@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<style>
+		*{padding:0 ; margin:0;}
+		canvas {background:#000; display:block; margin:0 auto;}
+	</style>
+
+	<title>Page Title</title>
+	<link rel="canonical" href="http://frogs.oort/"/>
+
+</head>
+<body>
+
+<canvas id="myCanvas" width="1366" height="620">   </canvas>
+
+<body style="background-color:black;">
+<h6>HI!</h6>
+
+	<SCRIPT LANGUAGE="JavaScript">
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+	
+	var ballXpos = 200;
+	var ballYpos = 300;
+	var ballDirX = 1
+	var ballDirY = -1
+	function draw(){
+		ctx.beginPath();
+		ctx.rect(200,200,200,200);
+		ctx.fillStyle="purple";
+		ctx.fill();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.arc(100,100,10,0,Math.PI*2);
+		ctx.fillStyle="red";
+		ctx.fill();
+		ctx.closePath();
+		
+		ballXpos += ballDirX;
+		ballYpos += ballDirY
+	}
+	setInterval(draw, 10);
+		
+	alert:("hi");
+//window["isChrome"] = /chrome/.test( navigator.userAgent.toLowerCase() );
+
+	</SCRIPT>
+
+</body>
+</html>
