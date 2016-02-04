@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+	<style>
+		*{padding:0 ; margin:0;}
+		canvas {background:#000; display:block; margin:0 auto;}
+	</style>
+
+	<title>Page Title</title>
+	<link rel="canonical" href="http://frogs.oort/"/>
+
+</head>
+<body>
+
+<canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+<body style="background-color:black;">
+<h6>HI!</h6>
+
+	<SCRIPT LANGUAGE="JavaScript">
+	var canvas = document.getElementById("myCanvas");
+	var ctx = canvas.getContext("2d");
+	
+	
+	
+	var screenToDisplay
+	var ballColor = "blue";
+	var ballXpos = 200;
+	var ballYpos = 300;
+	var ballXmove = 5;
+	var ballYmove = 5;
+	
+	function draw(){
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	
+	if(ballYpos >= canvas.height - 10 || ballYpos <= 10){
+	ballYmove = -ballYmove;
+	ballColor = "lime";
+	}
+	if(ballXpos >= canvas.width - 10 || ballXpos <= 10){
+	ballXmove = -ballXmove;
+	ballColor = "red";
+	}
+	
+	
+		ctx.beginPath();
+		ctx.rect(200,200,200,200);
+		ctx.fillStyle="purple";
+		ctx.fill();
+		ctx.closePath();
+		
+		ctx.beginPath();
+		ctx.arc(ballXpos,ballYpos,20,0,Math.PI*2);
+		ctx.fillStyle = ballColor;
+		ctx.fill();
+		ctx.closePath();
+		
+		ballXpos += ballXmove;
+		ballYpos += ballYmove;
+	}
+	setInterval(draw, 10);
+		
+	alert:("hi");
+//window["isChrome"] = /chrome/.test( navigator.userAgent.toLowerCase() );
+
+	</SCRIPT>
+
+</body>
+</html>
