@@ -1,0 +1,18 @@
+      changes made to marcel's game (breathtaking Flatverse)
+
+set gome control values
+
+initial hero size was 20
+hero size was 20
+min hero size was 20
+max hero size was 100
+init. hero speed was 80
+hero shrink factor was 0.95 (or something like that)
+hero grow factoe was 1.1
+hero speed factor was 20
+
+1. something happened that whenever something is bigger than me, I pass though it
+2. init. hero size changes how fast you move, but not your start size. i can use this to see the effects of probblem 1 over time.
+for some reason, when I set the  init. hero size  to 200, the balls get really big before the error, but with 300 or anything bigger the game freeses WAY earlier
+
+3. when you grow, the speed does not update itself until you click and turn the ball
