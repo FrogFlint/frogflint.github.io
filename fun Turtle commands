@@ -1,0 +1,2 @@
+repeat 100[pc 1 fd 4 rt 15 pc 2 fd 4 lt 21]
+repeat 1000 [pc 4 fd 5 rt 35 pc 1 fd 5 rt 35]
