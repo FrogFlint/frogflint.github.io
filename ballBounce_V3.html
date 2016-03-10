@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+    <title>Page Title</title>
+    <link rel="canonical" href="http://frogs.oort/" />
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+            var ballSize = 42;
+            var ballColor = "red";
+            var squareColor = "purple"
+            var ballXpos = 200;
+            var ballYpos = 300;
+            var ballXmove = 5;
+            var ballYmove = 5;
+
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+
+
+                if (ballYpos >= canvas.height - ballSize / 2 || ballYpos <= ballSize / 2) {
+                    ballYmove = -ballYmove;
+                    if (ballColor == "red"){ballColor = "lime"}
+                    else if (ballColor == "lime"){ballColor = "red"}
+
+                }
+                if (ballXpos >= canvas.width - ballSize / 2 || ballXpos <= ballSize / 2) {
+                    ballXmove = -ballXmove;
+                    if (ballColor == "red"){ballColor = "lime"}
+                    else if (ballColor == "lime"){ballColor = "red"}
+
+                }
+
+
+
+
+                if (ballColor == "red") {
+                    squareColor = "lime"
+                }
+                if (ballColor == "lime") {
+                    squareColor = "red"
+                }
+
+                ctx.beginPath();
+                ctx.rect(ballXpos - ballSize / 2, ballYpos - ballSize / 2, ballSize, ballSize);
+                ctx.fillStyle = squareColor;
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.beginPath();
+                ctx.arc(ballXpos, ballYpos, ballSize / 2, 0, Math.PI * 2);
+                ctx.fillStyle = ballColor;
+                ctx.fill();
+                ctx.closePath();
+
+                ballXpos += ballXmove;
+                ballYpos += ballYmove;
+            }
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
