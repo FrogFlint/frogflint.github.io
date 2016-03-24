@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+    <title>Page Title</title>
+    <link rel="canonical" href="http://frogs.oort/" />
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+            //42
+            var ballSize = 42;
+            var ballColor = "red";
+            var squareColor = "purple"
+            var ballXpos = 200;
+            var ballYpos = 300;
+            var ballXmove = 0;
+            var ballYmove = 0;
+
+			function colideWithRect(){
+			
+			}
+			
+			
+			
+			
+			
+			
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+
+              if (ballYpos > canvas.height - ballSize / 2){
+				ballYpos = canvas.height - ballSize / 2;
+			  }
+			  else if(ballYpos < ballSize / 2) {
+                    ballYpos = ballSize / 2;
+                }
+              else if (ballXpos > canvas.width - ballSize / 2){
+				ballXpos = canvas.width - ballSize / 2;
+			  }
+			  else if(ballXpos < ballSize / 2) {
+                    ballXpos = ballSize / 2;
+                }
+
+
+
+
+                if (ballColor == "red") {
+                    squareColor = "lime"
+                }
+                if (ballColor == "lime") {
+                    squareColor = "red"
+                }
+
+                ctx.beginPath();
+                ctx.rect(100, 100, ballSize, ballSize);
+                ctx.fillStyle = squareColor;
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.beginPath();
+                ctx.arc(ballXpos, ballYpos, ballSize / 2, 0, Math.PI * 2);
+                ctx.fillStyle = ballColor;
+                ctx.fill();
+                ctx.closePath();
+
+                ballXpos += ballXmove;
+                ballYpos += ballYmove;
+            }
+			
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+				if(e.keyCode == 39) {
+					ballXmove = 5;
+					//if(e.keyCode == 37) {ballXmove = 0}
+				}
+				else if(e.keyCode == 37) {
+					ballXmove = -5;
+					//if(e.keyCode == 39) {ballXmove = 0}
+				}
+				else if(e.keyCode == 40) {
+					ballYmove = 5;
+					//if(e.keyCode == 37) {ballXmove = 0}
+				}
+				else if(e.keyCode == 38) {
+					ballYmove = -5;
+					//if(e.keyCode == 39) {ballXmove = 0}
+				}
+			}
+
+			function keyUpHandler(e) {
+				if(e.keyCode == 39) {
+					ballXmove = 0;
+				}
+				else if(e.keyCode == 37) {
+					ballXmove = 0;
+				}
+				else if(e.keyCode == 40) {
+					ballYmove = 0;
+					//if(e.keyCode == 37) {ballXmove = 0}
+				}
+				else if(e.keyCode == 38) {
+					ballYmove = 0;
+					//if(e.keyCode == 39) {ballXmove = 0}
+				}
+			}
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
