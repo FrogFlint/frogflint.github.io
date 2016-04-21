@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+            //42
+            var ballSize = 42;
+            
+			
+            var ball1Xpos = 200;
+            var ball1Ypos = 300;
+			var ball2Xpos = 200;
+            var ball2Ypos = 300;
+			
+			
+
+			
+			
+			
+			
+			
+			
+			
+
+            function draw() {
+			 
+			 if (Math.random() * 10 <= 1){
+			 ctx.clearRect(0, 0, canvas.width, canvas.height);
+			 }
+       
+				
+				
+				
+			  if (ball1Ypos > canvas.height){
+				ball1Ypos = 0;
+			  }
+			  else if(ball1Ypos < 0) {
+                    ball1Ypos = canvas.height;
+                }
+              else if (ball1Xpos > canvas.width){
+				ball1Xpos = 0;
+			  }
+			  else if(ball1Xpos < 0) {
+                    ball1Xpos = canvas.width;
+                }
+			
+			if (ball2Ypos > canvas.height){
+				ball2Ypos = 0;
+			  }
+			  else if(ball2Ypos < 0) {
+                    ball2Ypos = canvas.height;
+                }
+              else if (ball2Xpos > canvas.width){
+				ball2Xpos = 0;
+			  }
+			  else if(ball2Xpos < 0) {
+                    ball2Xpos = canvas.width;
+                }
+
+
+                
+
+				//ball
+                ctx.beginPath();
+                ctx.arc(ball1Xpos, ball1Ypos, ballSize / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "red";
+                ctx.fill();
+                ctx.closePath();
+				
+				//ball
+                ctx.beginPath();
+                ctx.arc(ball2Xpos, ball2Ypos, ballSize / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "lime";
+                ctx.fill();
+                ctx.closePath();
+				
+
+					
+					
+
+                
+				ball1Xpos += Math.random() * 50 - 25;
+				ball1Ypos += Math.random() * 50 - 25;
+				
+				ball2Xpos += Math.random() * 50 - 25;
+				ball2Ypos += Math.random() * 50 - 25;
+            }
+			
+			
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
