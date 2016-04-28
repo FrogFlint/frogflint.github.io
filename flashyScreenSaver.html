@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+            
+			
+
+			
+			
+			
+            
+			
+			
+
+			
+			
+			
+			
+			
+			
+			
+
+            function draw() {
+			 
+			
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+			
+       
+				
+				
+				
+			 
+
+
+                
+
+				
+				
+				ctx.beginPath();
+				ctx.rect(Math.random() * 400, Math.random() * 400, Math.random() * 400, Math.random() * 400);
+				ctx.fillStyle = "lime";
+				ctx.fill();
+				ctx.closePath();
+				
+
+					
+					
+
+              
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+
+			function keyDownHandler(e) {
+			}
+				
+            }
+			
+			
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
