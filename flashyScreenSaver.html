@@ -68,7 +68,7 @@
 				
 				
 				ctx.beginPath();
-				ctx.rect(Math.random() * 400, Math.random() * 400, Math.random() * 400, Math.random() * 400);
+				ctx.rect(Math.random() * canvas.width,   Math.random() * canvas.height,   Math.random() * canvas.width - canvas.width/2,   Math.random() * canvas.height - canvas.height/2);
 				ctx.fillStyle = "lime";
 				ctx.fill();
 				ctx.closePath();
@@ -96,7 +96,7 @@
             }
 			
 			
-            setInterval(draw, 10);
+            setInterval(draw, 1);
 
         </SCRIPT>
 
