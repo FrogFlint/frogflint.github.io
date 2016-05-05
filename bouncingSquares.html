@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: black;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+			
+			var gameVariation = 1;
+			
+            //square size 100
+			var Xoffset = canvas.width/2 - 150;
+			var Yoffset = canvas.height/2 - 150;
+			
+			var index = 0;
+			var square = [4];
+
+			
+			//=====================================================================================================================
+				//starting values
+						
+					if(gameVariation == 1){
+						
+						square[0] = {
+							color:"blue",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset,
+							Xmove:2,
+							Ymove:2
+						}
+						square[1] = {
+							color:"lime",
+							Xpos: Xoffset + 200,
+							Ypos: Yoffset + 100,
+							Xmove:-2,
+							Ymove:2
+						}
+						square[2] = {
+							color:"red",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset + 200,
+							Xmove:-2,
+							Ymove:-2
+						}
+						square[3] = {
+							color:"purple",
+							Xpos: Xoffset,
+							Ypos: Yoffset + 100,
+							Xmove:2,
+							Ymove:-2
+						}
+					}
+            //=====================================================================================================================
+			if(gameVariation == 2){
+						
+						square[0] = {
+							color:"blue",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset,
+							Xmove:2,
+							Ymove:3
+						}
+						square[1] = {
+							color:"lime",
+							Xpos: Xoffset + 200,
+							Ypos: Yoffset + 100,
+							Xmove:-2,
+							Ymove:3
+						}
+						square[2] = {
+							color:"red",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset + 200,
+							Xmove:-2,
+							Ymove:-3
+						}
+						square[3] = {
+							color:"purple",
+							Xpos: Xoffset,
+							Ypos: Yoffset + 100,
+							Xmove:2,
+							Ymove:-3
+						}
+					}
+            //=====================================================================================================================
+			if(gameVariation == 3){
+						
+						square[0] = {
+							color:"blue",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset,
+							Xmove:3,
+							Ymove:2
+						}
+						square[1] = {
+							color:"lime",
+							Xpos: Xoffset + 200,
+							Ypos: Yoffset + 100,
+							Xmove:-2,
+							Ymove:3
+						}
+						square[2] = {
+							color:"red",
+							Xpos: Xoffset + 100,
+							Ypos: Yoffset + 200,
+							Xmove:-3,
+							Ymove:-2
+						}
+						square[3] = {
+							color:"purple",
+							Xpos: Xoffset,
+							Ypos: Yoffset + 100,
+							Xmove:2,
+							Ymove:-3
+						}
+					}
+            //=====================================================================================================================
+			
+			
+
+			
+			
+			
+			
+			
+			
+			
+
+            function draw() {
+			 
+			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				
+				
+				ctx.beginPath();
+					ctx.rect(Xoffset, Yoffset, 300, 300);
+					ctx.fillStyle = "black";
+					ctx.fill();
+					ctx.closePath();
+				
+				
+				
+				
+				//squares
+				
+				index = 0;
+				for(;index <= 3;){
+				
+				
+					//render it
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos, square[index].Ypos, 100, 100);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+				
+					//move it
+					square[index].Xpos += square[index].Xmove;
+					square[index].Ypos += square[index].Ymove;
+					
+					
+					//bounce
+					if(square[index].Xpos <= Xoffset  ||  square[index].Xpos + 100 >= Xoffset + 300){
+						square[index].Xmove *= -1;
+					}
+					if(square[index].Ypos <= Yoffset  ||  square[index].Ypos + 100 >= Yoffset + 300){
+						square[index].Ymove *= -1;
+					}
+					
+				
+					index += 1;
+				}
+
+				//Xoffset += Math.random() * 10 - 5;
+				//Yoffset += Math.random() * 10 - 5;
+            }
+			
+			
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
