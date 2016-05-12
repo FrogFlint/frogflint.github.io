@@ -1,0 +1,6 @@
+copy and paste the following code into the URL box and press enter.
+
+      javascript:var  int = 0; while(true){alert("Is this anoying?\n\nspam alert # " + int); int += 1;}
+
+note: when you paste it in the "javascript:" will probably disapear. Just retype that part.
+Because it uses URLs and redirecting, you can make it into a bookmark, or redirect to it from a website
