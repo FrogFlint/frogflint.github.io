@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: gray;
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="625">   </canvas>
+
+    <body style="background-color:black;">
+        <h6>HI!</h6>
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+
+
+            var screenToDisplay;
+			
+			
+			
+            //square size 100
+			var gameSpeed = 3;
+			var newGameSpeed = 3;
+			var speedBarColor;
+			
+			var randomlyChangeSpeed = true;
+			
+			var index = 0;
+			var square = [10];
+
+			
+			
+			
+			
+			//=====================================================================================================================
+				//starting values
+						
+					
+						
+						square[0] = {
+							Xpos: 100,
+							Ypos: canvas.height/2 - 100,
+							Ymove: -gameSpeed
+						}
+						square[1] = {
+							Xpos: 200,
+							Ypos: canvas.height/2 - 80,
+							Ymove: -gameSpeed
+						}
+						square[2] = {
+							Xpos: 300,
+							Ypos: canvas.height/2 - 60,
+							Ymove: -gameSpeed
+						}
+						square[3] = {
+							Xpos: 400,
+							Ypos: canvas.height/2 - 40,
+							Ymove: -gameSpeed
+						}
+						square[4] = {
+							Xpos: 500,
+							Ypos: canvas.height/2 - 20,
+							Ymove: -gameSpeed
+						}
+						square[5] = {
+							Xpos: 600,
+							Ypos: canvas.height/2,
+							Ymove: -gameSpeed
+						}
+						square[6] = {
+							Xpos: 700,
+							Ypos: canvas.height/2 - 20,
+							Ymove: +gameSpeed
+						}
+						square[7] = {
+							Xpos: 800,
+							Ypos: canvas.height/2 - 40,
+							Ymove: +gameSpeed
+						}
+						square[8] = {
+							Xpos: 900,
+							Ypos: canvas.height/2 - 60,
+							Ymove: +gameSpeed
+						}
+						square[9] = {
+							Xpos: 1000,
+							Ypos: canvas.height/2 - 80,
+							Ymove: +gameSpeed
+						}
+						
+					
+            //=====================================================================================================================
+
+			
+			
+			
+			
+
+            function draw() {
+			 
+			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				
+				
+				ctx.beginPath();
+					ctx.rect(0, canvas.height/2 - 100, canvas.width, 200);
+					ctx.fillStyle = "black";
+					ctx.fill();
+					ctx.closePath();
+				
+				
+				
+				
+				//squares
+				
+				if(randomlyChangeSpeed == true){
+				newGameSpeed = gameSpeed + (Math.random() * 0.2 - 0.1);
+				}
+				
+				index = 0;
+				for(;index <= 9;){
+				
+				square[index].Ymove /= gameSpeed;
+				square[index].Ymove *= newGameSpeed;
+				
+				
+				
+					//render it
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos, square[index].Ypos, 100, 100);
+					ctx.fillStyle = "blue";
+					ctx.fill();
+					ctx.closePath();
+				
+					//move them
+					square[index].Ypos += square[index].Ymove;
+					
+					
+					//bounce
+					if(square[index].Ypos <= canvas.height/2 - 100){
+						square[index].Ypos = canvas.height/2 - 100;
+						square[index].Ymove *= -1;
+					}
+					if(square[index].Ypos + 100 >= canvas.height/2 + 100){
+						square[index].Ypos = canvas.height/2;
+						square[index].Ymove *= -1;
+					}
+					
+				
+					index += 1;
+				}
+				gameSpeed = newGameSpeed;
+
+				if (gameSpeed >= 0){speedBarColor = "lime"}
+				else{speedBarColor = "red"}
+				
+				ctx.beginPath();
+					ctx.rect(canvas.width/2 - gameSpeed * 25, 50, gameSpeed * 50, 50);
+					ctx.fillStyle = speedBarColor;
+					ctx.fill();
+					ctx.closePath();
+				
+			
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+
+			function keyDownHandler(e) {
+			
+				if (e.keyCode == 82){
+					if(randomlyChangeSpeed == true){randomlyChangeSpeed = false}
+					else{randomlyChangeSpeed = true}
+				}
+				
+				if (e.keyCode == 32){gameSpeed = 3}
+            }
+			
+			
+			//end function draw
+            }
+			
+			
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
