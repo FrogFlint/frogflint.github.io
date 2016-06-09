@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1366" height="650">   </canvas>
+
+	<body style="background-color:gray;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+
+
+			function showCoords(event) {
+				var x = event.clientX;
+				var y = event.clientY;
+			}
+
+
+			var screenToDisplay;
+
+			//42
+			var ballSize = 42;
+
+			//arrows, WASD
+			var movementControls = "WASD";
+
+
+
+			var squareSize = 300;
+			var ballColor = "red";
+			var squareColor = "grey";
+			var ballXpos = 0;
+			var ballYpos = 0;
+			var ballXmove = 0;
+			var ballYmove = 0;
+			var squareXpos = 100;
+			var squareYpos = 100;
+
+
+
+			//function colideWithRect(){
+			//}
+
+
+
+
+			function draw() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+				ctx.font = "20px Arial";
+				ctx.fillText(ballXpos, 0, 0);
+
+
+				//squares
+				ctx.beginPath();
+				ctx.rect(canvas.width / 2 + squareXpos - ballXpos, canvas.height / 2 + squareYpos - ballYpos + 170, 500, 20);
+				ctx.fillStyle = squareColor;
+				ctx.fill();
+				ctx.closePath();
+
+				ctx.beginPath();
+				ctx.rect(canvas.width / 2 + squareXpos - ballXpos, canvas.height / 2 + squareYpos - ballYpos, 500, 20);
+				ctx.fillStyle = squareColor;
+				ctx.fill();
+				ctx.closePath();
+
+
+				//ball
+				ctx.beginPath();
+				ctx.arc(canvas.width / 2, canvas.height / 2, ballSize / 2, 0, Math.PI * 2);
+				ctx.fillStyle = ballColor;
+				ctx.fill();
+				ctx.closePath();
+
+
+				/*ctx.beginPath();
+                ctx.arc(x, y, ballSize / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "green";
+                ctx.fill();
+                ctx.closePath();
+				*/
+
+
+
+
+				//ball moves
+				ballXpos += ballXmove;
+				ballYpos += ballYmove;
+			}
+
+
+
+			//HIT WALLS  --=--	--=--	--=--	--=--	--=--
+
+
+
+
+			//			--=--	--=--	--=--	--=--	--=--
+
+
+
+
+			//keyboard input
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+
+			function keyDownHandler(e) {
+
+				if (movementControls == "arrows") {
+					//arrow keys
+					if (e.keyCode == 39) {
+						ballXmove = 8;
+					} else if (e.keyCode == 37) {
+						ballXmove = -8;
+					} else if (e.keyCode == 40) {
+						ballYmove = 8;
+					} else if (e.keyCode == 38) {
+						ballYmove = -8;
+					}
+				}
+
+				if (movementControls == "WASD") {
+					//WASD
+					if (e.keyCode == 68) {
+						ballXmove = 8;
+					} else if (e.keyCode == 65) {
+						ballXmove = -8;
+					} else if (e.keyCode == 83) {
+						ballYmove = 8;
+					} else if (e.keyCode == 87) {
+						ballYmove = -8;
+					}
+				}
+
+				//spacebar
+				if (e.keyCode == 32) {
+					if(movementControls == "arrows"){movementControls = "WASD"}
+					else{movementControls = "arrows"}
+				}
+			}
+
+			function keyUpHandler(e) {
+
+				if (movementControls == "arrows") {
+					//arrow keys
+					if (e.keyCode == 39) {
+						ballXmove = 0;
+					} else if (e.keyCode == 37) {
+						ballXmove = 0;
+					} else if (e.keyCode == 40) {
+						ballYmove = 0;
+
+					} else if (e.keyCode == 38) {
+						ballYmove = 0;
+
+					}
+				}
+
+				if (movementControls == "WASD") {
+					//WASD
+					if (e.keyCode == 68) {
+						ballXmove = 0;
+					} else if (e.keyCode == 65) {
+						ballXmove = 0;
+					} else if (e.keyCode == 83) {
+						ballYmove = 0;
+
+					} else if (e.keyCode == 87) {
+						ballYmove = 0;
+					}
+				}
+
+
+			}
+			setInterval(draw, 10);
+		</SCRIPT>
+
+	</body>
+
+</html>
