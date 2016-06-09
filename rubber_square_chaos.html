@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+	
+	
+<head>
+
+<title> Rubber square chaos </title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        
+        canvas {
+            background: gray;
+            display: block;
+            margin: 0 auto;
+			
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <canvas id="myCanvas" width="1366" height="667" >   </canvas>
+
+    
+        
+
+        <SCRIPT LANGUAGE="JavaScript">
+            var canvas = document.getElementById("myCanvas");
+			
+            var ctx = canvas.getContext("2d");
+			
+			
+			
+            var screenToDisplay;
+			
+			
+			
+            //square size 100
+			var gameSpeed = 3;
+			var newGameSpeed = 3;
+			var speedBarColor;
+			
+			var randomlyChangeSpeed = true;
+			
+			var square = [];
+			var index = 0;
+			var index2 = 0;
+			
+			
+			
+			
+			
+			//=====================================================================================================================
+				//starting values
+						
+					
+						
+						square[0] = {
+							color: "red",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[1] = {
+							color: "lime",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[2] = {
+							color: "blue",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[3] = {
+							color: "purple",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[4] = {
+							color: "aqua",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[5] = {
+							color: "forestGreen",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[6] = {
+							color: "orange",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						square[7] = {
+							color: "black",
+							Xpos: 0,
+							Ypos: 0,
+							Ymove: 0,
+							Xmove: 0
+						}
+						
+						
+						
+					
+            //=====================================================================================================================
+			
+			
+			index = 0;
+			for(;index < square.length;){
+				square[index].Xpos = (Math.random() * canvas.width);
+				square[index].Ypos = (Math.random() * canvas.height);
+				square[index].Xmove = (Math.random() * 20 - 10);
+				square[index].Ymove = (Math.random() * 20 - 10);
+			
+			index += 1;
+			}
+			
+			
+			
+			
+			
+            function draw() {
+			 
+			
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				//squares
+				
+				
+				
+				index = 0;
+				for(;index < square.length;){
+				
+				
+				
+				
+				
+					//render it
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos, square[index].Ypos, 100, 100);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+					
+					
+					
+					
+					
+				
+					//move them
+					square[index].Xpos += square[index].Xmove;
+					square[index].Ypos += square[index].Ymove;
+					
+					
+					//bounce off walls
+					//========================================================================
+					if(square[index].Xpos <= 0){
+						square[index].Xpos = 0;
+						square[index].Xmove *= -1;
+					}
+					if(square[index].Xpos + 100 >= canvas.width){
+						square[index].Xpos = canvas.width - 100;
+						square[index].Xmove *= -1;
+					}
+					if(square[index].Ypos <= 0){
+						square[index].Ypos = 0;
+						square[index].Ymove *= -1;
+					}
+					if(square[index].Ypos + 100 >= canvas.height){
+						square[index].Ypos = canvas.height - 100;
+						square[index].Ymove *= -1;
+					}
+					//========================================================================
+					//bounce off other squares
+					//========================================================================
+					
+					index2 = 0;
+					for(;index2 < square.length;){
+						if(index != index2){
+							
+							if (square[index].Xpos + 100 >= square[index2].Xpos  &&  square[index].Xpos + 100 <= square[index2].Xpos + 15/*top and bottom touch*/  
+							&& square[index].Ypos + 100 >= square[index2].Ypos  &&   square[index].Ypos <= square[index2].Ypos + 100/*sides align*/){
+								
+									square[index].Xmove *= -1;
+									square[index2].Xmove *= -1;
+							}
+							if (square[index].Ypos + 100 >= square[index2].Ypos  &&  square[index].Ypos + 100 <= square[index2].Ypos + 15/*top and bottom touch*/  
+							&& square[index].Xpos + 100 >= square[index2].Xpos  &&   square[index].Xpos <= square[index2].Xpos + 100/*sides align*/){
+								
+									square[index].Ymove *= -1;
+									square[index2].Ymove *= -1;
+							}
+							
+							
+						}
+						
+						index2 += 1;
+					}
+					
+					
+					
+					
+					//========================================================================
+					
+				
+					index += 1;
+				}
+				
+				
+				
+				
+			
+			document.addEventListener("keydown", keyDownHandler, false);
+			//document.addEventListener("keyup", keyUpHandler, false);
+			
+			function keyDownHandler(e) {
+				
+				if(e.keyCode == 32){
+					
+					index = 0;
+					for(;index < 4;){
+						square[index].Xpos = (Math.random() * canvas.width);
+						square[index].Ypos = (Math.random() * canvas.height);
+						square[index].Xmove = (Math.random() * 20 - 10);
+						square[index].Ymove = (Math.random() * 20 - 10);
+					index += 1;
+					}
+					
+				}
+			
+            }
+			
+			
+			//end function draw
+            }
+			
+			
+            setInterval(draw, 10);
+
+        </SCRIPT>
+
+    </body>
+
+</html>
