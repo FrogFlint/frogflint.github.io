@@ -42,15 +42,16 @@
 			
 			
             //square size 100
-			var gameSpeed = 3;
-			var newGameSpeed = 3;
+			var maxSpeed = 1;
 			var speedBarColor;
 			
-			var randomlyChangeSpeed = true;
+			var squareCornerMode = false;
 			
 			var square = [];
 			var index = 0;
 			var index2 = 0;
+			
+			
 			
 			
 			
@@ -128,8 +129,8 @@
 			for(;index < square.length;){
 				square[index].Xpos = (Math.random() * canvas.width);
 				square[index].Ypos = (Math.random() * canvas.height);
-				square[index].Xmove = (Math.random() * 20 - 10);
-				square[index].Ymove = (Math.random() * 20 - 10);
+				square[index].Xmove = (Math.random() * 20 - 10)* maxSpeed;
+				square[index].Ymove = (Math.random() * 20 - 10)* maxSpeed;
 			
 			index += 1;
 			}
@@ -161,14 +162,40 @@
 				
 				
 				
-				
+				if (squareCornerMode == true){
 					//render it
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos, square[index].Ypos, 20, 20);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos +80, square[index].Ypos, 20, 20);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos +80, square[index].Ypos +80, 20, 20);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.rect(square[index].Xpos, square[index].Ypos +80, 20, 20);
+					ctx.fillStyle = square[index].color;
+					ctx.fill();
+					ctx.closePath();
+				}
+				
+				else {
 					ctx.beginPath();
 					ctx.rect(square[index].Xpos, square[index].Ypos, 100, 100);
 					ctx.fillStyle = square[index].color;
 					ctx.fill();
 					ctx.closePath();
-					
+				}
 					
 					
 					
@@ -244,18 +271,13 @@
 				
 				if(e.keyCode == 32){
 					
-					index = 0;
-					for(;index < 4;){
-						square[index].Xpos = (Math.random() * canvas.width);
-						square[index].Ypos = (Math.random() * canvas.height);
-						square[index].Xmove = (Math.random() * 20 - 10);
-						square[index].Ymove = (Math.random() * 20 - 10);
-					index += 1;
+					if (squareCornerMode == true){squareCornerMode = false}
+					else {squareCornerMode = true}
 					}
 					
 				}
 			
-            }
+            
 			
 			
 			//end function draw
