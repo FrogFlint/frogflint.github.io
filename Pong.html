@@ -151,7 +151,14 @@
 				
 				
 					//top left
-					
+			//scores
+				ctx.font = "200px Arial";
+				ctx.fillText(paddle1score, canvas.width/2, canvas.height/2);
+				
+				ctx.font = "200px Arial";
+				ctx.fillText(paddle2score, canvas.width/2 - 100, canvas.height/2);		
+		    
+		    
                 ctx.beginPath();
                 ctx.rect(0, paddle1pos, 15, paddle1size);
                 ctx.fillStyle = "grey";
@@ -192,12 +199,8 @@
                 ctx.fillStyle = "blue";
                 ctx.fill();
                 ctx.closePath();
-				//scores
-				ctx.font = "200px Arial";
-				ctx.fillText(paddle1score, canvas.width/2, canvas.height/2);
 				
-				ctx.font = "200px Arial";
-				ctx.fillText(paddle2score, canvas.width/2 - 100, canvas.height/2);
+		    
 					//bottom right
 
 				
