@@ -153,10 +153,10 @@
 					//top left
 			//scores
 				ctx.font = "200px Arial";
-				ctx.fillText(paddle1score, canvas.width/2 +200, canvas.height/2);
+				ctx.fillText(paddle1score, canvas.width/2 -300, canvas.height/2);
 				
 				ctx.font = "200px Arial";
-				ctx.fillText(paddle2score, canvas.width/2 -300, canvas.height/2);		
+				ctx.fillText(paddle2score, canvas.width/2 +200, canvas.height/2);		
 		    
 		    
                 ctx.beginPath();
@@ -193,15 +193,10 @@
                 ctx.closePath();
 				//ball
 				
-					//bottom left
-				ctx.beginPath();
-                ctx.rect(canvas.width/2 - 10, canvas.height - 10, -paddle1score * 10, -10);
-                ctx.fillStyle = "blue";
-                ctx.fill();
-                ctx.closePath();
-				
 		    
-					//bottom right
+		    
+		    
+		    
 
 				
                 ballXpos += ballXmove;
