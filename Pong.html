@@ -193,11 +193,11 @@
                 ctx.fill();
                 ctx.closePath();
 				//scores
-				ctx.beginPath();
-                ctx.rect(canvas.width/2 + 10, canvas.height - 10, paddle2score * 10, -10);
-                ctx.fillStyle = "blue";
-                ctx.fill();
-                ctx.closePath();
+				ctx.font = "200px Arial";
+				ctx.fillText(paddle1score, canvas.width/2, canvas.height/2);
+				
+				ctx.font = "200px Arial";
+				ctx.fillText(paddle2score, canvas.width/2 - 100, canvas.height/2);
 					//bottom right
 
 				
