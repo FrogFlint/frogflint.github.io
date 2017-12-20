@@ -44,6 +44,7 @@
             //square size 100
 			var maxSpeed = 1;
 			var speedBarColor;
+			var tempSpeed = 0;
 			
 			var squareCornerMode = false;
 			
@@ -235,9 +236,12 @@
 							
 							if (square[index].Xpos + 100 >= square[index2].Xpos  &&  square[index].Xpos + 100 <= square[index2].Xpos + 15/*top and bottom touch*/  
 							&& square[index].Ypos + 100 >= square[index2].Ypos  &&   square[index].Ypos <= square[index2].Ypos + 100/*sides align*/){
-								
-									square[index].Xmove *= -1;
-									square[index2].Xmove *= -1;
+									
+								tempSpeed = square[index].Xmove;
+								square[index].Xmove = square[index2].Xmove;
+								square[index2].Xmove = tempSpeed;
+									//square[index].Xmove *= -1;
+									//square[index2].Xmove *= -1;
 							}
 							if (square[index].Ypos + 100 >= square[index2].Ypos  &&  square[index].Ypos + 100 <= square[index2].Ypos + 15/*top and bottom touch*/  
 							&& square[index].Xpos + 100 >= square[index2].Xpos  &&   square[index].Xpos <= square[index2].Xpos + 100/*sides align*/){
