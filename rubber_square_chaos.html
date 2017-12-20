@@ -237,6 +237,8 @@
 							if (square[index].Xpos + 100 >= square[index2].Xpos  &&  square[index].Xpos + 100 <= square[index2].Xpos + 15/*top and bottom touch*/  
 							&& square[index].Ypos + 100 >= square[index2].Ypos  &&   square[index].Ypos <= square[index2].Ypos + 100/*sides align*/){
 									
+								square[index].Xpos = square[index2].Xpos - 100;
+								
 								tempSpeed = square[index].Xmove;
 								square[index].Xmove = square[index2].Xmove;
 								square[index2].Xmove = tempSpeed;
