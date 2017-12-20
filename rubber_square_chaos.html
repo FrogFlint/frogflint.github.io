@@ -240,14 +240,14 @@
 								tempSpeed = square[index].Xmove;
 								square[index].Xmove = square[index2].Xmove;
 								square[index2].Xmove = tempSpeed;
-									//square[index].Xmove *= -1;
-									//square[index2].Xmove *= -1;
+								
 							}
 							if (square[index].Ypos + 100 >= square[index2].Ypos  &&  square[index].Ypos + 100 <= square[index2].Ypos + 15/*top and bottom touch*/  
 							&& square[index].Xpos + 100 >= square[index2].Xpos  &&   square[index].Xpos <= square[index2].Xpos + 100/*sides align*/){
 								
-									square[index].Ymove *= -1;
-									square[index2].Ymove *= -1;
+								tempSpeed = square[index].Ymove;
+								square[index].Ymove = square[index2].Xmove;
+								square[index2].Ymove = tempSpeed;
 							}
 							
 							
