@@ -52,6 +52,12 @@
 			var paddle1size = 150;
 			var paddle2size = 150;
 			var paddleSpeed = 0;
+			
+			var paddle1up = false;
+			var paddle1down = false;
+			var paddle2up = false;
+			var paddle2down = false;
+			
 			var wallMode = "stop";
 			var rand = 0;
 			
@@ -226,6 +232,8 @@
 				else if (e.keyCode == 74){paddle2move = 10;}
 				
 				
+			
+				
 				
 				if (e.keyCode == 32  &&  gameScreen == "gameOver"){
 				gameScreen = "game";
@@ -243,8 +251,22 @@
 			}
 
 			function keyUpHandler(e) {
-				if (e.keyCode == 82 || e.keyCode == 70){paddle1move = 0;}
-				else if (e.keyCode == 85 || e.keyCode == 74){paddle2move = 0;}
+				
+				
+				
+				if (e.keyCode == 82){
+					if (e.keyCode == 70){paddle1move = 0;}
+					else {paddle1move = -10;}
+				}
+				else if (e.keyCode == 70){paddle1move = 10;}
+				
+				
+				if (e.keyCode == 85){
+					if (e.keyCode == 74){paddle2move = 0;}
+					paddle2move = -10;
+				}
+				else if (e.keyCode == 74){paddle2move = 10;}
+				
 				
 			}
             setInterval(draw, 10);
