@@ -212,13 +212,19 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
-				if (e.keyCode == 82){paddle1move = -10;}
+				if (e.keyCode == 82){
+					if (e.keyCode == 70){paddle1move = 0;}
+					else {paddle1move = -10;}
+				}
 				else if (e.keyCode == 70){paddle1move = 10;}
-				else if (e.keyCode == 70 && e.keyCode == 82){paddle1move = 0;}
 				
-				else if (e.keyCode == 85){paddle2move = -10;}
+				
+				if (e.keyCode == 85){
+					if (e.keyCode == 74){paddle2move = 0;}
+					paddle2move = -10;
+				}
 				else if (e.keyCode == 74){paddle2move = 10;}
-				else if (e.keyCode == 74 && e.keyCode == 85){paddle2move = 10;}
+				
 				
 				
 				if (e.keyCode == 32  &&  gameScreen == "gameOver"){
