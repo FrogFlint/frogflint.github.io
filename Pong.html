@@ -209,8 +209,8 @@
 		    
 
 				
-                ballXpos += ballXmove;
-                ballYpos += ballYmove;
+                		ballXpos += ballXmove;
+                		ballYpos += ballYmove;
 				paddle1pos += paddle1move;
 				paddle2pos += paddle2move;
             }
@@ -249,21 +249,17 @@
 				if (e.keyCode == 85){paddle2down = false}
 				if (e.keyCode == 74){paddle2up = false}
 				
-				
 			}
 			
 			
-			if (paddle1up == true){
-				if (paddle1down == true){paddle1move = 0;}
-				else {paddle1move = -10}
-			}
-			else if (paddle1down == true){paddle1move = 10;}
+			if (paddle1up == true){paddle1move = -10}
+			if (paddle1down == true){paddle1move = 10;}
+			if (paddle1up == true && paddle1down == true){paddle1move = 0;}
 		
-			if (paddle2up == true){
-				if (paddle2down == true){paddle2move = 0;}
-				else {paddle2move = -10}
-			}
-			else if (paddle2down == true){paddle2move = 10;}
+		
+			if (paddle2up == true){paddle2move = -10}
+			if (paddle2down == true){paddle2move = 10;}
+			if (paddle2up == true && paddle2down == true){paddle2move = 0;}
 			
 			
 			
