@@ -53,10 +53,10 @@
 			var paddle2size = 150;
 			var paddleSpeed = 0;
 			
-			var paddle1up = false;
-			var paddle1down = false;
-			var paddle2up = false;
-			var paddle2down = false;
+			var paddle1up = 0;
+			var paddle1down = 0;
+			var paddle2up = 0;
+			var paddle2down = 0;
 			
 			var wallMode = "stop";
 			var rand = 0;
@@ -215,10 +215,10 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
-				if (e.keyCode == 82){paddle1down = true;}
-				if (e.keyCode == 70){paddle1up = true;}
-				if (e.keyCode == 85){paddle2down = true;}
-				if (e.keyCode == 74){paddle2up = true;}
+				if (e.keyCode == 82){paddle1down = 1;}
+				if (e.keyCode == 70){paddle1up = 1;}
+				if (e.keyCode == 85){paddle2down = 1;}
+				if (e.keyCode == 74){paddle2up = 1;}
 				
 				
 			
@@ -241,22 +241,22 @@
 
 			function keyUpHandler(e) {
 				
-				if (e.keyCode == 82){paddle1down = false;}
-				if (e.keyCode == 70){paddle1up = false;}
-				if (e.keyCode == 85){paddle2down = false;}
-				if (e.keyCode == 74){paddle2up = false;}
+				if (e.keyCode == 82){paddle1down = 0;}
+				if (e.keyCode == 70){paddle1up = 0;}
+				if (e.keyCode == 85){paddle2down = 0;}
+				if (e.keyCode == 74){paddle2up = 0;}
 				
 			}
 			
 			
-			if (paddle1up == true){paddle1move = -10}
-			if (paddle1down == true){paddle1move = 10;}
-			if (paddle1up == true && paddle1down == true){paddle1move = 0;}
+			if (paddle1up == 1){paddle1move = -10}
+			if (paddle1down == 1){paddle1move = 10;}
+			if (paddle1up == 1 && paddle1down == 1){paddle1move = 0;}
 		
 		
-			if (paddle2up == true){paddle2move = -10}
-			if (paddle2down == true){paddle2move = 10;}
-			if (paddle2up == true  &&  paddle2down == true){paddle2move = 0;}
+			if (paddle2up == 1){paddle2move = -10}
+			if (paddle2down == 1){paddle2move = 10;}
+			if (paddle2up == 1  &&  paddle2down == 1){paddle2move = 0;}
 			
 			
 			
