@@ -52,12 +52,16 @@
 		Xpos:100,
 		Ypos:canvas.height/2,
 		angle:0,
+		left:0,
+		right:0,
 		score:0
 	}
 	player2 = {
 		Xpos:canvas.width-100,
 		Ypos:canvas.height/2,
 		angle:0,
+		left:0,
+		right:0,
 		score:0
 	}
         
@@ -91,7 +95,32 @@
         
         
         
-        
+        		document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+				
+				if(e.keyCode == 65){player1.left = 1;}
+				if(e.keyCode == 68){player1.right = 1;}
+				if(e.keyCode == 37){player2.left = 1;}
+				if(e.keyCode == 39){player2.right = 1;}
+			}
+	      		function keyDownHandler(e) {
+				
+				if(e.keyCode == 65){player1.left = 0;}
+				if(e.keyCode == 68){player1.right = 0;}
+				if(e.keyCode == 37){player2.left = 0;}
+				if(e.keyCode == 39){player2.right = 0;}
+			}
+	      
+	      
+	      if(player1.left == 1){player1.angle -= 1;}
+	      if(player1.right == 1){player1.angle += 1;}
+	      if(player2.left == 1){player2.angle -= 1;}
+	      if(player2.right == 1){player2.angle += 1;}
+	      
+	      
+	      
+	      
         
         
         
