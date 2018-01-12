@@ -81,10 +81,16 @@
         
         
         
-        ctx.beginPath();
+       		ctx.beginPath();
   		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*10, player1.Xpos + Math.cos(player1.angle)*50);
 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*10, player1.Xpos + Math.cos(player1.angle + 135)*50);
  		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*10, player1.Xpos + Math.cos(player1.angle + 225)*50);
+ 		ctx.fill();
+	      
+	     	ctx.beginPath();
+  		ctx.moveTo(player2.Xpos + Math.sin(player2.angle)*10, player2.Xpos + Math.cos(player2.angle)*50);
+		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 135)*10, player2.Xpos + Math.cos(player2.angle + 135)*50);
+ 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 225)*10, player2.Xpos + Math.cos(player2.angle + 225)*50);
  		ctx.fill();
         
         
