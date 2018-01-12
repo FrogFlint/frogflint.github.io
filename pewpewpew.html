@@ -82,9 +82,9 @@
         
         
         ctx.beginPath();
-  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*10, player1.Xpos + Math.cos(player1.angle)*20);
-		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*10, player1.Xpos + Math.cos(player1.angle + 135)*20);
- 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*10, player1.Xpos + Math.cos(player1.angle + 225)*20);
+  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*10, player1.Xpos + Math.cos(player1.angle)*50);
+		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*10, player1.Xpos + Math.cos(player1.angle + 135)*50);
+ 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*10, player1.Xpos + Math.cos(player1.angle + 225)*50);
  		ctx.fill();
         
         
@@ -125,7 +125,7 @@
         
         
         }
-			setInterval(draw, 0);
+			setInterval(draw, 1);
 		</SCRIPT>
 
 	</body>
