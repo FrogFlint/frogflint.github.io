@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Rainbow lines</title>
+<title>pewpewpew!</title>
 </head>
 
 <body>
@@ -46,22 +46,40 @@
       
       function draw() {
 				
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
+
         
-        
-        
-        
-        
+	      
         var player1;
         var player2;
         var bullet = [];
+	var index = 0;
         
+        var pointScored = false;
         
+	      
         
+        player1 = {
+		Xpos:100,
+		Ypos:canvas.height/2,
+		angle:90,
+		score:0
+	}
+	player2 = {
+		Xpos:canvas.width-100,
+		Ypos:canvas.height/2,
+		angle:270,
+		score:0
+	}
         
-        
-        
+	      
+	bullet[0] = {
+		Xpos:0,
+		Ypos:0,
+		Xspeed:0,
+		Yspeed:0
+	}
         
         
         
