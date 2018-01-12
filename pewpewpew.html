@@ -51,13 +51,13 @@
         player1 = {
 		Xpos:100,
 		Ypos:canvas.height/2,
-		angle:90,
+		angle:0,
 		score:0
 	}
 	player2 = {
 		Xpos:canvas.width-100,
 		Ypos:canvas.height/2,
-		angle:270,
+		angle:0,
 		score:0
 	}
         
@@ -78,9 +78,9 @@
         
         
         ctx.beginPath();
-  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*10, player1.Xpos + Math.cos(player1.angle)*10);
-		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*10, player1.Xpos + Math.cos(player1.angle + 135)*10);
- 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*10, player1.Xpos + Math.cos(player1.angle + 225)*10);
+  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*10, player1.Xpos + Math.cos(player1.angle)*20);
+		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*10, player1.Xpos + Math.cos(player1.angle + 135)*20);
+ 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*10, player1.Xpos + Math.cos(player1.angle + 225)*20);
  		ctx.fill();
         
         
