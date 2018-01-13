@@ -213,7 +213,7 @@
                 		ballYpos += ballYmove;
 				paddle1pos += paddle1move;
 				paddle2pos += paddle2move;
-            }
+            
 			
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
@@ -236,10 +236,10 @@
 				else if (rand < 2){ballXmove = -8; ballYmove = -5;}
 				else if (rand < 3){ballXmove = 8; ballYmove = 5;}
 				else if (rand < 4){ballXmove = 8; ballYmove = -5;}
-				
-				
 				}
 			}
+				
+			
 
 			function keyUpHandler(e) {
 				
@@ -247,9 +247,9 @@
 				if (e.keyCode == 82){paddle1down = 0;}
 				if (e.keyCode == 74){paddle2up = 0;}
 				if (e.keyCode == 85){paddle2down = 0;}
-				
-			
 			}
+			
+			
 			
 			if (paddle1up == 1){paddle1pos -= 10;}
 			if (paddle1down == 1){paddle1pos += 10;}
@@ -258,7 +258,7 @@
 			
 			
 			
-	    }
+		}
             setInterval(draw, 10);
 
         </SCRIPT>
