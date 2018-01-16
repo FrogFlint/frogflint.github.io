@@ -139,7 +139,6 @@
 					
 					ballXmove *= 1.1;
 					ballYmove *= 1.1;
-					ballYmove += paddle1move;
 					//ballSize += 5;
 				}
 				else if (gameScreen == "game" && ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2pos < ballYpos + ballSize/2  &&  paddle2pos + paddle2size > ballYpos - ballSize/2){
@@ -150,7 +149,6 @@
 					
 					ballXmove *= 1.1;
 					ballYmove *= 1.1;
-					ballYmove += paddle2move;
 					//ballSize += 5;
 				}
 				//ball bounces off paddles
