@@ -83,8 +83,8 @@
         
        		ctx.beginPath();
   		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*50, player1.Ypos + Math.cos(player1.angle)*50);
-		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 135)*50, player1.Ypos + Math.cos(player1.angle + 135)*50);
- 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 225)*50, player1.Ypos + Math.cos(player1.angle + 225)*50);
+		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 2.5)*30, player1.Ypos + Math.cos(player1.angle + 2.5)*30);
+ 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle - 2.5)*30, player1.Ypos + Math.cos(player1.angle - 2.5)*30);
  		ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
@@ -123,10 +123,10 @@
 			}
 	      
 	      
-	      if(player1.left == 1){player1.angle -= 1;}
-	      if(player1.right == 1){player1.angle += 1;}
-	      if(player2.left == 1){player2.angle -= 1;}
-	      if(player2.right == 1){player2.angle += 1;}
+	      if(player1.left == 1){player1.angle -= 0.1;}
+	      if(player1.right == 1){player1.angle += 0.1;}
+	      if(player2.left == 1){player2.angle -= 0.1;}
+	      if(player2.right == 1){player2.angle += 0.1;}
 	      
 	      
 	      
