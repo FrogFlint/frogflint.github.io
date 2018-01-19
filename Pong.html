@@ -46,7 +46,7 @@
 		
 			var paddle1pos = 100;
 			var paddle1move = 0;
-			var paddle1score = 100;
+			var paddle1score = 0;
 			var paddle2pos = 100;
 			var paddle2move = 0;
 			var paddle2score = 0;
@@ -97,7 +97,7 @@
 		  		  ballYmove = 0;
   			  	paddle2size *= 0.95;
   			  	  if(paddle2size < 15){paddle2size = 15;}
-	  			  paddle2score += 1;
+	  			  paddle1score += 1;
 				    gameScreen = "gameOver"
 			    }
 			  }
@@ -232,10 +232,10 @@
 				ballYpos = canvas.height/2;
 				
 				rand = Math.random()*4;
-				if (rand < 1){ballXmove = -24; ballYmove = 15;}
-				else if (rand < 2){ballXmove = -24; ballYmove = -15;}
-				else if (rand < 3){ballXmove = 24; ballYmove = 15;}
-				else if (rand < 4){ballXmove = 24; ballYmove = -15;}
+				if (rand < 1){ballXmove = -16; ballYmove = 10;}
+				else if (rand < 2){ballXmove = -16; ballYmove = -10;}
+				else if (rand < 3){ballXmove = 16; ballYmove = 10;}
+				else if (rand < 4){ballXmove = 16; ballYmove = -10;}
 				}
 			}
 				
@@ -251,15 +251,15 @@
 			
 			
 			
-			if (paddle1up == 1){paddle1pos -= 30;}
-			if (paddle1down == 1){paddle1pos += 30;}
-			if (paddle2up == 1){paddle2pos -= 30;}
-			if (paddle2down == 1){paddle2pos += 30;}
+			if (paddle1up == 1){paddle1pos -= 20;}
+			if (paddle1down == 1){paddle1pos += 20;}
+			if (paddle2up == 1){paddle2pos -= 20;}
+			if (paddle2down == 1){paddle2pos += 20;}
 			
 			
 			
 		}
-            setInterval(draw, 33);
+            setInterval(draw, 20);
 
         </SCRIPT>
 
