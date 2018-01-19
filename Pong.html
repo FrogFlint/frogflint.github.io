@@ -97,7 +97,9 @@
 		  		  ballYmove = 0;
   			  	paddle2size *= 0.95;
   			  	  if(paddle2size < 15){paddle2size = 15;}
-	  			  paddle1score += 100;
+	  			  paddle2score += 1;
+				    
+				    ballSize += 1;
 				    gameScreen = "gameOver"
 			    }
 			  }
@@ -110,7 +112,9 @@
 		    		ballYmove = 0;
 				    paddle1size *= 0.95;
 				      if(paddle1size < 15){paddle1size = 15;}
-			    	paddle1score += 100;
+			    	paddle1score += 1;
+		 		
+		 		ballsize += 1;
 			    	gameScreen = "gameOver"
           }
 			  }
