@@ -99,7 +99,6 @@
   			  	  if(paddle2size < 15){paddle2size = 15;}
 	  			  paddle2score += 1;
 				    
-				    ballSize += 20;
 				    gameScreen = "gameOver"
 			    }
 			  }
@@ -114,7 +113,6 @@
 				      if(paddle1size < 15){paddle1size = 15;}
 			    	paddle1score += 1;
 		 		
-		 		ballSize += 20;
 			    	gameScreen = "gameOver"
           }
 			  }
@@ -143,7 +141,7 @@
 					
 					ballXmove *= 1.1;
 					ballYmove *= 1.1;
-					//ballSize += 5;
+					ballSize += 20;
 				}
 				else if (gameScreen == "game" && ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2pos < ballYpos + ballSize/2  &&  paddle2pos + paddle2size > ballYpos - ballSize/2){
 					//ballXpos = camvas.width - (15 + ballSize/2);
@@ -153,7 +151,7 @@
 					
 					ballXmove *= 1.1;
 					ballYmove *= 1.1;
-					//ballSize += 5;
+					ballSize += 20;
 				}
 				//ball bounces off paddles
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
