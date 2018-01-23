@@ -38,7 +38,8 @@
         var player1;
         var player2;
         var bullet = [];
-	//var index = 0;
+	var index = 0;
+	var bulletNumber = 0;
         
         //var pointScored = false;
         
@@ -52,7 +53,9 @@
 		right:0,
 		forwards:0,
 		backwards:0,
-		score:0
+		score:0,
+		shooting:0,
+		cooldown:0
 	}
 	player2 = {
 		Xpos:canvas.width-100,
@@ -62,7 +65,9 @@
 		right:0,
 		forwards:0,
 		backwards:0,
-		score:0
+		score:0,
+		shooting
+		cooldown:0
 	}
         
 	      
@@ -87,16 +92,16 @@
         
        		ctx.beginPath();
   		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*40, player1.Ypos + Math.cos(player1.angle)*40);
-		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 2.5)*20, player1.Ypos + Math.cos(player1.angle + 2.5)*20);
- 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle - 2.5)*20, player1.Ypos + Math.cos(player1.angle - 2.5)*20);
+		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 2.5)*25, player1.Ypos + Math.cos(player1.angle + 2.5)*25);
+ 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle - 2.5)*25, player1.Ypos + Math.cos(player1.angle - 2.5)*25);
  		ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
 	      
 	     	ctx.beginPath();
   		ctx.moveTo(player2.Xpos + Math.sin(player2.angle)*40, player2.Ypos + Math.cos(player2.angle)*40);
-		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 2.5)*20, player2.Ypos + Math.cos(player2.angle + 2.5)*20);
- 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle - 2.5)*20, player2.Ypos + Math.cos(player2.angle - 2.5)*20);
+		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 2.5)*25, player2.Ypos + Math.cos(player2.angle + 2.5)*25);
+ 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle - 2.5)*25, player2.Ypos + Math.cos(player2.angle - 2.5)*25);
  		ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
@@ -116,9 +121,12 @@
 				if(e.keyCode == 65){player1.left = 1;}
 				if(e.keyCode == 68){player1.right = 1;}
 				if(e.keyCode == 87){player1.forwards = 1;}
+				if(e.keyCode == 81){player1.shooting = 1;}
+				
 				if(e.keyCode == 37){player2.left = 1;}
 				if(e.keyCode == 39){player2.right = 1;}
 				if(e.keyCode == 38){player2.forwards = 1;}
+				if(e.keyCode == 38){player2.shooting = 1;}
 				
 				
 			}
@@ -127,9 +135,12 @@
 				if(e.keyCode == 65){player1.left = 0;}
 				if(e.keyCode == 68){player1.right = 0;}
 				if(e.keyCode == 87){player1.forwards = 0;}
+				if(e.keyCode == 87){player1.shooting = 0;}
+				
 				if(e.keyCode == 37){player2.left = 0;}
 				if(e.keyCode == 39){player2.right = 0;}
 				if(e.keyCode == 38){player2.forwards = 0;}
+				if(e.keyCode == 38){player2.shooting = 0;}
 			}
 	      
 	      
@@ -145,6 +156,19 @@
 	      if(player2.forwards == 1){
 		      player2.Xpos += Math.sin(player2.angle)*3;
 		      player2.Ypos += Math.cos(player2.angle)*3;
+	      }
+	      
+	      if(player1.shooting == 1){
+		      if(player1.cooldown == 0){
+			      bullet[bulletNumber].Xpos = player1.Xpos;
+			      bullet[bulletNumber].Ypos = player1.Ypos;
+			      bullet[bulletNumber].Xspeed = Math.sin(player1.angle);
+			      bullet[bulletNumber].Yspeed = Math.cos(player1.angle);
+			      bulletNumber = 1;
+			      if(bulletNumber >= 10){bulletNumber = 0;
+			      player1.cooldown = 10;
+		      }
+		      else {player1.cooldown -= 1;}
 	      }
 	      
 	      
