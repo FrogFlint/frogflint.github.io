@@ -37,9 +37,11 @@
 	      
         var player1;
         var player2;
-        var bullet = [];
-	var index = 0;
-	var bulletNumber = 0;
+        var bullet1 = [];
+        var bullet2 = [];
+	//var index = 0;
+	var bulletNumber1 = 0;
+	var bulletNumber2 = 0;
         
         //var pointScored = false;
         
@@ -71,7 +73,7 @@
 	}
         
 	      
-	bullet[0] = {
+	bullet1[0] = {
 		Xpos:0,
 		Ypos:0,
 		Xspeed:0,
@@ -160,10 +162,10 @@
 	      
 	      if(player1.shooting == 1){
 		      if(player1.cooldown == 0){
-			      bullet[bulletNumber].Xpos = player1.Xpos;
-			      bullet[bulletNumber].Ypos = player1.Ypos;
-			      bullet[bulletNumber].Xspeed = Math.sin(player1.angle);
-			      bullet[bulletNumber].Yspeed = Math.cos(player1.angle);
+			      bullet1[bulletNumber].Xpos = player1.Xpos;
+			      bullet1[bulletNumber].Ypos = player1.Ypos;
+			      bullet1[bulletNumber].Xspeed = Math.sin(player1.angle);
+			      bullet1[bulletNumber].Yspeed = Math.cos(player1.angle);
 			      bulletNumber = 1;
 			      if(bulletNumber >= 10){bulletNumber = 0;
 			      player1.cooldown = 10;
