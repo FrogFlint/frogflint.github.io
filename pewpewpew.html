@@ -37,11 +37,11 @@
 	      
         var player1;
         var player2;
-        //var bullet1 = [];
-        //var bullet2 = [];
+        var bullet1 = [];
+        var bullet2 = [];
 	//var index = 0;
-	//var bulletNumber1 = 0;
-	//var bulletNumber2 = 0;
+	var bulletNumber1 = 0;
+	var bulletNumber2 = 0;
         
         //var pointScored = false;
         
@@ -165,15 +165,15 @@
 		      player2.Xpos += Math.sin(player2.angle)*3;
 		      player2.Ypos += Math.cos(player2.angle)*3;
 	      }
-	      /*
+	      
 	      if(player1.shooting == 1){
 		      if(player1.cooldown == 0){
 			      bullet1[bulletNumber1].Xpos = player1.Xpos;
 			      bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle);
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle);
-			      bulletNumber1 = 1;
-			      if(bulletNumber1 >= 10){bulletNumber1 = 0;
+			      bulletNumber1 += 1;
+			      if(bulletNumber1 >= 10){bulletNumber1 = 0;}
 			      player1.cooldown = 10;
 		      }
 		      else {player1.cooldown -= 1;}
@@ -184,13 +184,13 @@
 			      bullet2[bulletNumber2].Ypos = player2.Ypos;
 			      bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle);
 			      bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle);
-			      bulletNumber2 = 1;
-			      if(bulletNumber2 >= 10){bulletNumber2 = 0;
+			      bulletNumber2 += 1;
+			      if(bulletNumber2 >= 10){bulletNumber2 = 0;}
 			      player2.cooldown = 10;
 		      }
 		      else {player2.cooldown -= 1;}
 	      }
-		*/
+		
 	      
 	      
 	      
