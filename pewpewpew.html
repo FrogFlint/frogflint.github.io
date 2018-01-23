@@ -50,6 +50,8 @@
 		angle:0,
 		left:0,
 		right:0,
+		forwards:0,
+		backwards:0,
 		score:0
 	}
 	player2 = {
@@ -58,6 +60,8 @@
 		angle:0,
 		left:0,
 		right:0,
+		forwards:0,
+		backwards:0,
 		score:0
 	}
         
@@ -82,23 +86,23 @@
         
         
        		ctx.beginPath();
-  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*50, player1.Ypos + Math.cos(player1.angle)*50);
-		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 2.5)*30, player1.Ypos + Math.cos(player1.angle + 2.5)*30);
- 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle - 2.5)*30, player1.Ypos + Math.cos(player1.angle - 2.5)*30);
+  		ctx.moveTo(player1.Xpos + Math.sin(player1.angle)*40, player1.Ypos + Math.cos(player1.angle)*40);
+		ctx.lineTo(player1.Xpos + Math.sin(player1.angle + 2.5)*20, player1.Ypos + Math.cos(player1.angle + 2.5)*20);
+ 		ctx.lineTo(player1.Xpos + Math.sin(player1.angle - 2.5)*20, player1.Ypos + Math.cos(player1.angle - 2.5)*20);
  		ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
 	      
 	     	ctx.beginPath();
-  		ctx.moveTo(player2.Xpos + Math.sin(player2.angle)*50, player2.Ypos + Math.cos(player2.angle)*50);
-		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 2.5)*30, player2.Ypos + Math.cos(player2.angle + 2.5)*30);
- 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle - 2.5)*30, player2.Ypos + Math.cos(player2.angle - 2.5)*30);
+  		ctx.moveTo(player2.Xpos + Math.sin(player2.angle)*40, player2.Ypos + Math.cos(player2.angle)*40);
+		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 2.5)*20, player2.Ypos + Math.cos(player2.angle + 2.5)*20);
+ 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle - 2.5)*20, player2.Ypos + Math.cos(player2.angle - 2.5)*20);
  		ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
         
         
-        	player1.Xpos += 1;
+        	
         
         
         
@@ -111,22 +115,37 @@
 				
 				if(e.keyCode == 65){player1.left = 1;}
 				if(e.keyCode == 68){player1.right = 1;}
+				if(e.keyCode == 87){player1.forwards = 1;}
 				if(e.keyCode == 37){player2.left = 1;}
 				if(e.keyCode == 39){player2.right = 1;}
+				if(e.keyCode == 38){player2.backwards = 1;}
+				
+				
 			}
 	      		function keyUpHandler(e) {
 				
 				if(e.keyCode == 65){player1.left = 0;}
 				if(e.keyCode == 68){player1.right = 0;}
+				if(e.keyCode == 87){player1.forwards = 0;}
 				if(e.keyCode == 37){player2.left = 0;}
 				if(e.keyCode == 39){player2.right = 0;}
+				if(e.keyCode == 38){player2.backwards = 0;}
 			}
 	      
 	      
-	      if(player1.left == 1){player1.angle += 0.1;}
-	      if(player1.right == 1){player1.angle -= 0.1;}
-	      if(player2.left == 1){player2.angle += 0.1;}
-	      if(player2.right == 1){player2.angle -= 0.1;}
+	      if(player1.left == 1){player1.angle += 0.05;}
+	      if(player1.right == 1){player1.angle -= 0.05;}
+	      if(player2.left == 1){player2.angle += 0.05;}
+	      if(player2.right == 1){player2.angle -= 0.05;}
+	      
+	      if(player1.forwards == 1){
+		      player1.Xpos += Math.sin(player1.angle);
+		      player1.Ypos += Math.cos(player1.angle);
+	      }
+	      if(player2.forwards == 1){
+		      player2.Xpos += Math.sin(player2.angle);
+		      player2.Ypos += Math.cos(player2.angle);
+	      }
 	      
 	      
 	      
