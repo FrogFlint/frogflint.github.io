@@ -118,7 +118,7 @@
 				if(e.keyCode == 87){player1.forwards = 1;}
 				if(e.keyCode == 37){player2.left = 1;}
 				if(e.keyCode == 39){player2.right = 1;}
-				if(e.keyCode == 38){player2.backwards = 1;}
+				if(e.keyCode == 38){player2.forwards = 1;}
 				
 				
 			}
@@ -129,7 +129,7 @@
 				if(e.keyCode == 87){player1.forwards = 0;}
 				if(e.keyCode == 37){player2.left = 0;}
 				if(e.keyCode == 39){player2.right = 0;}
-				if(e.keyCode == 38){player2.backwards = 0;}
+				if(e.keyCode == 38){player2.forwards = 0;}
 			}
 	      
 	      
@@ -139,12 +139,12 @@
 	      if(player2.right == 1){player2.angle -= 0.05;}
 	      
 	      if(player1.forwards == 1){
-		      player1.Xpos += Math.sin(player1.angle);
-		      player1.Ypos += Math.cos(player1.angle);
+		      player1.Xpos += Math.sin(player1.angle)*3;
+		      player1.Ypos += Math.cos(player1.angle)*3;
 	      }
 	      if(player2.forwards == 1){
-		      player2.Xpos += Math.sin(player2.angle);
-		      player2.Ypos += Math.cos(player2.angle);
+		      player2.Xpos += Math.sin(player2.angle)*3;
+		      player2.Ypos += Math.cos(player2.angle)*3;
 	      }
 	      
 	      
