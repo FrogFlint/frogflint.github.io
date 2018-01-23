@@ -37,11 +37,11 @@
 	      
         var player1;
         var player2;
-        //var bullet1 = [];
-        //var bullet2 = [];
+        var bullet1 = [];
+        var bullet2 = [];
 	//var index = 0;
-	//var bulletNumber1 = 0;
-	//var bulletNumber2 = 0;
+	var bulletNumber1 = 0;
+	var bulletNumber2 = 0;
         
         //var pointScored = false;
         
@@ -68,12 +68,18 @@
 		forwards:0,
 		backwards:0,
 		score:0,
-		shooting
+		shooting:0,
 		cooldown:0
 	}
         
 	      
 	bullet1[0] = {
+		Xpos:0,
+		Ypos:0,
+		Xspeed:0,
+		Yspeed:0
+	}
+	bullet2[0] = {
 		Xpos:0,
 		Ypos:0,
 		Xspeed:0,
