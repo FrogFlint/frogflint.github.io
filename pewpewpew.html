@@ -39,7 +39,7 @@
         var player2;
         var bullet1 = [];
         var bullet2 = [];
-	//var index = 0;
+	var index = 0;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
         
@@ -176,7 +176,28 @@
 	      }
 		
 	      
-	      
+	      index = 0;
+	      for(;index <= 0;index++){
+		      bullet1[index].Xpos += bullet1[index].Xmove
+		      bullet1[index].Ypos += bullet1[index].Ymove
+		      
+		ctx.beginPath();
+                ctx.arc(bullet1[index].Xpos, bullet1[index].Ypos, 5, 0, Math.PI * 2);
+                ctx.fillStyle = "red";
+                ctx.fill();
+                ctx.closePath();
+	      }
+	      index = 0;
+	      for(;index <= 0;index++){
+		      bullet2[index].Xpos += bullet2[index].Xmove
+		      bullet2[index].Ypos += bullet2[index].Ymove
+		      
+		ctx.beginPath();
+                ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
+                ctx.fillStyle = "lime";
+                ctx.fill();
+                ctx.closePath();
+	      }
 	      
 	      
 	      
