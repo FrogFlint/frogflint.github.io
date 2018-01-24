@@ -154,8 +154,8 @@
 		      player1.Ypos += Math.cos(player1.angle)*8;
 	      }
 	      if(player2.forwards == 1){
-		      player2.Xpos += Math.sin(player2.angle)*speed;
-		      player2.Ypos += Math.cos(player2.angle)*speed;
+		      player2.Xpos += Math.sin(player2.angle)*player2.speed;
+		      player2.Ypos += Math.cos(player2.angle)*player2.speed;
 	      }
 	      
 	      if(player1.Xpos < 40){player1.Xpos = 40;}
