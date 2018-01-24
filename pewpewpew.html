@@ -42,6 +42,8 @@
 	var index = 0;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
+	
+	var speed = 8;
         
         //var pointScored = false;
         
@@ -56,6 +58,7 @@
 		forwards:0,
 		backwards:0,
 		score:0,
+		speed:8,
 		shooting:0,
 		cooldown:0
 	}
@@ -68,6 +71,7 @@
 		forwards:0,
 		backwards:0,
 		score:0,
+		speed:8,
 		shooting:0,
 		cooldown:0
 	}
@@ -136,6 +140,10 @@
 			}
 	      
 	      
+	      if(player2.shooting == true){player2.speed = 80;}
+	      else{player2.speed = 8;}
+	      
+	      
 	      if(player1.left == 1){player1.angle += 0.07;}
 	      if(player1.right == 1){player1.angle -= 0.07;}
 	      if(player2.left == 1){player2.angle += 0.07;}
@@ -146,8 +154,8 @@
 		      player1.Ypos += Math.cos(player1.angle)*8;
 	      }
 	      if(player2.forwards == 1){
-		      player2.Xpos += Math.sin(player2.angle)*8;
-		      player2.Ypos += Math.cos(player2.angle)*8;
+		      player2.Xpos += Math.sin(player2.angle)*speed;
+		      player2.Ypos += Math.cos(player2.angle)*speed;
 	      }
 	      
 	      if(player1.Xpos < 40){player1.Xpos = 40;}
