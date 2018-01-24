@@ -150,6 +150,17 @@
 		      player2.Ypos += Math.cos(player2.angle)*3;
 	      }
 	      
+	      if(player1.Xpos < 40){player1.Xpos = 40;}
+	      if(player1.Ypos < 40){player1.Xpos = 40;}
+	      if(player1.Xpos < canvas.width - 40){player1.Xpos = canvas.width - 40;}
+	      if(player1.Ypos < canvas.height - 40){player1.Xpos = canvas.height - 40;}
+	      
+	      if(player2.Xpos < 40){player2.Xpos = 40;}
+	      if(player2.Ypos < 40){player2.Xpos = 40;}
+	      if(player2.Xpos < canvas.width - 40){player2.Xpos = canvas.width - 40;}
+	      if(player2.Ypos < canvas.height - 40){player2.Xpos = canvas.height - 40;}
+	      
+	      
 	      if(player1.shooting == 1){
 		      if(player1.cooldown == 0){
 			      bullet1[bulletNumber1].Xpos = player1.Xpos;
