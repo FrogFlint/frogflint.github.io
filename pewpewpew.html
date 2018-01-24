@@ -136,14 +136,14 @@
 			}
 	      
 	      
-	      if(player1.left == 1){player1.angle += 0.07;}
-	      if(player1.right == 1){player1.angle -= 0.07;}
-	      if(player2.left == 1){player2.angle += 0.07;}
-	      if(player2.right == 1){player2.angle -= 0.07;}
+	      if(player1.left == 1){player1.angle += 0.2;}//07
+	      if(player1.right == 1){player1.angle -= 0.2;}
+	      if(player2.left == 1){player2.angle += 0.2;}
+	      if(player2.right == 1){player2.angle -= 0.2;}
 	      
 	      if(player1.forwards == 1){
-		      player1.Xpos += Math.sin(player1.angle)*5;
-		      player1.Ypos += Math.cos(player1.angle)*5;
+		      player1.Xpos += Math.sin(player1.angle)*40;//5
+		      player1.Ypos += Math.cos(player1.angle)*40;
 	      }
 	      if(player2.forwards == 1){
 		      player2.Xpos += Math.sin(player2.angle)*40;
