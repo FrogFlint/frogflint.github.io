@@ -58,7 +58,7 @@
 		forwards:0,
 		backwards:0,
 		score:0,
-		speed:8,
+		speed:5,
 		shooting:0,
 		cooldown:0
 	}
@@ -71,7 +71,7 @@
 		forwards:0,
 		backwards:0,
 		score:0,
-		speed:8,
+		speed:5,
 		shooting:0,
 		cooldown:0
 	}
@@ -140,8 +140,8 @@
 			}
 	      
 	      
-	      if(player2.shooting == 1){player2.speed = 80;}
-	      else{player2.speed = 8;}
+	      if(player2.shooting == 1){player2.speed = 50;}
+	      else{player2.speed = 5;}
 	      
 	      
 	      if(player1.left == 1){player1.angle += 0.07;}
@@ -150,8 +150,8 @@
 	      if(player2.right == 1){player2.angle -= 0.07;}
 	      
 	      if(player1.forwards == 1){
-		      player1.Xpos += Math.sin(player1.angle)*8;
-		      player1.Ypos += Math.cos(player1.angle)*8;
+		      player1.Xpos += Math.sin(player1.angle)*player1.speed;
+		      player1.Ypos += Math.cos(player1.angle)*player1.speed;
 	      }
 	      if(player2.forwards == 1){
 		      player2.Xpos += Math.sin(player2.angle)*player2.speed;
