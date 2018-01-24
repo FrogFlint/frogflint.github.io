@@ -189,8 +189,8 @@
 	      
 	      index = 0;
 	      for(;index <= 0;index++){
-		      bullet1[index].Xpos += bullet1[index].Xmove
-		      bullet1[index].Ypos += bullet1[index].Ymove
+		      bullet1[index].Xpos += bullet1[index].Xmove;
+		      bullet1[index].Ypos += bullet1[index].Ymove;
 		      
 		ctx.beginPath();
                 ctx.arc(bullet1[index].Xpos, bullet1[index].Ypos, 5, 0, Math.PI * 2);
@@ -200,8 +200,8 @@
 	      }
 	      index = 0;
 	      for(;index <= 0;index++){
-		      bullet2[index].Xpos += bullet2[index].Xmove
-		      bullet2[index].Ypos += bullet2[index].Ymove
+		      bullet2[index].Xpos += bullet2[index].Xmove;
+		      bullet2[index].Ypos += bullet2[index].Ymove;
 		      
 		ctx.beginPath();
                 ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
@@ -230,7 +230,7 @@
                 ctx.closePath();
 	      
 	      
-	      if(player2.shooting == 1){
+	      if(player2.shooting == 0){
 		ctx.beginPath();
   		ctx.moveTo(player2.Xpos + Math.sin(player2.angle)*40, player2.Ypos + Math.cos(player2.angle)*40);
 		ctx.lineTo(player2.Xpos + Math.sin(player2.angle + 2.5)*25, player2.Ypos + Math.cos(player2.angle + 2.5)*25);
