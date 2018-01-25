@@ -57,6 +57,7 @@
 		backwards:0,
 		score:0,
 		speed:5,
+		boost:0;
 		shooting:0,
 		cooldown:0
 	}
@@ -70,6 +71,7 @@
 		backwards:0,
 		score:0,
 		speed:5,
+		boost:0,
 		shooting:0,
 		cooldown:0
 	}
@@ -116,11 +118,13 @@
 				if(e.keyCode == 68){player1.right = 1;}
 				if(e.keyCode == 87){player1.forwards = 1;}
 				if(e.keyCode == 81){player1.shooting = 1;}
+				if(e.keyCode == 16){player1.boost = 1;}
 				
 				if(e.keyCode == 37){player2.left = 1;}
 				if(e.keyCode == 39){player2.right = 1;}
 				if(e.keyCode == 38){player2.forwards = 1;}
 				if(e.keyCode == 191){player2.shooting = 1;}
+				if(e.keyCode == 69){player2.boost = 1;}
 				
 				
 			}
@@ -130,16 +134,19 @@
 				if(e.keyCode == 68){player1.right = 0;}
 				if(e.keyCode == 87){player1.forwards = 0;}
 				if(e.keyCode == 81){player1.shooting = 0;}
+				if(e.keyCode == 16){player1.boost = 0;}
 				
 				if(e.keyCode == 37){player2.left = 0;}
 				if(e.keyCode == 39){player2.right = 0;}
 				if(e.keyCode == 38){player2.forwards = 0;}
 				if(e.keyCode == 191){player2.shooting = 0;}
+				if(e.keyCode == 69){player2.boost = 0;}
 			}
 	      
-	      
-	      //if(player2.shooting == 1){player2.speed = 50;}
-	      //else{player2.speed = 5;}
+	      if(player1.boost == 1){player1.speed = 50;}
+	      else{player1.speed = 5;}
+	      if(player2.boost == 1){player2.speed = 50;}
+	      else{player2.speed = 5;}
 	      
 	      
 	      if(player1.left == 1){player1.angle += 0.07;}
