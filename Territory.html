@@ -44,21 +44,29 @@
 			
 			//==============================================================================================================================
 			tile[0,0] = {
-				color: "green",
-				nextColor:"green"
+				color: "lime",
+				nextColor:"lime"
 			}
-			/*
+			
 			index1 = 0;
 				while(index1 < index1Max){
 					index2 = 0;
 					while(index2 < index2Max){
 						
-						rand = Math.random
+						rand = Math.random()*2;
+						if(rand <= 1){tile[index1,index2] = {
+							color:"lime",
+							nextColor:"lime"
+						}}
+						else{tile[index1,index2] = {
+							color:"blue",
+							nextColor:"blue"
+						}}
 						
 						index2 += 1;
 					}
 					index1 += 1;
-				}*/
+				}
 			
 			
 			
