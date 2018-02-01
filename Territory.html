@@ -67,19 +67,19 @@
 						
 						if(index1 != 0){
 							rand = Math.random()*8;
-							if(rand <= 1){tile[index1-1,index2].color = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1-1,index2].nextColor = tile[index1,index2].color;}
 						}
 						if(index2 != 0){
 							rand = Math.random()*8;
-							if(rand <= 1){tile[index1,index2-1].color = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1,index2-1].nextColor = tile[index1,index2].color;}
 						}
 						if(index1 != index1Max){
 							rand = Math.random()*8;
-							if(rand <= 1){tile[index1+1,index2].color = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1+1,index2].nextColor = tile[index1,index2].color;}
 						}
 						if(index2 != index2Max){
 							rand = Math.random()*8;
-							if(rand <= 1){tile[index1,index2+1].color = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1,index2+1].nextColor = tile[index1,index2].color;}
 						}
 						
 						index2 += 1;
@@ -96,6 +96,13 @@
 					index2 = 0;
 					while(index2 <= index2Max){
 						
+						tile[index1,index2].color = tile[index1,index2].nextColor;
+						
+						ctx.beginPath();
+						ctx.rect(index1*100, index2*100, 100, 100);
+						ctx.fillStyle = tile[index1,index2].color;
+						ctx.fill();
+						ctx.closePath();
 						
 						index2 += 1;
 					}
