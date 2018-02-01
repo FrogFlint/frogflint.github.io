@@ -126,7 +126,7 @@
 						tile[index1,index2].color = tile[index1,index2].nextColor;
 						
 						ctx.beginPath();
-						ctx.rect(index1*tileSize, index2*tileSize, 10, 10);
+						ctx.rect(index1*tileSize, index2*tileSize, tileSize-1, tilesize-1);
 						ctx.fillStyle = tile[index1,index2].color;
 						ctx.fill();
 						ctx.closePath();
