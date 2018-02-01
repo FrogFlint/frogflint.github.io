@@ -49,9 +49,9 @@
 			}*/
 			
 			index1 = 0;
-				while(index1 < index1Max){
+				while(index1 <= index1Max){
 					index2 = 0;
-					while(index2 < index2Max){
+					while(index2 <= index2Max){
 						
 						rand = Math.random()*2;
 						if(rand <= 1){tile[index1,index2] = {
@@ -89,9 +89,9 @@
 				
 				
         			index1 = 0;
-				while(index1 < index1Max){
+				while(index1 <= index1Max){
 					index2 = 0;
-					while(index2 < index2Max){
+					while(index2 <= index2Max){
 						
 						if(index1 != 0){
 							rand = Math.random()*8;
@@ -120,9 +120,9 @@
 				
 				
 				index1 = 0;
-				while(index1 < index1Max){
+				while(index1 <= index1Max){
 					index2 = 0;
-					while(index2 < index2Max){
+					while(index2 <= index2Max){
 						
 						tile[index1,index2].color = tile[index1,index2].nextColor;
 						
