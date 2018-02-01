@@ -36,6 +36,7 @@
      			var index2 = 0
 			var index1Max = 20;
 			var index2Max = 10;
+			var tileSize = 50;
 			var rand = 0;
 			var tile = [];
 			
@@ -99,7 +100,7 @@
 						tile[index1,index2].color = tile[index1,index2].nextColor;
 						
 						ctx.beginPath();
-						ctx.rect(index1*100, index2*100, 100, 100);
+						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
 						ctx.fillStyle = tile[index1,index2].color;
 						ctx.fill();
 						ctx.closePath();
