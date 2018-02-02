@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>A war of Good and Evil, of Light and Dark, of Right and Wrong, of Green and Blue!</title>
+<title>Rainbow lines</title>
 </head>
 
 <body>
@@ -34,16 +34,19 @@
 			
 			var index1 = 0;
      			var index2 = 0;
-			var index1Max = 20;
-			var index2Max = 10;
-			var tileSize = 50;
+			var index1Max = 200;
+			var index2Max = 100;
+			var tileSize = 5;
 			var rand = 0;
 			var tile = [];
 			
 			
 			
-			//=========================================================================
-			
+			//========================================================================
+			/*tile[0,0] = {
+				color: "lime",
+				nextColor:"lime"
+			}*/
 			
 			index1 = 0;
 				while(index1 <= index1Max){
@@ -54,18 +57,20 @@
 						if(rand <= 1){tile[index1,index2] = {
 							color:"lime",
 							nextColor:"lime"
-							}
-						}
+						}}
 						else{tile[index1,index2] = {
 							color:"blue",
 							nextColor:"blue"
-							}
-						}
+						}}
 						
 						index2 += 1;
 					}
 					index1 += 1;
 				}
+			
+			
+			
+			
 			
 			
 			
@@ -114,7 +119,7 @@
 					index1 += 1;
 				}
 				
-				
+				tile[0,0].nextColor = "lime";
 				
 				
 				
@@ -126,7 +131,7 @@
 						tile[index1,index2].color = tile[index1,index2].nextColor;
 						
 						ctx.beginPath();
-						ctx.rect(index1*tileSize, index2*tileSize, tileSize-5, tileSize-5);
+						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
 						ctx.fillStyle = tile[index1,index2].color;
 						ctx.fill();
 						ctx.closePath();
