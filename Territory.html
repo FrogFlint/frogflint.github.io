@@ -39,7 +39,7 @@
 			var tileSize = 50;
 			var rand = 0;
 			var spreadChance = 8;  //fraction
-			var tile = [][];
+			var tile = [[]];
 			
 			
 			
@@ -56,11 +56,11 @@
 						rand = Math.random()*2;
 						if(rand <= 1){tile[index1][index2] = {
 							color:"lime",
-							nextColor:"lime"
+							nextColor:"lime",
 						}}
 						else{tile[index1][index2] = {
 							color:"blue",
-							nextColor:"blue"
+							nextColor:"blue",
 						}}
 						
 						index2 += 1;
@@ -128,7 +128,7 @@
 					index1 += 1;
 				}
 				
-				//tile[2,2].nextColor = "lime";
+				
 				
 				
 				
