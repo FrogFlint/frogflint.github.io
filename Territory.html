@@ -55,11 +55,11 @@
 					while(index2 <= index2Max){
 						
 						rand = Math.random()*2;
-						if(rand <= 1){tile[index1,index2] = {
+						if(rand <= 1){tile[index1][index2] = {
 							color:"lime",
 							nextColor:"lime"
 						}}
-						else{tile[index1,index2] = {
+						else{tile[index1][index2] = {
 							color:"blue",
 							nextColor:"blue"
 						}}
@@ -100,19 +100,19 @@
 						
 						if(index1 != 0){
 							rand = Math.random()*spreadChance;
-							if(rand <= 1){tile[index1 - 1,index2].nextColor = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1 - 1][index2].nextColor = tile[index1][index2].color;}
 						}
 						if(index2 != 0){
 							rand = Math.random()*spreadChance;
-							if(rand <= 1){tile[index1,index2 - 1].nextColor = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1][index2 - 1].nextColor = tile[index1][index2].color;}
 						}
 						if(index1 != index1Max){
 							rand = Math.random()*spreadChance;
-							if(rand <= 1){tile[index1 + 1,index2].nextColor = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1 + 1][index2].nextColor = tile[index1][index2].color;}
 						}
 						if(index2 != index2Max){
 							rand = Math.random()*spreadChance;
-							if(rand <= 1){tile[index1,index2 + 1].nextColor = tile[index1,index2].color;}
+							if(rand <= 1){tile[index1][index2 + 1].nextColor = tile[index1][index2].color;}
 						}
 						
 						index2 += 1;
@@ -120,7 +120,7 @@
 					index1 += 1;
 				}
 				
-				tile[2,2].nextColor = "lime";
+				//tile[2,2].nextColor = "lime";
 				
 				
 				
@@ -129,11 +129,11 @@
 					index2 = 0;
 					while(index2 <= index2Max){
 						
-						tile[index1,index2].color = tile[index1,index2].nextColor;
+						tile[index1][index2].color = tile[index1][index2].nextColor;
 						
 						ctx.beginPath();
 						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
-						ctx.fillStyle = tile[index1,index2].color;
+						ctx.fillStyle = tile[index1][index2].color;
 						ctx.fill();
 						ctx.closePath();
 						
