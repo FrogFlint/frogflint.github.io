@@ -34,10 +34,11 @@
 			
 			var index1 = 0;
      			var index2 = 0;
-			var index1Max = 200;
-			var index2Max = 100;
-			var tileSize = 5;
+			var index1Max = 20;
+			var index2Max = 10;
+			var tileSize = 50;
 			var rand = 0;
+			var spreadChance = 8;  //fraction
 			var tile = [];
 			
 			
@@ -98,20 +99,20 @@
 					while(index2 <= index2Max){
 						
 						if(index1 != 0){
-							rand = Math.random()*8;
-							if(rand <= 1){tile[index1-1,index2].nextColor = tile[index1,index2].color;}
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){tile[index1 - 1,index2].nextColor = tile[index1,index2].color;}
 						}
 						if(index2 != 0){
-							rand = Math.random()*8;
-							if(rand <= 1){tile[index1,index2-1].nextColor = tile[index1,index2].color;}
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){tile[index1,index2 - 1].nextColor = tile[index1,index2].color;}
 						}
 						if(index1 != index1Max){
-							rand = Math.random()*8;
-							if(rand <= 1){tile[index1+1,index2].nextColor = tile[index1,index2].color;}
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){tile[index1 + 1,index2].nextColor = tile[index1,index2].color;}
 						}
 						if(index2 != index2Max){
-							rand = Math.random()*8;
-							if(rand <= 1){tile[index1,index2+1].nextColor = tile[index1,index2].color;}
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){tile[index1,index2 + 1].nextColor = tile[index1,index2].color;}
 						}
 						
 						index2 += 1;
