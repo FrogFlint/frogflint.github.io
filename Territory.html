@@ -115,34 +115,57 @@
 					while(index2 <= index2Max){
 						
 						
+						rand = Math.random()*4;
 						
-						
-						
+						if(rand <= 1){
 						if(index1 != 0){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1 - 1][index2].nextColor = tile[index1][index2].color;
 							}
-						}
+						}}
+						if(rand <= 2){
 						if(index2 != 0){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1][index2 - 1].nextColor = tile[index1][index2].color;
 							}
-						}
+						}}
+						if(rand <= 3){
 						if(index1 != index1Max){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
 							}
-						}
+						}}
+						//always
 						if(index2 != index2Max){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1][index2 + 1].nextColor = tile[index1][index2].color;
 							}
 						}
-						
+						if(rand >= 1){
+						if(index1 != 0){
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){
+								tile[index1 - 1][index2].nextColor = tile[index1][index2].color;
+							}
+						}}
+						if(rand >= 2){
+						if(index2 != 0){
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){
+								tile[index1][index2 - 1].nextColor = tile[index1][index2].color;
+							}
+						}}
+						if(rand >= 3){
+						if(index1 != index1Max){
+							rand = Math.random()*spreadChance;
+							if(rand <= 1){
+								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
+							}
+						}}
 						
 						
 						
