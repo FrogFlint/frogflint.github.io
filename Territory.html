@@ -32,7 +32,7 @@
 			
 			var speed = 10;
 			
-			var setup = "sides"; //random, sides
+			var setup = "random"; //random, sides
 			var scale = 10; // between 1 and 50
 			var index1 = 0;
      			var index2 = 0;
@@ -115,6 +115,9 @@
 					while(index2 <= index2Max){
 						
 						
+						
+						
+						
 						if(index1 != 0){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
@@ -139,6 +142,9 @@
 								tile[index1][index2 + 1].nextColor = tile[index1][index2].color;
 							}
 						}
+						
+						
+						
 						
 						index2 += 1;
 					}
