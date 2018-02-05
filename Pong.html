@@ -88,8 +88,8 @@
 		//ctx.clearRect(canvas.width-15, 0, 15, canvas.height);
 
 
-        //paddle1.pos = ballYpos-75;
-        //paddle2.pos = ballYpos-paddle2.size/2;
+        //paddle1.pos = ball.Ypos-75;
+        //paddle2.pos = ball.Ypos-paddle2.size/2;
         //autopaddles
         
         
@@ -98,12 +98,12 @@
 
 
 
-			if (ball.Xpos - ballSize/2 <= 0){
+			if (ball.Xpos - ball.size/2 <= 0){
 			  if (gameScreen == "game"){
-			    if (ballXpos - ballSize/2 < 15  &&  paddle1.pos < ball.Ypos + ballSize/2  &&  paddle1.pos + paddle1.size > ballYpos - ballSize/2){}
+			    if (ball.Xpos - ball.size/2 < 15  &&  paddle1.pos < ball.Ypos + ball.size/2  &&  paddle1.pos + paddle1.size > ball.Ypos - ball.size/2){}
 			    else {
-			    	ballXmove = 0;
-		  		  ballYmove = 0;
+			    	ball.Xmove = 0;
+		  		  ball.Ymove = 0;
   			  	paddle2.size *= 0.95;
   			  	  if(paddle2.size < 15){paddle2.size = 15;}
 	  			  paddle2.score += 1;
@@ -112,12 +112,12 @@
 			    }
 			  }
 			}
-			if (ballXpos + ballSize/2 >= canvas.width){
+			if (ball.Xpos + ball.size/2 >= canvas.width){
 			  if (gameScreen == "game"){
-			   if (ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2.pos < ballYpos + ballSize/2  &&  paddle2.pos + paddle2.size > ballYpos - ballSize/2){}
+			   if (ball.Xpos + ball.size/2 > canvas.width - 15  &&  paddle2.pos < ball.Ypos + ball.size/2  &&  paddle2.pos + paddle2.size > ball.Ypos - ball.size/2){}
          else {
-    			  ballXmove = 0;
-		    		ballYmove = 0;
+    			  ball.Xmove = 0;
+		    		ball.Ymove = 0;
 				    paddle1.size *= 0.95;
 				      if(paddle1.size < 15){paddle1.size = 15;}
 			    	paddle1.score += 1;
@@ -135,32 +135,32 @@
 				//paddles stop at walls
 				
 				
-				if (ballYpos + ballSize/2 >= canvas.height - 30 || ballYpos - ballSize/2 <= 10){
-					ballYmove = -ballYmove;
+				if (ball.Ypos + ball.size/2 >= canvas.height - 30 || ball.Ypos - ball.size/2 <= 10){
+					ball.Ymove = -ball.Ymove;
 					
 				}
 				//ball bounces off ceiling and floor
 				
 				
-				if (gameScreen == "game" && ballXpos - ballSize/2 < 15  &&  paddle1.pos < ballYpos + ballSize/2  &&  paddle1.pos + paddle1.size > ballYpos - ballSize/2){
+				if (gameScreen == "game" && ball.Xpos - ball.size/2 < 15  &&  paddle1.pos < ball.Ypos + ball.size/2  &&  paddle1.pos + paddle1.size > ball.Ypos - ball.size/2){
 					//ballXpos = 15 + ballSize/2;
-					ballXmove = -ballXmove;
-					ballXpos = 15 + ballSize/2;
+					ball.Xmove = -ball.Xmove;
+					ball.Xpos = 15 + ball.size/2;
 					gameScreen = "game";
 					
-					ballXmove *= 1.1;
-					ballYmove *= 1.1;
+					ball.Xmove *= 1.1;
+					ball.Ymove *= 1.1;
 					//ballSize += 5;
 				}
-				else if (gameScreen == "game" && ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2.pos < ballYpos + ballSize/2  &&  paddle2.pos + paddle2.size > ballYpos - ballSize/2){
+				else if (gameScreen == "game" && ball.Xpos + ball.size/2 > canvas.width - 15  &&  paddle2.pos < ball.Ypos + ball.size/2  &&  paddle2.pos + paddle2.size > ball.Ypos - ball.size/2){
 					//ballXpos = camvas.width - (15 + ballSize/2);
-					ballXmove = -ballXmove;
-					ballXpos = canvas.width - 15 - ballSize/2;
+					ball.Xmove = -ball.Xmove;
+					ball.Xpos = canvas.width - 15 - ball.size/2;
 					gameScreen = "game";
 					
-					ballXmove *= 1.1;
-					ballYmove *= 1.1;
-					//ballSize += 5;
+					ball.Xmove *= 1.1;
+					ball.Ymove *= 1.1;
+					//ball.size += 5;
 				}
 				//ball bounces off paddles
 //---------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -208,7 +208,7 @@
 				
 					//center
                 ctx.beginPath();
-                ctx.arc(ballXpos, ballYpos, ballSize / 2, 0, Math.PI * 2);
+                ctx.arc(ball.Xpos, ball.Ypos, ball.size / 2, 0, Math.PI * 2);
                 ctx.fillStyle = "black";
                 ctx.fill();
                 ctx.closePath();
@@ -220,8 +220,8 @@
 		    
 
 				
-                		ballXpos += ballXmove;
-                		ballYpos += ballYmove;
+                		ball.Xpos += ball.Xmove;
+                		ball.Ypos += ball.Ymove;
 				paddle1.pos += paddle1.move;
 				paddle2.pos += paddle2.move;
             
@@ -239,14 +239,14 @@
 				
 				if (e.keyCode == 32  &&  gameScreen == "gameOver"){
 				gameScreen = "game";
-				ballXpos = canvas.width/2;
-				ballYpos = canvas.height/2;
+				ball.Xpos = canvas.width/2;
+				ball.Ypos = canvas.height/2;
 				
 				rand = Math.random()*4;
-				if (rand < 1){ballXmove = -16; ballYmove = 10;}
-				else if (rand < 2){ballXmove = -16; ballYmove = -10;}
-				else if (rand < 3){ballXmove = 16; ballYmove = 10;}
-				else if (rand < 4){ballXmove = 16; ballYmove = -10;}
+				if (rand < 1){ball.Xmove = -16; ball.Ymove = 10;}
+				else if (rand < 2){ball.Xmove = -16; ball.Ymove = -10;}
+				else if (rand < 3){ball.Xmove = 16; ball.Ymove = 10;}
+				else if (rand < 4){ball.Xmove = 16; ball.Ymove = -10;}
 				}
 			}
 				
