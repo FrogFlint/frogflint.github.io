@@ -38,20 +38,27 @@
 			
 			var varSwap;
 			var gameScreen = "gameOver";
-     			var ballXpos = canvas.width/2;
- 			var ballYpos = canvas.height/2;
-      			var ballXmove = 0;
-      			var ballYmove = 0;
-			var ballSize = 42;  //42
-		
-			var paddle1pos = 100;
-			var paddle1move = 0;
-			var paddle1score = 0;
-			var paddle2pos = 100;
-			var paddle2move = 0;
-			var paddle2score = 0;
-			var paddle1size = 150;
-			var paddle2size = 150;
+			
+			var ball = {
+				Xpos:canvas.width/2,
+				Ypos:canvas.height/2,
+				Xmove:0,
+				Ymove:0,
+				size:42,
+			}
+     			
+			var paddle1 = {
+				pos:100,
+				move:0,
+				score:0,
+				size:150
+			}
+			var paddle2 = {
+				pos:100,
+				move:0,
+				score:0,
+				size:150
+			}
 			
 			
 			var paddle1up = 0;
@@ -76,13 +83,13 @@
 			
 
             function draw() {
-                //ctx.clearRect(0, 0, canvas.width, canvas.height);
-		ctx.clearRect(0, 0, 15, canvas.height);
-		ctx.clearRect(canvas.width-15, 0, 15, canvas.height);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+		//ctx.clearRect(0, 0, 15, canvas.height);
+		//ctx.clearRect(canvas.width-15, 0, 15, canvas.height);
 
 
-        //paddle1pos = ballYpos-75;
-        //paddle2pos = ballYpos-paddle2size/2;
+        //paddle1.pos = ballYpos-75;
+        //paddle2.pos = ballYpos-paddle2.size/2;
         //autopaddles
         
         
@@ -91,15 +98,15 @@
 
 
 
-			if (ballXpos - ballSize/2 <= 0){
+			if (ball.Xpos - ballSize/2 <= 0){
 			  if (gameScreen == "game"){
-			    if (ballXpos - ballSize/2 < 15  &&  paddle1pos < ballYpos + ballSize/2  &&  paddle1pos + paddle1size > ballYpos - ballSize/2){}
+			    if (ballXpos - ballSize/2 < 15  &&  paddle1.pos < ball.Ypos + ballSize/2  &&  paddle1.pos + paddle1.size > ballYpos - ballSize/2){}
 			    else {
 			    	ballXmove = 0;
 		  		  ballYmove = 0;
-  			  	paddle2size *= 0.95;
-  			  	  if(paddle2size < 15){paddle2size = 15;}
-	  			  paddle2score += 1;
+  			  	paddle2.size *= 0.95;
+  			  	  if(paddle2.size < 15){paddle2.size = 15;}
+	  			  paddle2.score += 1;
 				    
 				    gameScreen = "gameOver"
 			    }
@@ -107,13 +114,13 @@
 			}
 			if (ballXpos + ballSize/2 >= canvas.width){
 			  if (gameScreen == "game"){
-			   if (ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2pos < ballYpos + ballSize/2  &&  paddle2pos + paddle2size > ballYpos - ballSize/2){}
+			   if (ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2.pos < ballYpos + ballSize/2  &&  paddle2.pos + paddle2.size > ballYpos - ballSize/2){}
          else {
     			  ballXmove = 0;
 		    		ballYmove = 0;
-				    paddle1size *= 0.95;
-				      if(paddle1size < 15){paddle1size = 15;}
-			    	paddle1score += 1;
+				    paddle1.size *= 0.95;
+				      if(paddle1.size < 15){paddle1.size = 15;}
+			    	paddle1.score += 1;
 		 		
 			    	gameScreen = "gameOver"
           }
@@ -121,10 +128,10 @@
 			}
 			//ball scores
 			
-				if (paddle1pos < 10){paddle1pos = 10; paddle1move = 0;}
-				if (paddle1pos + paddle1size > canvas.height - 30){paddle1pos = (canvas.height - 30) - paddle1size; paddle1move = 0;}
-				if (paddle2pos < 10){paddle2pos = 10; paddle2move = 0;}
-				if (paddle2pos + paddle2size > canvas.height - 30){paddle2pos = (canvas.height - 30) - paddle2size; paddle2move = 0;}
+				if (paddle1.pos < 10){paddle1.pos = 10; paddle1.move = 0;}
+				if (paddle1.pos + paddle1.size > canvas.height - 30){paddle1.pos = (canvas.height - 30) - paddle1.size; paddle1.move = 0;}
+				if (paddle2.pos < 10){paddle.2pos = 10; paddle2.move = 0;}
+				if (paddle2.pos + paddle2.size > canvas.height - 30){paddle2.pos = (canvas.height - 30) - paddle2.size; paddle2.move = 0;}
 				//paddles stop at walls
 				
 				
@@ -135,7 +142,7 @@
 				//ball bounces off ceiling and floor
 				
 				
-				if (gameScreen == "game" && ballXpos - ballSize/2 < 15  &&  paddle1pos < ballYpos + ballSize/2  &&  paddle1pos + paddle1size > ballYpos - ballSize/2){
+				if (gameScreen == "game" && ballXpos - ballSize/2 < 15  &&  paddle1.pos < ballYpos + ballSize/2  &&  paddle1.pos + paddle1.size > ballYpos - ballSize/2){
 					//ballXpos = 15 + ballSize/2;
 					ballXmove = -ballXmove;
 					ballXpos = 15 + ballSize/2;
@@ -145,7 +152,7 @@
 					ballYmove *= 1.1;
 					//ballSize += 5;
 				}
-				else if (gameScreen == "game" && ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2pos < ballYpos + ballSize/2  &&  paddle2pos + paddle2size > ballYpos - ballSize/2){
+				else if (gameScreen == "game" && ballXpos + ballSize/2 > canvas.width - 15  &&  paddle2.pos < ballYpos + ballSize/2  &&  paddle2.pos + paddle2.size > ballYpos - ballSize/2){
 					//ballXpos = camvas.width - (15 + ballSize/2);
 					ballXmove = -ballXmove;
 					ballXpos = canvas.width - 15 - ballSize/2;
@@ -165,22 +172,22 @@
 				ctx.font = "200px Arial";
 		    		ctx.fillStyle = "#0000ff";
 		    		ctx.textAlign = "center";
-				ctx.fillText(paddle1score, canvas.width/2 -300, canvas.height/2 +50);
+				ctx.fillText(paddle1.score, canvas.width/2 -300, canvas.height/2 +50);
 				
 				ctx.font = "200px Arial";
 				ctx.fillStyle = "#0000ff";
 		    		ctx.textAlign = "center";
-				ctx.fillText(paddle2score, canvas.width/2 +300, canvas.height/2 +50);
+				ctx.fillText(paddle2.score, canvas.width/2 +300, canvas.height/2 +50);
 		    
 		    
                 ctx.beginPath();
-                ctx.rect(0, paddle1pos, 15, paddle1size);
+                ctx.rect(0, paddle1.pos, 15, paddle1.size);
                 ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
 				
 				        ctx.beginPath();
-                ctx.rect(canvas.width - 15, paddle2pos, 15, paddle2size);
+                ctx.rect(canvas.width - 15, paddle2.pos, 15, paddle2.size);
                 ctx.fillStyle = "grey";
                 ctx.fill();
                 ctx.closePath();
@@ -215,8 +222,8 @@
 				
                 		ballXpos += ballXmove;
                 		ballYpos += ballYmove;
-				paddle1pos += paddle1move;
-				paddle2pos += paddle2move;
+				paddle1.pos += paddle1.move;
+				paddle2.pos += paddle2.move;
             
 			
 			document.addEventListener("keydown", keyDownHandler, false);
@@ -255,10 +262,10 @@
 			
 			
 			
-			if (paddle1up == 1){paddle1pos -= 20;}
-			if (paddle1down == 1){paddle1pos += 20;}
-			if (paddle2up == 1){paddle2pos -= 20;}
-			if (paddle2down == 1){paddle2pos += 20;}
+			if (paddle1up == 1){paddle1.pos -= 20;}
+			if (paddle1down == 1){paddle1.pos += 20;}
+			if (paddle2up == 1){paddle2.pos -= 20;}
+			if (paddle2down == 1){paddle2.pos += 20;}
 			
 			
 			
