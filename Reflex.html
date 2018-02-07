@@ -56,7 +56,7 @@
         			//function keyUpHandler(e) {}
         
 				
-				dotPos += 0.1;
+				dotPos += 0.02;
 				
 				
 				
@@ -71,7 +71,7 @@
 				
 				
 			ctx.beginPath();
-                	ctx.rect(canvas.width + Math.sin(dotPos*(1 + level/4))*200 - 5, 490, 10, 20);
+                	ctx.rect(canvas.width/2 + Math.sin(dotPos*(1 + level/4))*200 - 5, 490, 10, 20);
                 	ctx.fillStyle = "black";
                 	ctx.fill();
                 	ctx.closePath();
