@@ -23,14 +23,15 @@
 
 	<canvas id="myCanvas" width="1350" height="625">   </canvas>
 
-	<body style="background-color:black;">
+	<body style="background-color:green;">
 
 		<SCRIPT LANGUAGE="JavaScript">
     
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var speed = 10;
+			var dotPos = 0;
+			var level = 0;
 			
 			
 			
@@ -54,6 +55,20 @@
 				//function keyDownHandler(e) {}
         			//function keyUpHandler(e) {}
         
+				
+				
+				
+				
+				
+				
+				
+				
+			ctx.beginPath();
+                	ctx.arc(canvas.width/2, 500, 10, 0, Math.PI * 2);
+                	ctx.fillStyle = "gray";
+                	ctx.fill();
+                	ctx.closePath();
+				
         
         
 			}
