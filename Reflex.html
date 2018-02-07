@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: black;
+			background: gray;
 			display: block;
 			margin: 0 auto;
 		}
@@ -23,7 +23,7 @@
 
 	<canvas id="myCanvas" width="1350" height="625">   </canvas>
 
-	<body style="background-color:green;">
+	<body style="background-color:black;">
 
 		<SCRIPT LANGUAGE="JavaScript">
     
@@ -56,7 +56,7 @@
         			//function keyUpHandler(e) {}
         
 				
-				
+				dotPos += 0.1;
 				
 				
 				
@@ -66,6 +66,13 @@
 			ctx.beginPath();
                 	ctx.arc(canvas.width/2, 500, 10, 0, Math.PI * 2);
                 	ctx.fillStyle = "gray";
+                	ctx.fill();
+                	ctx.closePath();
+				
+				
+			ctx.beginPath();
+                	ctx.rect(canvas.width + Math.sin(dotPos*(1 + level/4))*200, 500, 15, paddle1.size);
+                	ctx.fillStyle = "black";
                 	ctx.fill();
                 	ctx.closePath();
 				
