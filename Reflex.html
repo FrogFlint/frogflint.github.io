@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: gray;
+			background: blue;
 			display: block;
 			margin: 0 auto;
 		}
@@ -71,7 +71,7 @@
 				
 				
 			ctx.beginPath();
-                	ctx.rect(canvas.width + Math.sin(dotPos*(1 + level/4))*200, 500, 15, paddle1.size);
+                	ctx.rect(canvas.width + Math.sin(dotPos*(1 + level/4))*200 - 5, 490, 10, 20);
                 	ctx.fillStyle = "black";
                 	ctx.fill();
                 	ctx.closePath();
