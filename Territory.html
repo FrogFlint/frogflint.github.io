@@ -58,7 +58,7 @@
 					while(index2 <= index2Max){
 						
 						if(setup == "random"){
-							rand = Math.random()*3;
+							rand = Math.random()*2;
 							if(rand <= 1){tile[index1][index2] = {
 								color:"lime",
 								nextColor:"lime",
@@ -68,8 +68,8 @@
 								nextColor:"blue",
 							}}
 							else{tile[index1][index2] = {
-								color:"blue",
-								nextColor:"blue",
+								color:"red",
+								nextColor:"red",
 							}}
 						}
 						if(setup == "sides"){
