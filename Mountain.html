@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Territory wars</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="625">   </canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+    
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var speed = 10;
+			
+			
+			var scale = 10; // between 1 and 50
+			var index1 = 0;
+     	var index2 = 0;
+			var index1Max = 20*scale;
+			var index2Max = 10*scale;
+			var tileSize = 50/scale;
+			var tile = [[]];
+			
+			
+			
+			
+			//========================================================================
+			
+			index1 = 0;
+			while(index1 <= index1Max){
+					tile[index1] = [];
+          index2 = 0;
+          while(index2 <= index2Max){
+          
+			
+			
+			
+			
+			
+			
+			
+			
+		
+			//========================================================================
+			function draw() {
+				
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          
+				//document.addEventListener("keydown", keyDownHandler, false);
+				//document.addEventListener("keyup", keyUpHandler, false);
+				
+				//function keyDownHandler(e) {}
+        //function keyUpHandler(e) {}
+        
+				
+				
+				
+				
+				
+				
+        
+        
+        
+        
+        
+        
+        
+        
+			}
+			setInterval(draw, speed);
+		</SCRIPT>
+
+	</body>
+
+</html>
