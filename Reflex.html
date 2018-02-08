@@ -33,6 +33,7 @@
 			var dotPos = 0;
 			var dotDraw = 0;
 			var level = 0;
+			var space = false;
 			
 			
 			
@@ -53,16 +54,17 @@
 				
 				
 				dotPos += 0.01;
-				dotDraw = Math.sin(dotPos*(1 + level/4))*400;
+				dotDraw = Math.cos(dotPos*(1 + level/4))*400;
 				
 				
 				
           
 				document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
 				
 				function keyDownHandler(e) {
-					if(e.keyCode == 32){
+					if(e.keyCode == 32 && space = false){
+						space = true;
 						if(dotDraw <= 60 && dotDraw >= -60){
 							dotPos = 0;
 							level += 1;
@@ -73,10 +75,13 @@
 						}
 					}
 				}
-        			//function keyUpHandler(e) {}
+        			function keyUpHandler(e) {
+				if(e.keyCode == 32){space = false;}
+				}
         
 				
 				
+					
 				
 				
 				
