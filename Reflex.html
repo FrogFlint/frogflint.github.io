@@ -66,7 +66,7 @@
 				
 				
 				
-				
+			//green bar
 			ctx.beginPath();
                 	ctx.rect(canvas.width/2 - 420, 480, 840, 40);
                 	ctx.fillStyle = "green";
@@ -74,14 +74,28 @@
                 	ctx.closePath();
 				
 				
+			//seperation lines
+			ctx.beginPath();
+                	ctx.rect(canvas.width/2 +30, 480, 5, 40);
+                	ctx.fillStyle = "blue";
+                	ctx.fill();
+                	ctx.closePath();
 				
+			ctx.beginPath();
+                	ctx.rect(canvas.width/2 -35, 480, 5, 40);
+                	ctx.fillStyle = "blue";
+                	ctx.fill();
+                	ctx.closePath();
+				
+				
+			//gray circle
 			ctx.beginPath();
                 	ctx.arc(canvas.width/2, 500, 10, 0, Math.PI * 2);
                 	ctx.fillStyle = "gray";
                 	ctx.fill();
                 	ctx.closePath();
 				
-				
+			//black bar
 			ctx.beginPath();
                 	ctx.rect(canvas.width/2 + Math.sin(dotPos*(1 + level/4))*400 - 5, 490, 10, 20);
                 	ctx.fillStyle = "black";
