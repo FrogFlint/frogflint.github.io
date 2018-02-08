@@ -86,7 +86,7 @@
 				//document.addEventListener("keyup", keyUpHandler, false);
 				
 				//function keyDownHandler(e) {}
-        //function keyUpHandler(e) {}
+        			//function keyUpHandler(e) {}
         
 				
 				
@@ -94,6 +94,23 @@
 				
 				
 				
+				index1 = 0;
+				while(index1 <= index1Max){
+					index2 = 0;
+					while(index2 <= index2Max){
+						
+						if(tile[index1][index2].color == "black"){tile[index1][index2].exactColor = "#ff0000";}
+						
+						ctx.beginPath();
+						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
+						ctx.fillStyle = tile[index1][index2].exactColor;
+						ctx.fill();
+						ctx.closePath();
+						
+						index2 += 1;
+					}
+					index1 += 1;
+				}
         
         
         
