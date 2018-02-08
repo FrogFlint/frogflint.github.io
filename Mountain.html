@@ -99,7 +99,17 @@
 					index2 = 0;
 					while(index2 <= index2Max){
 						
-						if(tile[index1][index2].color == "black"){tile[index1][index2].exactColor = "#ff0000";}
+						if(tile[index1][index2].color == "black"){
+							tile[index1][index2].exactColor = "#000000";}
+						if(tile[index1][index2].color == "red"){
+							tile[index1][index2].exactColor = "#ff0000";}
+						if(tile[index1][index2].color == "orange"){
+							tile[index1][index2].exactColor = "#ffff00";}
+						if(tile[index1][index2].color == "green"){
+							
+							tile[index1][index2].exactColor = "00" + (tile[index1][index2].color*10 + 50).toString(16) + "00";
+							
+						}
 						
 						ctx.beginPath();
 						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
