@@ -30,12 +30,12 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var speed = 10;
+			var speed = 500;
 			
 			
-			var scale = 10; // between 1 and 50
+			var scale = 1; // between 1 and 50
 			var index1 = 0;
-     	var index2 = 0;
+     			var index2 = 0;
 			var index1Max = 20*scale;
 			var index2Max = 10*scale;
 			var tileSize = 50/scale;
@@ -49,14 +49,19 @@
 			index1 = 0;
 			while(index1 <= index1Max){
 					tile[index1] = [];
-          index2 = 0;
-          while(index2 <= index2Max){
-          
-			
-			
-			
-			
-			
+          				index2 = 0;
+          				while(index2 <= index2Max){
+						
+						tile[index1][index2] = {
+							color:"black",  //black, red, green
+							exactColor:"#000000"
+						}
+						
+						index2 += 1;
+					}
+				index1 += 1;
+			}
+				
 			
 			
 			
