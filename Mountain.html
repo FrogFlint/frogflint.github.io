@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Territory wars</title>
+<title>Terrain Generator</title>
 </head>
 
 <body>
@@ -32,8 +32,12 @@
 			
 			var speed = 500;
 			
+			var rand1 = 0;
+			var rand2 = 0;
+			
 			var stage = "decide";  //decide, add, change
 			
+			var heightMax = 20
 			var scale = 1; // between 1 and 50
 			var index1 = 0;
      			var index2 = 0;
@@ -63,8 +67,10 @@
 				index1 += 1;
 			}
 			
-			
-			tile[Math.floor(Math.random()*(index1Max + 1))][Math.floor(Math.random()*(index2Max + 1))].color = "green";
+			rand1 = Math.floor(Math.random()*(index1Max + 1));
+			rand2 = Math.floor(Math.random()*(index2Max + 1));
+			tile[rand1][rand2] = Math.floor(Math.random()*(heightMax+1));
+			tile[rand1][rand2].color = "green";
 				
 			
 			
