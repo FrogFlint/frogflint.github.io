@@ -52,7 +52,7 @@
 			var index = 0;
 			var index2 = 0;
 			
-			
+			var gameSpeed = 1;
 			
 			
 			
@@ -204,8 +204,8 @@
 					//square[index].Ymove += 0.1;
 					
 						//move them
-					square[index].Xpos += square[index].Xmove;
-					square[index].Ypos += square[index].Ymove;
+					square[index].Xpos += square[index].Xmove * gameSpeed;
+					square[index].Ypos += square[index].Ymove * gameSpeed;
 					
 					
 					//bounce off walls
