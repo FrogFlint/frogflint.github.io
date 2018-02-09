@@ -58,6 +58,7 @@
           				while(index2 <= index2Max){
 						
 						tile[index1][index2] = {
+							height:0,
 							color:"black",  //black, red, orange, green
 							exactColor:"#000000"
 						}
@@ -69,7 +70,7 @@
 			
 			rand1 = Math.floor(Math.random()*(index1Max + 1));
 			rand2 = Math.floor(Math.random()*(index2Max + 1));
-			tile[rand1][rand2] = Math.floor(Math.random()*(heightMax+1));
+			tile[rand1][rand2].height = Math.floor(Math.random()*(heightMax+1));
 			tile[rand1][rand2].color = "green";
 				
 			
@@ -107,7 +108,7 @@
 							tile[index1][index2].exactColor = "#ffff00";}
 						if(tile[index1][index2].color == "green"){
 							
-							tile[index1][index2].exactColor = "00" + (tile[index1][index2].color*10 + 50).toString(16) + "00";
+							tile[index1][index2].exactColor = "00" + (tile[index1][index2].height*10 + 50).toString(16) + "00";
 							
 						}
 						
