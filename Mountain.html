@@ -38,7 +38,7 @@
 			var stage = "decide";  //highlight, change
 			var stop = 0;
 			
-			var heightMax = 20;
+			var heightMax = 10;
 			var scale = 1; // between 1 and 50
 			var index1 = 0;
      			var index2 = 0;
@@ -72,7 +72,7 @@
 			rand1 = Math.floor(Math.random()*(index1Max + 1));
 			rand2 = Math.floor(Math.random()*(index2Max + 1));
 			tile[rand1][rand2].height = Math.floor(Math.random()*(heightMax+1));
-			tile[rand1][rand2].color = "red";
+			tile[rand1][rand2].color = "green";
 				
 			
 			
@@ -109,8 +109,31 @@
 							tile[index1][index2].exactColor = "#ffff00";}
 						if(tile[index1][index2].color == "green"){
 							
-							tile[index1][index2].exactColor = 
-								"00" + (tile[index1][index2].height*10 + 50).toString(16) + "00";
+							if(tile[index1][index2].height = 0)[
+								tile[index1][index2].exactColor = "#006600";
+							if(tile[index1][index2].height = 1)[
+								tile[index1][index2].exactColor = "#008000";
+							if(tile[index1][index2].height = 2)[
+								tile[index1][index2].exactColor = "#009900";
+							if(tile[index1][index2].height = 3)[
+								tile[index1][index2].exactColor = "#00b300";
+							if(tile[index1][index2].height = 4)[
+								tile[index1][index2].exactColor = "#00cc00";
+							if(tile[index1][index2].height = 5)[
+								tile[index1][index2].exactColor = "#00e600";
+							if(tile[index1][index2].height = 6)[
+								tile[index1][index2].exactColor = "#1aff1a";
+							if(tile[index1][index2].height = 7)[
+								tile[index1][index2].exactColor = "#33ff33";
+							if(tile[index1][index2].height = 8)[
+								tile[index1][index2].exactColor = "#4dff4d";
+							if(tile[index1][index2].height = 9)[
+								tile[index1][index2].exactColor = "#66ff66";
+							if(tile[index1][index2].height = 10)[
+								tile[index1][index2].exactColor = "#80ff80";
+								
+							
+								
 							
 						}
 						
