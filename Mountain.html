@@ -105,18 +105,22 @@
 							
 							if(tile[index1][index2].color == "green"){
 								
-								if(tile[index1+1][index2].color == "black"){
-									tile[index1+1][index2].color = "red";
-								}
-								if(tile[index1][index2+1].color == "black"){
-									tile[index1][index2+1].color = "red";
-								}
-								if(tile[index1-1][index2].color == "black"){
-									tile[index1-1}[index2].color = "red";
-								}
-								if(tile[index1][index2-1].color == "black"){
-									tile[index1][index2-1].color = "red";
-								}
+								if(index1 < index1Max){
+									if(tile[index1+1][index2].color == "black"){
+										tile[index1+1][index2].color = "red";
+								}	}
+								if(index2 < index2Max){
+									if(tile[index1][index2+1].color == "black"){
+										tile[index1][index2+1].color = "red";
+								}	}
+								if(index1 < 0){
+									if(tile[index1-1][index2].color == "black"){
+										tile[index1-1}[index2].color = "red";
+								}	}
+								if(index2 < 0){
+									if(tile[index1][index2-1].color == "black"){
+										tile[index1][index2-1].color = "red";
+								}	}
 								
 							}
 							
@@ -142,17 +146,17 @@
 											tile[index1][index2].height = tile[index1+1][index2].height;
 										}
 									}
-									if(rand1 < 2){
+									else if(rand1 < 2){
 										if(tile[index1][index2+1].color == "green"){
 											tile[index1][index2].height = tile[index1][index2+1].height;
 										}
 									}
-									if(rand1 < 3){
+									else if(rand1 < 3){
 										if(tile[index1-1][index2].color == "green"){
 											tile[index1][index2].height = tile[index1-1][index2].height;
 										}
 									}
-									if(rand1 < 4){
+									else if(rand1 < 4){
 										if(tile[index1][index2-1].color == "green"){
 											tile[index1][index2].height = tile[index1][index2-1].height;
 										}
