@@ -124,9 +124,30 @@
 						index2 = 0;
 						if(stop == 0){while(index2 <= index2Max){
 							if(stop == 0){
-								if(tile[index1][index2].color == "red"){
+								while(tile[index1][index2].color == "red"){
 									
-									rand1 = Math.random*4
+									rand1 = Math.random()*4;
+									tile[index1][index2].color = "green";
+									if(rand1 < 1){
+										if(tile[index1+1][index2].color == "green"){
+											tile[index1][index2].height = tile[index1+1][index2].height;
+										}
+									}
+									if(rand1 < 1){
+										if(tile[index1][index2+1].color == "green"){
+											tile[index1][index2].height = tile[index1][index2+1].height;
+										}
+									}
+									if(rand1 < 1){
+										if(tile[index1-1][index2].color == "green"){
+											tile[index1][index2].height = tile[index1-1][index2].height;
+										}
+									}
+									if(rand1 < 1){
+										if(tile[index1][index2-1].color == "green"){
+											tile[index1][index2].height = tile[index1][index2-1].height;
+										}
+									}
 									
 									
 								}
