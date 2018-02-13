@@ -70,8 +70,11 @@
 			}
 			
 			
-				
 			
+			rand1 = Math.floor(Math.random()*(index1Max + 1));
+			rand2 = Math.floor(Math.random()*(index2Max + 1));
+			tile[rand1][rand2].height = Math.floor(Math.random()*(heightMax+1));
+			tile[rand1][rand2].color = "green";
 			
 			
 		
@@ -81,10 +84,7 @@
 					ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
-			rand1 = Math.floor(Math.random()*(index1Max + 1));
-			rand2 = Math.floor(Math.random()*(index2Max + 1));
-			tile[rand1][rand2].height = Math.floor(Math.random()*(heightMax+1));
-			tile[rand1][rand2].color = "green";
+			
           
           
 				//document.addEventListener("keydown", keyDownHandler, false);
@@ -102,12 +102,12 @@
 						index2 = 0;
 						while(index2 <= index2Max){
 							
-							if(tile[index1][index2].color == "black"){
+							if(tile[index1][index2].color == "green"){
 								
-								if(tile[index1][index2].color == "green"){tile[index1][index2].color = "red";}
-								if(tile[index1][index2].color == "green"){tile[index1][index2].color = "red";}
-								if(tile[index1][index2].color == "green"){tile[index1][index2].color = "red";}
-								if(tile[index1][index2].color == "green"){tile[index1][index2].color = "red";}
+								if(tile[index1+1][index2].color == "black"){tile[index1][index2].color = "red";}
+								if(tile[index1][index2+1].color == "black"){tile[index1][index2].color = "red";}
+								if(tile[index1-1][index2].color == "black"){tile[index1][index2].color = "red";}
+								if(tile[index1][index2-1].color == "black"){tile[index1][index2].color = "red";}
 								
 							}
 							
