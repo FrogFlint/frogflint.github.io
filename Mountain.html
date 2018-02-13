@@ -134,17 +134,17 @@
 											tile[index1][index2].height = tile[index1+1][index2].height;
 										}
 									}
-									if(rand1 < 1){
+									else if(rand1 < 1){
 										if(tile[index1][index2+1].color == "green"){
 											tile[index1][index2].height = tile[index1][index2+1].height;
 										}
 									}
-									if(rand1 < 1){
+									else if(rand1 < 1){
 										if(tile[index1-1][index2].color == "green"){
 											tile[index1][index2].height = tile[index1-1][index2].height;
 										}
 									}
-									if(rand1 < 1){
+									else if(rand1 < 1){
 										if(tile[index1][index2-1].color == "green"){
 											tile[index1][index2].height = tile[index1][index2-1].height;
 										}
