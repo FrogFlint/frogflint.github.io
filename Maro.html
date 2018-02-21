@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Terrain Generator</title>
+<title>It's Super Maro 2D Galaxy!</title>
 </head>
 
 <body>
@@ -32,12 +32,12 @@
 			
 			var speed = 500;
 			
-      var maro;
-      var gooba = [];
+      			var maro;
+      			var gooba = [];
       
 			var tile = [[]];
 			var index1 = 0;
-     	var index2 = 0;
+     			var index2 = 0;
 			var index1Max = 30;
 			var index2Max = 15;
 			
@@ -47,7 +47,15 @@
 			
 			//========================================================================
 			
-			maro = {}
+			maro = {
+				Xpos:0,
+				Ypos:0,
+				Xspeed:0,
+				Yspeed:0,
+				isDead:false,
+				lives:10,
+			}
+			
       
 			
 			
@@ -65,7 +73,7 @@
 				//document.addEventListener("keyup", keyUpHandler, false);
 				
 				//function keyDownHandler(e) {}
-        //function keyUpHandler(e) {}
+        			//function keyUpHandler(e) {}
         
 				
 				
