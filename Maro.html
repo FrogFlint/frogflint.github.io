@@ -34,12 +34,17 @@
 			
       			var maro;
       			var gooba = [];
+			var goobaIndex = 0;
+			var goobaMax = 50;
       
 			var tile = [[]];
 			var index1 = 0;
      			var index2 = 0;
 			var index1Max = 30;
 			var index2Max = 15;
+			
+			var level = 0;
+			var levelLayout = [[[]]];
 			
 			
 			
@@ -53,7 +58,15 @@
 				Xspeed:0,
 				Yspeed:0,
 				isDead:false,
-				lives:10,
+				lives:10
+			}
+			for(goobaIndex = 0; goobaIndex <= goobaMax; goobaIndex++){
+				gooba[goobaIndex] = {
+					Xpos:0,
+					Ypos:0,
+					smart:false,
+					direction:"left"
+				}
 			}
 			
       
@@ -69,11 +82,11 @@
 			
           
           
-				//document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
 				
-				//function keyDownHandler(e) {}
-        			//function keyUpHandler(e) {}
+				function keyDownHandler(e) {}
+        			function keyUpHandler(e) {}
         
 				
 				
