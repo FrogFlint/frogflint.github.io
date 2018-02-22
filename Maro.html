@@ -40,8 +40,8 @@
 			var tile = [[]];
 			var index1 = 0;
      			var index2 = 0;
-			var index1Max = 30;
-			var index2Max = 15;
+			var index1Max = 200;
+			var index2Max = 10;
 			
 			var level = 0;
 			var levelLayout = [[[]]];
@@ -57,6 +57,8 @@
 				Ypos:0,
 				Xspeed:0,
 				Yspeed:0,
+				left:0,
+				right:0,
 				onGround:true,
 				isDead:false,
 				lives:10,
@@ -71,19 +73,27 @@
 			}
 			
 			
-      			/*while(level <= 10){
-				level
-			}*/
+      			for(level = 0;level <= 10 ; level++){
+				levelLayout
+			}
 			
 			level = 0;
 			
+			/*
+			space = air
+			b = block
+			m = maro
+			g = gooba
+			f = flag
+			
+			*/
 			
 			levelLayout[1] = [
-				[b,b,b,b,a],
-				[b,b,a,a,a],
-				[a,a,a,a,b],
-				[a,a,a,a,a],
-				[a,a,b,a,a],
+				["b","b","b","b"," "],
+				["b","b"," "," "," "],
+				[" "," "," "," ","b"],
+				[" "," "," "," "," "],
+				[" "," ","b"," ","a"],
 				[],
 				[],
 				[],
