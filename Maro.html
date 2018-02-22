@@ -60,7 +60,7 @@
 				left:0,
 				right:0,
 				jump:0,
-				onGround:0,
+				onGround:1,
 				isDead:0,
 				lives:10,
 			}
@@ -139,7 +139,7 @@
 				
 				if (maro.left == 1 && maro.right == 0){maro.Xspeed -= 1;}
 				if (maro.left == 0 && maro.right == 1){maro.Xspeed += 1;}
-				if (maro.jump == 1 && maro.onGround == 1){maro.Yspeed = 1;}
+				if (maro.jump == 1 && maro.onGround == 1){maro.Yspeed = -1;}
 				
 				if(maro.Xspeed > 10){maro.Xspeed = 10;}
 				if(maro.Xspeed < -10){maro.Xspeed = -10;}
