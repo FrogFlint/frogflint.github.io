@@ -146,14 +146,14 @@
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
 				
 				
-				if (maro.Ypos > 500){
+				if (maro.Ypos <= 500){
+					maro.onGround = 0;
+					maro.Yspeed += 1;
+				}
+				else{
 					maro.Ypos = 500;
 					maro.Yspeed = 0;
 					maro.onGround = 1;
-				}
-				else{
-					maro.onGround = 0;
-					maro.Yspeed += 1;
 				}
 				
 				
