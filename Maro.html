@@ -60,8 +60,8 @@
 				left:0,
 				right:0,
 				jump:0,
-				onGround:true,
-				isDead:false,
+				onGround:0,
+				isDead:0,
 				lives:10,
 			}
 			for(goobaIndex = 0; goobaIndex <= goobaMax; goobaIndex++){
@@ -146,7 +146,7 @@
 				if(maro.Yspeed < 30){maro.Yspeed = 30;}
 				
 				maro.Xpos += maro.Xspeed;
-				//maro.Ypos += maro.Yspeed;
+				maro.Ypos += maro.Yspeed;
 				
 				
 				
