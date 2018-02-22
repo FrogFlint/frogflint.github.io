@@ -54,13 +54,13 @@
 			
 			maro = {
 				Xpos:0,
-				Ypos:-500,
+				Ypos:500,
 				Xspeed:0,
 				Yspeed:0,
 				left:0,
 				right:0,
 				jump:0,
-				onGround:1,
+				onGround:0,
 				isDead:0,
 				lives:10,
 			}
@@ -144,6 +144,19 @@
 				if(maro.Xspeed > 10){maro.Xspeed = 10;}
 				if(maro.Xspeed < -10){maro.Xspeed = -10;}
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
+				
+				
+				if (maro.Ypos > 500){
+					maro.Ypos = 500;
+					maro.Yspeed = 0;
+					maro.onGround = 1;
+				}
+				else{
+					maro.onGround = 0;
+					maro.Yspeed += 1;
+				}
+				
+				
 				
 				maro.Xpos += maro.Xspeed;
 				maro.Ypos += maro.Yspeed;
