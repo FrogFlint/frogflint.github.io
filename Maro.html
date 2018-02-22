@@ -59,6 +59,7 @@
 				Yspeed:0,
 				left:0,
 				right:0,
+				jump:0,
 				onGround:true,
 				isDead:false,
 				lives:10,
@@ -85,7 +86,6 @@
 			m = maro
 			g = gooba
 			f = flag
-			
 			*/
 			
 			levelLayout[1] = [
@@ -119,8 +119,16 @@
 				document.addEventListener("keydown", keyDownHandler, false);
 				document.addEventListener("keyup", keyUpHandler, false);
 				
-				function keyDownHandler(e) {}
-        			function keyUpHandler(e) {}
+				function keyDownHandler(e) {
+					if(e.keyCode == 37){maro.left = 1;}
+					if(e.keyCode == 39){maro.right = 1;}
+					if(e.keyCode == 38){maro.jump = 1;}
+				}
+        			function keyUpHandler(e) {
+					if(e.keyCode == 37){maro.left = 0;}
+					if(e.keyCode == 39){maro.right = 0;}
+					if(e.keyCode == 38){maro.jump = 0;}
+				}
         
 				
 				
@@ -128,6 +136,17 @@
 				
 				
 				
+				
+				if (maro.left == 1 && maro.right == 0){maro.Xspeed -= 1;}
+				if (maro.left == 0 && maro.right == 1){maro.Xspeed += 1;}
+				if (maro.jump == 1 && maro.onGround == 1){maro.Yspeed = 1;}
+				
+				if(maro.Xspeed > 10){maro.Xspeed = 10;}
+				if(maro.Xspeed < -10){maro.Xspeed = -10;}
+				if(maro.Yspeed < 30){maro.Yspeed = 30;}
+				
+				maro.Xpos += maro.Xspeed;
+				maro.Ypos += maro.Yspeed;
 				
 				
 				
