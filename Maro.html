@@ -152,9 +152,6 @@
 					maro.onGround = 1;
 				}
 				
-				if(maro.Xpos < 0){maro.Xpos = 0; maro.Xspeed = 0;}
-				if(maro.Xpos > 1000-35){maro.Xpos = 1000-35; maro.Xspeed = 0;}
-				if(maro.Ypos < 0){maro.Ypos = 0; maro.Yspeed = 0;}
 				
 				
 				maro.Xpos += maro.Xspeed;
@@ -162,6 +159,9 @@
 				
 				
 				
+				if(maro.Xpos < 0){maro.Xpos = 0; maro.Xspeed = 0;}
+				if(maro.Xpos > 1000-35){maro.Xpos = 1000-35; maro.Xspeed = 0;}
+				if(maro.Ypos < 0){maro.Ypos = 0; maro.Yspeed = 0;}
 				if (maro.Ypos > 500 + 60){maro.Ypos = 500 + 60;}
 				
 				
