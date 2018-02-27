@@ -32,10 +32,14 @@
 			
 			var speed = 20;
 			
+			
       			var maro;
+			
       			var gooba = [];
 			var goobaIndex = 0;
 			var goobaMax = 50;
+			var points = 0;
+			
       
 			var tile = [[]];
 			var index1 = 0;
@@ -71,12 +75,8 @@
 					smart:false,
 					direction:"left"
 				}
-			}
+			}			
 			
-			
-      			for(level = 0;level <= 10 ; level++){
-				levelLayout
-			}
 			
 			level = 0;
 			
@@ -86,24 +86,16 @@
 			m = maro
 			g = gooba
 			f = flag
+			p = gooba pipe
 			*/
 			
 			levelLayout[1] = [
-				["b","b","b","b"," "],
-				["b","b"," "," "," "],
-				[" "," "," "," ","b"],
-				[" "," "," "," "," "],
-				[" "," ","b"," ","a"],
-				[],
-				[],
-				[],
-				[],
-				[],
-				[],
-				[],
-				[],
-				[],
-				[]
+				["p"," "," "," "," "," ","p"],
+				["b","b"," "," "," ","b","b"],
+				["b"," "," "," "," "," ","b"],
+				["p"," "," "," "," "," ","p"],
+				["b"," "," "," "," "," ","b"],
+				["b","b","b","b","b","b","b"]
 			]
 			
 		
@@ -150,16 +142,19 @@
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
 				
 				
-				if (maro.Ypos <= 500){
+				if (maro.Ypos <= 560){
 					maro.onGround = 0;
 					maro.Yspeed += 1; //gravity
 				}
 				else{
-					maro.Ypos = 500;
+					maro.Ypos = 560;
 					maro.Yspeed = 0;
 					maro.onGround = 1;
 				}
 				
+				if(maro.Xpos < 0){maro.Xpos = 0; maro.Xspeed = 0;}
+				if(maro.Xpos > 1000-35){maro.Xpos = 1000-35; maro.Xspeed = 0;}
+				if(maro.Ypos < 0){maro.Ypos = 0; maro.Yspeed = 0;}
 				
 				
 				maro.Xpos += maro.Xspeed;
@@ -167,7 +162,9 @@
 				
 				
 				
-				if (maro.Ypos > 500){maro.Ypos = 500;}
+				if (maro.Ypos > 500 + 60){maro.Ypos = 500 + 60;}
+				
+				
 				
 				
         
