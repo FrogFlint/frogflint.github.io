@@ -150,7 +150,7 @@
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
 				
 				
-				if (maro.Ypos + 60 <= canvas.height){
+				if (maro.Ypos + 60 < canvas.height){
 					maro.onGround = 0;
 					maro.Yspeed += 1; //gravity
 				}
