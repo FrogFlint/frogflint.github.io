@@ -35,10 +35,6 @@
 			
       			var maro;
 			
-      			var gooba = [];
-			var goobaIndex = 0;
-			var goobaMax = 50;
-			var points = 0;
 			
       
 			var tile = [[]];
@@ -58,7 +54,7 @@
 			
 			maro = {
 				Xpos:0,
-				Ypos:500,
+				Ypos:canvas.height-60,
 				Xspeed:0,
 				Yspeed:0,
 				left:0,
@@ -68,15 +64,7 @@
 				onWall:0,
 				isDead:0,
 				lives:10,
-			}
-			for(goobaIndex = 0; goobaIndex <= goobaMax; goobaIndex++){
-				gooba[goobaIndex] = {
-					Xpos:0,
-					Ypos:0,
-					smart:false,
-					direction:"left"
-				}
-			}			
+			}		
 			
 			
 			level = 0;
@@ -150,21 +138,23 @@
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
 				
 				
-				if (maro.Ypos + 60 < canvas.height-5){
-					maro.onGround = 0;
-					maro.Yspeed += 1; //gravity
-				}
-				else{
+				if (maro.Ypos + 60 >= canvas.height){
 					maro.Ypos = canvas.height;
 					maro.Yspeed = 0;
 					maro.onGround = 1;
+					
+					
 				}//detecting when player is on the ground
+				else{
+					maro.onGround = 0;
+					maro.Yspeed += 1; //gravity
+				}
 				
-				if (maro.Xpos <= 0 && maro.left == 1){
+				/*if (maro.Xpos <= 5 && maro.left == 1){
 					maro.onWall = 1;
 					if (maro.Yspeed > 5){maro.Yspeed = 5;}
 				}
-				else
+				else{}*/
 				
 				
 					
