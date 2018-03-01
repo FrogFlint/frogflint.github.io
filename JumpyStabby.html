@@ -122,6 +122,7 @@
 				
 				
 				if (maro.Ypos + 60 > canvas.height){
+					maro.Ypos = canvas.height;
 					maro.Yspeed = 0;
 				}//detecting when player is in the ground
 				
@@ -145,7 +146,6 @@
 				
 				
 				if (maro.Ypos + 60 >= canvas.height){
-					maro.Ypos = canvas.height;
 					maro.onGround = 1;
 				}//detecting when player is on the ground
 				else{
