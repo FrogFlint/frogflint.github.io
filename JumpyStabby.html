@@ -121,18 +121,12 @@
 				
 				
 				
+				if (maro.Ypos + 60 > canvas.height){
+					maro.Yspeed = 0;
+				}//detecting when player is in the ground
 				
 				
 				
-				if (maro.Ypos + 60 >= canvas.height){
-					maro.Ypos = canvas.height;
-					//maro.Yspeed = 0;
-					maro.onGround = 1;
-				}//detecting when player is on the ground
-				else{
-					maro.onGround = 0;
-					maro.Yspeed += 1; //gravity
-				}
 				
 				
 				if (maro.left == 1 && maro.right == 0){maro.Xspeed -= 2;}
@@ -149,6 +143,15 @@
 				if(maro.Yspeed > 30){maro.Yspeed = 30;}
 				
 				
+				
+				if (maro.Ypos + 60 >= canvas.height){
+					maro.Ypos = canvas.height;
+					maro.onGround = 1;
+				}//detecting when player is on the ground
+				else{
+					maro.onGround = 0;
+					maro.Yspeed += 1; //gravity
+				}
 				
 				
 				/*if (maro.Xpos <= 5 && maro.left == 1){
