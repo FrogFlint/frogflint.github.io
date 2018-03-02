@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>It's Super Maro 2D Galaxy!</title>
+<title>A thing</title>
 </head>
 
 <body>
@@ -33,7 +33,7 @@
 			var speed = 20;
 			
 			
-      			var maro;
+      			var player;
 			
 			
       
@@ -52,7 +52,7 @@
 			
 			//========================================================================
 			
-			maro = {
+			player = {
 				Xpos:0,
 				Ypos:canvas.height-60,
 				Xspeed:0,
@@ -63,7 +63,6 @@
 				onGround:0,
 				onWall:0,
 				isDead:0,
-				lives:10,
 			}		
 			
 			
@@ -107,77 +106,77 @@
 				document.addEventListener("keyup", keyUpHandler, false);
 				
 				function keyDownHandler(e) {
-					if(e.keyCode == 37){maro.left = 1;}
-					if(e.keyCode == 39){maro.right = 1;}
-					if(e.keyCode == 38){maro.jump = 1;}
+					if(e.keyCode == 37){player.left = 1;}
+					if(e.keyCode == 39){player.right = 1;}
+					if(e.keyCode == 38){player.jump = 1;}
 				}
         			function keyUpHandler(e) {
-					if(e.keyCode == 37){maro.left = 0;}
-					if(e.keyCode == 39){maro.right = 0;}
-					if(e.keyCode == 38){maro.jump = 0;}
+					if(e.keyCode == 37){player.left = 0;}
+					if(e.keyCode == 39){player.right = 0;}
+					if(e.keyCode == 38){player.jump = 0;}
 				}
         			//key inputs
 				
 				
 				
 				
-				if (maro.Ypos + 60 > canvas.height){
-					maro.Ypos = canvas.height;
-					maro.Yspeed = 0;
+				if (player.Ypos + 60 > canvas.height){
+					player.Ypos = canvas.height;
+					player.Yspeed = 0;
 				}//detecting when player is in the ground
 				
 				
 				
 				
 				
-				if (maro.left == 1 && maro.right == 0){maro.Xspeed -= 2;}
-				if (maro.left == 0 && maro.right == 1){maro.Xspeed += 2;}
-				if (maro.left == maro.right){
-					if (maro.Xspeed > 0){maro.Xspeed -= 2;}
-					if (maro.Xspeed < 0){maro.Xspeed += 2;}
+				if (player.left == 1 && player.right == 0){player.Xspeed -= 2;}
+				if (player.left == 0 && player.right == 1){player.Xspeed += 2;}
+				if (player.left == player.right){
+					if (player.Xspeed > 0){player.Xspeed -= 2;}
+					if (player.Xspeed < 0){player.Xspeed += 2;}
 				}
-				if (maro.jump == 1 && maro.onGround == 1){maro.Yspeed = -16;}
+				if (player.jump == 1 && player.onGround == 1){player.Yspeed = -16;}
 				//move and jump
 				
-				if(maro.Xspeed > 10){maro.Xspeed = 10;}
-				if(maro.Xspeed < -10){maro.Xspeed = -10;}
-				if(maro.Yspeed > 30){maro.Yspeed = 30;}
+				if(player.Xspeed > 10){player.Xspeed = 10;}
+				if(player.Xspeed < -10){player.Xspeed = -10;}
+				if(player.Yspeed > 30){player.Yspeed = 30;}
 				
 				
 				
-				if (maro.Ypos + 60 >= canvas.height){
-					maro.onGround = 1;
+				if (player.Ypos + 60 >= canvas.height){
+					player.onGround = 1;
 				}//detecting when player is on the ground
 				else{
-					maro.onGround = 0;
-					maro.Yspeed += 1; //gravity
+					player.onGround = 0;
+					player.Yspeed += 1; //gravity
 				}
 				
 				
-				/*if (maro.Xpos <= 5 && maro.left == 1){
-					maro.onWall = 1;
-					if (maro.Yspeed > 5){maro.Yspeed = 5;}
+				/*if (player.Xpos <= 5 && player.left == 1){
+					player.onWall = 1;
+					if (player.Yspeed > 5){player.Yspeed = 5;}
 				}
 				else{}*/
 				
 				
 					
-				maro.Xpos += maro.Xspeed;
-				maro.Ypos += maro.Yspeed;
+				player.Xpos += player.Xspeed;
+				player.Ypos += player.Yspeed;
 				
 				
 				
-				if(maro.Xpos < 0){maro.Xpos = 0; maro.Xspeed = 0;}
-				if(maro.Xpos + 35 > canvas.width){maro.Xpos = canvas.width - 35; maro.Xspeed = 0;}
-				if(maro.Ypos < 0){maro.Ypos = 0; maro.Yspeed = 0;}
-				if(maro.Ypos + 60 > canvas.height){maro.Ypos = canvas.height - 60;}
+				if(player.Xpos < 0){player.Xpos = 0; player.Xspeed = 0;}
+				if(player.Xpos + 35 > canvas.width){player.Xpos = canvas.width - 35; player.Xspeed = 0;}
+				if(player.Ypos < 0){player.Ypos = 0; player.Yspeed = 0;}
+				if(player.Ypos + 60 > canvas.height){player.Ypos = canvas.height - 60;}
 				
 				
 				
 				
         
         	ctx.beginPath();
-                ctx.rect(maro.Xpos, maro.Ypos, 35, 60);
+                ctx.rect(player.Xpos, player.Ypos, 35, 60);
                 ctx.fillStyle = "black";
                 ctx.fill();
                 ctx.closePath();
