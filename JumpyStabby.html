@@ -126,6 +126,13 @@
 				}//detecting when player is in the ground
 				
 				
+				if (player.Xpos <= 2 && player.left != player.right){
+					player.onWall = 1;
+					//if (player.Yspeed > 5){player.Yspeed = 5;}
+				}
+				else{
+					player.onWall = 0;
+				}
 				
 				
 				
@@ -134,9 +141,16 @@
 				if (player.left == player.right){
 					if (player.Xspeed > 0){player.Xspeed -= 2;}
 					if (player.Xspeed < 0){player.Xspeed += 2;}
-				}
+				}//move
+				
 				if (player.jump == 1 && player.onGround == 1){player.Yspeed = -16;}
-				//move and jump
+				//jump
+				
+				else if (player.jump == 1 && player.onWall == 1){
+					player.Yspeed = -16;
+					if(player.left == 1){player.Xspeed = 10;}
+					if(player.right == 1){player.Xspeed = -10;}
+				}
 				
 				if(player.Xspeed > 10){player.Xspeed = 10;}
 				if(player.Xspeed < -10){player.Xspeed = -10;}
@@ -153,11 +167,7 @@
 				}
 				
 				
-				/*if (player.Xpos <= 5 && player.left == 1){
-					player.onWall = 1;
-					if (player.Yspeed > 5){player.Yspeed = 5;}
-				}
-				else{}*/
+				
 				
 				
 					
