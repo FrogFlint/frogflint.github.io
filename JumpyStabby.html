@@ -155,12 +155,12 @@
 				//jump
 				
 				else{
-					if (player.jump == 1 && player.onWallLeft == 1){
+					if (player.jump == 1 && player.onWallLeft == 1 && player.onWallRight == 0){
 						player.Yspeed = -16;
 						player.Xspeed = 20;
 						player.jump = 2;
 					}
-					if (player.jump == 1 && player.onWallRight == 1){
+					if (player.jump == 1 && player.onWallRight == 1 && player.onWallLeft == 0){
 						player.Yspeed = -16;
 						player.Xspeed = -20;
 						player.jump = 2;
