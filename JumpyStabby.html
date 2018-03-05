@@ -133,11 +133,11 @@
 				}
 				else{player.onWallLeft = 0;}
 				
-				if (player.Xpos + 5 >= canvas.width && player.right == 1){
+				if (player.Xpos + 35 >= canvas.width - 5 && player.right == 1){
 					player.onWallRight = 1;
 					if (player.Yspeed > 5){player.Yspeed = 5;}
 				}
-				else{player.onWallRight = 1;}
+				else{player.onWallRight = 0;}
 				
 				
 				
