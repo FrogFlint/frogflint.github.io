@@ -154,7 +154,7 @@
 				else{
 					if (player.jump == 1 && player.onWallLeft == 1){
 						player.Yspeed = -16;
-						player.Xspeed = 60;
+						player.Xspeed = 16;
 					}
 					if (player.jump == 1 && player.onWallRight == 1){
 						player.Yspeed = -16;
@@ -162,8 +162,8 @@
 					}
 				}
 				
-				if(player.Xspeed > 10){player.Xspeed = 10;}
-				if(player.Xspeed < -10){player.Xspeed = -10;}
+				if(player.Xspeed > 10){player.Xspeed -= 2;}
+				if(player.Xspeed < -10){player.Xspeed += 2;}
 				if(player.Yspeed > 30){player.Yspeed = 30;}
 				
 				
