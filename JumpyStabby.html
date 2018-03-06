@@ -125,7 +125,7 @@
 						
 						ctx.beginPath();
                 				ctx.rect((index2 - 1)*50, (index1 - 1)*50, 50, 50);
-						//ctx.fillStyle = "silver";
+						if(levelLayout[0][index1][index2] == " "){ctx.fillStyle = "silver";}
 						if(levelLayout[0][index1][index2] == "w"){ctx.fillStyle = "gray";}
                 				ctx.fill();
                 				ctx.closePath();
