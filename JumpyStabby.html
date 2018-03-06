@@ -123,13 +123,14 @@
 				for(index1 = 1; index1 <= index1Max; index1++){
 					for(index2 = 1; index2 <= index2Max; index2++){
 						
-						ctx.beginPath();
-                				ctx.rect((index2 - 1)*50, (index1 - 1)*50, 50, 50);
-						ctx.fillStyle = "silver";
-						if(levelLayout[0][index1][index2] == "w"){ctx.fillStyle = "gray";}
-                				ctx.fill();
-                				ctx.closePath();
-						
+						if(levelLayout[0][index1][index2] != "w"){
+							ctx.beginPath();
+                					ctx.rect((index2 - 1)*50, (index1 - 1)*50, 50, 50);
+							ctx.fillStyle = "silver";
+							if(levelLayout[0][index1][index2] == "w"){ctx.fillStyle = "gray";}
+                					ctx.fill();
+                					ctx.closePath();
+						}
 					}
 				}
 				
@@ -183,8 +184,8 @@
 					}
 				}
 				
-				if(player.Xspeed > 10){player.Xspeed -= 2;}
-				if(player.Xspeed < -10){player.Xspeed += 2;}
+				if(player.Xspeed > 10){player.Xspeed -= 3;}
+				if(player.Xspeed < -10){player.Xspeed += 3;}
 				if(player.Yspeed > 30){player.Yspeed = 30;}
 				
 				
