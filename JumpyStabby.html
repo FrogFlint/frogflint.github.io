@@ -83,7 +83,7 @@
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
-				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
+				[" "," "," "," "," ","w","w","w","w","w"," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
 				[" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "],
@@ -117,6 +117,23 @@
 					if(e.keyCode == 38){player.jump = 0;}
 				}
         			//key inputs
+				
+				
+				
+				for(index1 = 1; index1 <= index1Max; index1++){
+					for(index2 = 1; index2 <= index2Max; index2++){
+						
+						ctx.beginPath();
+                				ctx.rect((index1 - 1)*50, (index2 - 1)*50, 50, 50);
+						if(levelLayout[level][index1][index2] == "w"){ctx.fillStyle = "gray";}
+						if(levelLayout[level][index1][index2] == "s"){ctx.fillStyle = "darkGray";}
+						if(levelLayout[level][index1][index2] == " "){ctx.fillStyle = "silver";}
+                				ctx.fill();
+                				ctx.closePath();
+						
+					}
+				}
+				
 				
 				
 				
@@ -156,8 +173,8 @@
 				
 				else{
 					if (player.jump == 1 && player.onWallLeft == 1 && player.onWallRight == 0){
-						player.Yspeed = -48;
-						player.Xspeed = 60;
+						player.Yspeed = -16;
+						player.Xspeed = 20;
 						player.jump = 2;
 					}
 					if (player.jump == 1 && player.onWallRight == 1 && player.onWallLeft == 0){
