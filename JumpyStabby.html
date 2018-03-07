@@ -120,8 +120,8 @@
 				
 				
 				
-				for(index1 = 1; index1 <= index1Max; index1++){
-					for(index2 = 1; index2 <= index2Max; index2++){
+				for(index1 = 0; index1 <= index1Max; index1++){
+					for(index2 = 0; index2 <= index2Max; index2++){
 						
 						ctx.beginPath();
                 				ctx.rect((index2 - 1)*50, (index1 - 1)*50, 50, 50);
@@ -137,11 +137,7 @@
           				ctx.fill();
            				ctx.closePath();
 				}
-				ctx.beginPath();
-            		    	ctx.rect(player.Xpos, player.Ypos, 35, 60);
-           		     	ctx.fillStyle = "black";
-          			ctx.fill();
-           			ctx.closePath();
+				
 				
 				
 				
