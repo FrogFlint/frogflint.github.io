@@ -94,8 +94,8 @@
 					while(index2 <= index2Max){
 						
 						tile[index1][index2].newHeight = tile[index1][index2].height + Math.floor(Math.random()*3-1);
-						if (tile[index1][index2].newHeight > tile[index1+1][index2] ||
-						    tile[index1][index2].newHeight < tile[index1+1][index2]){tile[index1][index2].newColor = tile[index1][index2].height;}
+						if (tile[index1][index2].newHeight > tile[index1+1][index2].height+1 ||
+						    tile[index1][index2].newHeight < tile[index1+1][index2].height-1){tile[index1][index2].newColor = tile[index1][index2].height;}
 						
 						index2 += 1;
 					}
