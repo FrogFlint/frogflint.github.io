@@ -53,11 +53,22 @@
 			
 			
 			
-			ctx.beginPath();
-			ctx.rect(100, 100, 200, 200);
-			ctx.fillStyle = "lime";
-			ctx.fill();
-			ctx.closePath();
+			for(index1 = 0; index1 < width; index1++){
+				for(index2 = 0; index2 < 15; index2++){
+					
+					ctx.beginPath();
+					ctx.rect(index1*50, index2*50, 50, 50);
+					if(tile[index1][index2] == 0){ctx.fillStyle = "lime";}
+					if(tile[index1][index2] == 1){ctx.fillStyle = "cyan";}
+					ctx.fill();
+					ctx.closePath();
+					
+				}
+			}
+			
+			
+			
+			
 			
 			
 			
