@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: lime;
+			background: black;
 			display: block;
 			margin: 0 auto;
 		}
@@ -42,10 +42,20 @@
 			
 			
 			
+			for(index1 = 0; index1 < width; index1++){
+				tile[index1] = [];
+				for(index2 = 0; index2 < 15; index2++){
+					
+					tile[index1][index2] = 0;
+				}
+			}
+			
+			
+			
 			
 			ctx.beginPath();
 			ctx.rect(100, 100, 200, 200);
-			ctx.fillStyle = "red";
+			ctx.fillStyle = "lime";
 			ctx.fill();
 			ctx.closePath();
 			
