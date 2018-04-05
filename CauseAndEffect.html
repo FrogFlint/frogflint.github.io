@@ -31,7 +31,7 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var width = 10;
+			var width = 100;
 			var scroll = 0;
 			var selection = 0;
 			
@@ -59,7 +59,7 @@
 					if(Math.sqrt(index1**2+index2**2) % 2 < 1){
 						
 					ctx.beginPath();
-					ctx.rect(index1*50, index2*50 + 5, 50, 50);
+					ctx.rect(index1*10, index2*10 + 5, 10, 10);
 					if(tile[index1][index2] == 0){ctx.fillStyle = "lime";}
 					if(tile[index1][index2] == 1){ctx.fillStyle = "cyan";}
 					ctx.fill();
