@@ -56,7 +56,7 @@
 			for(index1 = 0; index1 < width; index1++){
 				for(index2 = 1; index2 < 15; index2++){
 					
-					if((index1+index2)%3 == 0){
+					if(Math.sqrt(index1**2+index2**2) < 8){
 						
 					ctx.beginPath();
 					ctx.rect(index1*50, index2*50 + 5, 50, 50);
