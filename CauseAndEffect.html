@@ -72,7 +72,7 @@
 				for(index1 = 1; index1 < width-1; index1++){
 					for(index2 = 1; index2 < 20; index2++){
 						
-						tile[index1][index2].next = (tile[(index1-1)% width][index2-1].now + tile[index1][index2-1].now + (tile[(index1+1).now % width][index2-1]) % 2;
+						tile[index1][index2].next = (tile[(index1-1)% width][index2-1].now + tile[index1][index2-1].now + (tile[(index1+1) % width][index2-1].now) % 2;
 						
 						
 					}
