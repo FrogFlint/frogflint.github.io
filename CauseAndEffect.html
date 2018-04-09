@@ -86,13 +86,13 @@
 				
 				
 				// draw the squares
-				for(index1 = 0; index1 <= width; index1++){
+				for(index1 = 1; index1 < width-1; index1++){
 					for(index2 = 0; index2 < 150; index2++){
 						
 						tile[index1][index2].now = tile[index1][index2].next;
 						
 						ctx.beginPath();
-						ctx.rect(index1*60, index2*60 + 5, 50, 50);
+						ctx.rect(index1*50, index2*50 + 5, 50, 50);
 						if(tile[index1][index2].now == 0){ctx.fillStyle = "blue";}
 						if(tile[index1][index2].now == 1){ctx.fillStyle = "lime";}
 						ctx.fill();
