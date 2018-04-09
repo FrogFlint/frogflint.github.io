@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			var frame = 0;
-			var width = 150;
+			var width = 15;
 			var scroll = 0;
 			var selection = 0;
 			
@@ -82,7 +82,7 @@
 						
 						
 						ctx.beginPath();
-						ctx.rect(index1*10, index2*10 + 5, 10, 10);
+						ctx.rect(index1*1000/width, index2*1000/width + 5, 1000/width, 1000/width);
 						if(tile[index1][index2] == 0){ctx.fillStyle = "lime";}
 						if(tile[index1][index2] == 1){ctx.fillStyle = "cyan";}
 						ctx.fill();
