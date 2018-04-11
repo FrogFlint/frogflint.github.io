@@ -51,7 +51,7 @@
 				}
 			}
 			
-			tile[4][0] = 1;
+			//tile[4][0] = 1;
 			
 			
 			
@@ -83,7 +83,7 @@
 				
 				
 				for(index2 = 19; index2 > 0; index2--){
-					for(index1 = 1; index1 < width; index1++){
+					for(index1 = 0; index1 < width; index1++){
 						
 						tile[index1][index2] = (
 							  (tile[(index1-1) % width][index2-1])
@@ -123,7 +123,7 @@
 				
 				
 				ctx.beginPath();
-				ctx.rect(selection*50 +300 + 20, 20 + 5, 10, 10);
+				ctx.rect(selection*50 +300 + 15, 15 + 5, 20, 20);
 				ctx.fillStyle = "black";
 				ctx.fill();
 				ctx.closePath();
