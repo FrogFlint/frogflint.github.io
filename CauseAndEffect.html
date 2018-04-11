@@ -64,6 +64,23 @@
 				
 				
 				
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
+				function keyDownHandler(e) {
+					
+					if(e.keyCode == 37){selection = (selection-1)%width;}
+					if(e.keyCode == 37){player1.right = 1;}
+					if(e.keyCode == 87){player1.forwards = 1;}
+					if(e.keyCode == 81){player1.shooting = 1;}
+					if(e.keyCode == 69){player1.boost = 1;}
+					
+					
+					
+					
+				}
+				
+				
+				
 				
 				
 				for(index2 = 19; index2 > 0; index2--){
