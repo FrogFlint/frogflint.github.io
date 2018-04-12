@@ -41,6 +41,13 @@
 			
 			var tile = [[]];
 			
+			//keys
+			var left = 0;
+			var right = 0;
+			var up = 0;
+			var down = 0;
+			var space = 0;
+			
 			
 			
 			for(index1 = 0; index1 < width; index1++){
@@ -65,19 +72,34 @@
 				
 				
 				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
 				function keyDownHandler(e) {
 					
-					if(e.keyCode == 37){selection = (selection-1) % width;}
-					if(e.keyCode == 39){selection = (selection+1) % width;}
-					if(e.keyCode == 40){scroll++;}
-					if(e.keyCode == 40){scroll--; if(scroll < 0){scroll = 0;}}
-					if(e.keyCode == 32){tile[selection][0] = (tile[selection][0] + 1) % 2;}
+					if(e.keyCode == 37){left = 1;}
+					if(e.keyCode == 39){right = 1;}
+					if(e.keyCode == 40){down = 1;}
+					if(e.keyCode == 38){up = 1;}
+					if(e.keyCode == 32){space = 1;}
 					
 					
 				}
+				function keyUpHandler(e) {
 					
-				
-				
+					if(e.keyCode == 37){left = 0;}
+					if(e.keyCode == 39){right = 0;}
+					if(e.keyCode == 40){down = 0;}
+					if(e.keyCode == 38){up = 0;}
+					if(e.keyCode == 32){space = 0;}
+					
+					
+				}
+				/*
+				if(e.keyCode == 37){selection = (selection-1) % width;}
+				if(e.keyCode == 39){selection = (selection+1) % width;}
+				if(e.keyCode == 40){scroll++;}
+				if(e.keyCode == 40){scroll--; if(scroll < 0){scroll = 0;}}
+				if(e.keyCode == 32){tile[selection][0] = (tile[selection][0] + 1) % 2;}
+				*/
 				
 				
 				
