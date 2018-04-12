@@ -94,7 +94,7 @@
 					
 				}
 				
-				if(left  == 1){selection = (selection-1) % 5;}
+				if(left  == 1){selection = (selection-1); if(selection < 0){selection = width;}}
 				if(right == 1){selection = (selection+1) % width;}
 				if(down  == 1){scroll++;}
 				if(up    == 1){scroll--; if(scroll < 0){scroll = 0;}}
@@ -152,7 +152,7 @@
 				
 				
 			}
-			setInterval(draw, 10);
+			setInterval(draw, 1000);
    		 </SCRIPT>
 
 	</body>
