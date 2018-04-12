@@ -94,7 +94,7 @@
 					
 				}
 				
-				if(left == 1){selection = (selection-1) % width;}
+				if(left == 1){selection = (selection-1) % (width-1);}
 				if(right == 1){selection = (selection+1) % width;}
 				if(down == 1){scroll++;}
 				if(up == 1){scroll--; if(scroll < 0){scroll = 0;}}
