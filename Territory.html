@@ -33,6 +33,7 @@
 			var speed = 10;
 			
 			var setup = "random"; //random, sides
+			var squish = 0;
 			var scale = 10; // between 1 and 50
 			var index1 = 0;
      			var index2 = 0;
@@ -170,6 +171,13 @@
 								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
 							}
 						}}
+						
+						
+						if(squish == 1){
+							if(tile[index1+1][index2].color == tile[index1-1][index2].color &&
+							   tile[index1+1][index2].color == tile[index1][index2+1].color &&
+							   tile[index1+1][index2].color == tile[index1][index2-1].color){
+								tile[index1][index2].color = tile[index1+1][index2].color;
 						
 						
 						
