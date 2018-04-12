@@ -104,7 +104,7 @@
 				
 				
 				
-				for(index2 = 19; index2 > 0; index2--){
+				for(index2 = 199; index2 > 0; index2--){
 					for(index1 = 1; index1 < width; index1++){
 						
 						tile[index1][index2] = (
@@ -126,7 +126,7 @@
 				
 				// draw the squares
 				for(index1 = 0; index1 < width; index1++){
-					for(index2 = 0; index2 < 20; index2++){
+					for(index2 = 0; index2 < 200; index2++){
 						
 						
 						
@@ -145,7 +145,7 @@
 				
 				
 				ctx.beginPath();
-				ctx.rect(selection*50 +300 + 15, scroll*50 + 15 + 5, 20, 20);
+				ctx.rect(selection*50 +300 + 15, 15 + 5 - scroll*50, 20, 20);
 				ctx.fillStyle = "black";
 				ctx.fill();
 				ctx.closePath();
