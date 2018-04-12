@@ -94,10 +94,10 @@
 					
 				}
 				
-				if(left == 1){selection = (selection-1) % (width-1);}
+				if(left  == 1){selection = (selection-1) % width;}
 				if(right == 1){selection = (selection+1) % width;}
-				if(down == 1){scroll++;}
-				if(up == 1){scroll--; if(scroll < 0){scroll = 0;}}
+				if(down  == 1){scroll++;}
+				if(up    == 1){scroll--; if(scroll < 0){scroll = 0;}}
 				if(space == 1){tile[selection][0] = (tile[selection][0] + 1) % 2;}
 				
 				
