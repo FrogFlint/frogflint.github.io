@@ -113,9 +113,9 @@
 					for(index1 = 1; index1 < width; index1++){
 						
 						tile[index1][index2] = (
-							  tile[Math.mod(index1-1, width)][index2-1]
-							+  tile[         index1          ][index2-1]
-							+ tile[Math.mod(index1+1, width)][index2-1]
+							  tile[mod(index1-1, width)][index2-1]
+							+ tile[    index1          ][index2-1]
+							+ tile[mod(index1+1, width)][index2-1]
 						) % 2;
 						
 						
