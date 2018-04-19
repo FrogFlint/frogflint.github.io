@@ -85,14 +85,14 @@
 			
 	for(index = 0; index < maxBullets; index++){
 		bullet1[index] = {
-			Xpos:100,
-			Ypos:100,
+			Xpos:-10,
+			Ypos:0,
 			Xspeed:0,
 			Yspeed:0
 		}
 		bullet2[index] = {
-			Xpos:200,
-			Ypos:200,
+			Xpos:-10,
+			Ypos:0,
 			Xspeed:0,
 			Yspeed:0
 		}
@@ -231,7 +231,7 @@
 			bullet1[index].Ypos += bullet1[index].Yspeed;
 		      
 		      	if(Math.sqrt((player2.Xpos - bullet1[index].Xpos)**2 + (player2.Ypos - bullet1[index].Ypos)**2) <= 30){
-				bullet1[index].Xpos = 0;
+				bullet1[index].Xpos = -10;
 				bullet1[index].Ypos = 0;
 				//bullet1[index].Xspeed = 0;
 				//bullet1[index].Yspeed = 0;
@@ -250,7 +250,7 @@
 			bullet2[index].Ypos += bullet2[index].Yspeed;
 		      
 		      	if(Math.sqrt((player1.Xpos - bullet2[index].Xpos)**2 + (player1.Ypos - bullet2[index].Ypos)**2) <= 30){
-				bullet2[index].Xpos = 0;
+				bullet2[index].Xpos = -10;
 				bullet2[index].Ypos = 0;
 				//bullet2[index].Xspeed = 0;
 				//bullet2[index].Yspeed = 0;
