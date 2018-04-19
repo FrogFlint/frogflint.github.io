@@ -176,10 +176,10 @@
 	      else{player2.speed = 5;}
 	      
 	      
-	      if(player1.left == 1){player1.angle += 0.07;}
-	      if(player1.right == 1){player1.angle -= 0.07;}
-	      if(player2.left == 1){player2.angle += 0.07;}
-	      if(player2.right == 1){player2.angle -= 0.07;}
+	      if(player1.left == 1){player1.angle += 0.035;}// 0.07
+	      if(player1.right == 1){player1.angle -= 0.035;}
+	      if(player2.left == 1){player2.angle += 0.035;}
+	      if(player2.right == 1){player2.angle -= 0.035;}
 	      
 	      if(player1.forwards == 1){
 		      player1.Xpos += Math.sin(player1.angle)*player1.speed;
@@ -208,7 +208,7 @@
 			      bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle)*player1.bulletSpeed;
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle)*player1.bulletSpeed;
 			      bulletNumber1 += 1;
-			      if(bulletNumber1 >= 2){bulletNumber1 = 0;}
+			      if(bulletNumber1 >= 3){bulletNumber1 = 0;}
 			      //player1.cooldown = 10;
 		      //}
 		      //else {player1.cooldown -= 1;}
@@ -220,7 +220,7 @@
 			      bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle)*player2.bulletSpeed;
 			      bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle)*player2.bulletSpeed;
 			      bulletNumber2 += 1;
-			      if(bulletNumber2 >= 2){bulletNumber2 = 0;}
+			      if(bulletNumber2 >= 3){bulletNumber2 = 0;}
 			      //player2.cooldown = 10;
 		      //}
 		      //else {player2.cooldown -= 1;}
