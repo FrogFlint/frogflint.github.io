@@ -58,7 +58,7 @@
 		backwards:0,
 		score:0,
 		speed:5,
-		bulletSpeed:80,
+		bulletSpeed:8,
 		boost:0,
 		shooting:0,
 		cooldown:0
@@ -73,7 +73,7 @@
 		backwards:0,
 		score:0,
 		speed:5,
-		bulletSpeed:80,
+		bulletSpeed:8,
 		boost:0,
 		shooting:0,
 		cooldown:0
@@ -231,6 +231,8 @@
 		      	if(Math.sqrt((player2.Xpos - bullet1[index].Xpos)**2 + (player2.Ypos - bullet1[index].Ypos)**2) <= 30){
 				bullet1[index].Xpos = 0;
 				bullet1[index].Ypos = 0;
+				bullet1[index].Xspeed = 0;
+				bullet1[index].Yspeed = 0;
 				player1.score += 1;
 			}
 			      
@@ -248,6 +250,8 @@
 		      	if(Math.sqrt((player1.Xpos - bullet2[index].Xpos)**2 + (player1.Ypos - bullet2[index].Ypos)**2) <= 30){
 				bullet2[index].Xpos = 0;
 				bullet2[index].Ypos = 0;
+				bullet2[index].Xspeed = 0;
+				bullet2[index].Yspeed = 0;
 				player2.score += 1;
 			}
 			      
