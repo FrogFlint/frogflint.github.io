@@ -250,25 +250,31 @@
 	      
 	      index = 0;
 	      for(;index < maxBullets;index++){
-		      bullet1[index].Xpos += bullet1[index].Xspeed;
-		      bullet1[index].Ypos += bullet1[index].Yspeed;
+			bullet1[index].Xpos += bullet1[index].Xspeed;
+			bullet1[index].Ypos += bullet1[index].Yspeed;
 		      
-		ctx.beginPath();
-                ctx.arc(bullet1[index].Xpos, bullet1[index].Ypos, 5, 0, Math.PI * 2);
-                ctx.fillStyle = "red";
-                ctx.fill();
-                ctx.closePath();
+		      	if(Math.sqrt((player2.Xpos - bullet1[index].Xpos)**2 + (player2.Ypos - bullet1[index].Ypos)**2) <= 30){
+				bullet1[index].Xpos = 0;
+				bullet1[index].Ypos = 0;
+				player1.score += 1;
+			}
+			      
+			ctx.beginPath();
+	                ctx.arc(bullet1[index].Xpos, bullet1[index].Ypos, 5, 0, Math.PI * 2);
+        	        ctx.fillStyle = "red";
+                	ctx.fill();
+		        ctx.closePath();
 	      }
 	      index = 0;
 	      for(;index < maxBullets;index++){
-		      bullet2[index].Xpos += bullet2[index].Xspeed;
-		      bullet2[index].Ypos += bullet2[index].Yspeed;
-		      
-		ctx.beginPath();
-                ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
-                ctx.fillStyle = "lime";
-                ctx.fill();
-                ctx.closePath();
+			bullet2[index].Xpos += bullet2[index].Xspeed;
+			bullet2[index].Ypos += bullet2[index].Yspeed;
+			      
+			ctx.beginPath();
+       	   	    	ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
+        	        ctx.fillStyle = "lime";
+         	   	ctx.fill();
+          	   	ctx.closePath();
 	      }
 	      
 	      
