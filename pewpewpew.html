@@ -42,7 +42,7 @@
 	var index = 0;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
-	var maxBullets = 20;
+	var maxBullets = 200;
         
         //var pointScored = false;
         
@@ -61,7 +61,8 @@
 		bulletSpeed:8,
 		boost:0,
 		shooting:0,
-		cooldown:0
+		cooldown:0,
+		reload:10
 	}
 	player2 = {
 		Xpos:canvas.width-100,
@@ -76,7 +77,8 @@
 		bulletSpeed:8,
 		boost:0,
 		shooting:0,
-		cooldown:0
+		cooldown:0,
+		reload:1
 	}
         
 	 
@@ -192,7 +194,7 @@
 			      bulletNumber1 += 1;
 			      if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
 			      
-			      player1.cooldown = 20;
+			      player1.cooldown = player1.reload;
 		      }
 		      else {player1.cooldown -= 1;}
 	      }
@@ -206,7 +208,7 @@
 			      bulletNumber2 += 1;
 			      if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
 			      
-			      player2.cooldown = 20;
+			      player2.cooldown = player2.reload;
 		      }
 		      else {player2.cooldown -= 1;}
 	      }
