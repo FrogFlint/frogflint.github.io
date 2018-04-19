@@ -79,43 +79,7 @@
 		cooldown:0
 	}
         
-	      
-	bullet1[0] = {
-		Xpos:100,
-		Ypos:100,
-		Xspeed:0,
-		Yspeed:0
-	}
-	bullet1[1] = {
-		Xpos:100,
-		Ypos:150,
-		Xspeed:0,
-		Yspeed:0
-	}
-	bullet1[2] = {
-		Xpos:100,
-		Ypos:200,
-		Xspeed:0,
-		Yspeed:0
-	}
-	bullet2[0] = {
-		Xpos:200,
-		Ypos:100,
-		Xspeed:0,
-		Yspeed:0
-	}
-	bullet2[1] = {
-		Xpos:200,
-		Ypos:150,
-		Xspeed:0,
-		Yspeed:0
-	}
-	bullet2[2] = {
-		Xpos:200,
-		Ypos:200,
-		Xspeed:0,
-		Yspeed:0
-	}
+	 
 			
 	for(index = 0; index < maxBullets; index++){
 		bullet1[index] = {
@@ -248,6 +212,17 @@
 	      }
 		
 	      
+	      
+	      	ctx.font = "200px Arial";
+		ctx.fillStyle = "#ff0000";
+		ctx.textAlign = "center";
+		ctx.fillText(player1.score, canvas.width/2 -300, canvas.height/2 +50);
+		
+		ctx.font = "200px Arial";
+		ctx.fillStyle = "#00ff00";
+		ctx.textAlign = "center";
+		ctx.fillText(player2.score, canvas.width/2 +300, canvas.height/2 +50);
+	      
 	      index = 0;
 	      for(;index < maxBullets;index++){
 			bullet1[index].Xpos += bullet1[index].Xspeed;
@@ -269,6 +244,12 @@
 	      for(;index < maxBullets;index++){
 			bullet2[index].Xpos += bullet2[index].Xspeed;
 			bullet2[index].Ypos += bullet2[index].Yspeed;
+		      
+		      	if(Math.sqrt((player1.Xpos - bullet2[index].Xpos)**2 + (player1.Ypos - bullet2[index].Ypos)**2) <= 30){
+				bullet2[index].Xpos = 0;
+				bullet2[index].Ypos = 0;
+				player2.score += 1;
+			}
 			      
 			ctx.beginPath();
        	   	    	ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
