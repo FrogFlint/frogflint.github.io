@@ -42,6 +42,7 @@
 	var index = 0;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
+	var maxBullets = 20;
         
         //var pointScored = false;
         
@@ -116,10 +117,16 @@
 		Yspeed:0
 	}
 			
-	for(index = 0; index < 20; index++){
+	for(index = 0; index < maxBullets; index++){
 		bullet1[index] = {
 			Xpos:100,
 			Ypos:100,
+			Xspeed:0,
+			Yspeed:0
+		}
+		bullet2[index] = {
+			Xpos:200,
+			Ypos:200,
 			Xspeed:0,
 			Yspeed:0
 		}
@@ -219,7 +226,7 @@
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle)*player1.bulletSpeed;
 			      
 			      bulletNumber1 += 1;
-			      if(bulletNumber1 >= 3){bulletNumber1 = 0;}
+			      if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
 			      
 			      player1.cooldown = 10;
 		      }
@@ -233,7 +240,7 @@
 			      bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle)*player2.bulletSpeed;
 			      
 			      bulletNumber2 += 1;
-			      if(bulletNumber2 >= 3){bulletNumber2 = 0;}
+			      if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
 			      
 			      player2.cooldown = 10;
 		      }
@@ -242,7 +249,7 @@
 		
 	      
 	      index = 0;
-	      for(;index <= 2;index++){
+	      for(;index < maxBullets;index++){
 		      bullet1[index].Xpos += bullet1[index].Xspeed;
 		      bullet1[index].Ypos += bullet1[index].Yspeed;
 		      
@@ -253,7 +260,7 @@
                 ctx.closePath();
 	      }
 	      index = 0;
-	      for(;index <= 2;index++){
+	      for(;index < maxBullets;index++){
 		      bullet2[index].Xpos += bullet2[index].Xspeed;
 		      bullet2[index].Ypos += bullet2[index].Yspeed;
 		      
