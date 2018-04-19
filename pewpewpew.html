@@ -228,8 +228,8 @@
 	      }
 	      index = 0;
 	      for(;index <= 0;index++){
-		      bullet2[index].Xpos += bullet2[index].Xmove;
-		      bullet2[index].Ypos += bullet2[index].Ymove;
+		      bullet2[index].Xpos += bullet2[index].Xspeed;
+		      bullet2[index].Ypos += bullet2[index].Yspeed;
 		      
 		ctx.beginPath();
                 ctx.arc(bullet2[index].Xpos, bullet2[index].Ypos, 5, 0, Math.PI * 2);
