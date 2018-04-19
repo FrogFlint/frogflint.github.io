@@ -207,9 +207,11 @@
 			      bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle)*player1.bulletSpeed;
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle)*player1.bulletSpeed;
+			      
 			      bulletNumber1 += 1;
 			      if(bulletNumber1 >= 3){bulletNumber1 = 0;}
-			      //player1.cooldown = 10;
+			      
+			      player1.cooldown = 10;
 		      }
 		      //else {player1.cooldown -= 1;}
 	      }
@@ -219,9 +221,11 @@
 			      bullet2[bulletNumber2].Ypos = player2.Ypos;
 			      bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle)*player2.bulletSpeed;
 			      bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle)*player2.bulletSpeed;
+			      
 			      bulletNumber2 += 1;
 			      if(bulletNumber2 >= 3){bulletNumber2 = 0;}
-			      //player2.cooldown = 10;
+			      
+			      player2.cooldown = 10;
 		      }
 		      //else {player2.cooldown -= 1;}
 	      }
