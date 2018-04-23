@@ -266,7 +266,7 @@
 				player1.score += 1;
 			}
 		      	if(bullet1[index].Xpos <= 5){
-				if(bullet1[index].bounces <= maxBounces){
+				if(bullet1[index].bounces < maxBounces){
 					bullet1[index].Xpos     =  5;
 					bullet1[index].Xspeed  *= -1;
 					bullet1[index].bounces +=  1;
@@ -280,7 +280,7 @@
 				}
 			}
 		      	if(bullet1[index].Xpos >= canvas.width-5){
-				if(bullet1[index].bounces <= maxBounces){
+				if(bullet1[index].bounces < maxBounces){
 					bullet1[index].Xpos     =  canvas.width-5;
 					bullet1[index].Xspeed *= -1;
 					bullet1[index].bounces += 1;
@@ -294,7 +294,7 @@
 				}
 			}
 		      	if(bullet1[index].Ypos <= 5){
-				if(bullet1[index].bounces <= maxBounces){
+				if(bullet1[index].bounces < maxBounces){
 					bullet1[index].Ypos     =  5;
 					bullet1[index].Yspeed  *= -1;
 					bullet1[index].bounces +=  1;
@@ -308,7 +308,7 @@
 				}
 			}
 		      	if(bullet1[index].Ypos >= canvas.height-5){
-				if(bullet1[index].bounces <= maxBounces){
+				if(bullet1[index].bounces < maxBounces){
 					bullet1[index].Ypos     =  canvas.height-5;
 					bullet1[index].Yspeed *= -1;
 					bullet1[index].bounces += 1;
@@ -341,7 +341,7 @@
 				player2.score += 1;
 			}
 		      	if(bullet2[index].Xpos <= 5){
-				if(bullet2[index].bounces <= maxBounces){
+				if(bullet2[index].bounces < maxBounces){
 					bullet2[index].Xpos     =  5;
 					bullet2[index].Xspeed  *= -1;
 					bullet2[index].bounces +=  1;
@@ -355,7 +355,7 @@
 				}
 			}
 		      	if(bullet2[index].Xpos >= canvas.width-5){
-				if(bullet2[index].bounces <= maxBounces){
+				if(bullet2[index].bounces < maxBounces){
 					bullet2[index].Xpos     =  canvas.width-5;
 					bullet2[index].Xspeed *= -1;
 					bullet2[index].bounces += 1;
@@ -369,7 +369,7 @@
 				}
 			}
 		      	if(bullet2[index].Ypos <= 5){
-				if(bullet2[index].bounces <= maxBounces){
+				if(bullet2[index].bounces < maxBounces){
 					bullet2[index].Ypos     =  5;
 					bullet2[index].Yspeed  *= -1;
 					bullet2[index].bounces +=  1;
@@ -383,7 +383,7 @@
 				}
 			}
 		      	if(bullet2[index].Ypos >= canvas.height-5){
-				if(bullet2[index].bounces <= maxBounces){
+				if(bullet2[index].bounces < maxBounces){
 					bullet2[index].Ypos     =  canvas.height-5;
 					bullet2[index].Yspeed *= -1;
 					bullet2[index].bounces += 1;
