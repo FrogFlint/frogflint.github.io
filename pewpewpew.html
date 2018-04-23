@@ -47,7 +47,7 @@
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
 	var maxBullets = 100;
-	var maxBounces = 5;
+	var maxBounces = 0;
         
         //var pointScored = false;
         
@@ -67,7 +67,8 @@
 		boost:0,
 		shooting:0,
 		cooldown:0,
-		reload:20
+		reload:20,
+		shotgun:3
 	}
 	player2 = {
 		Xpos:canvas.width-100,
@@ -83,7 +84,8 @@
 		boost:0,
 		shooting:0,
 		cooldown:0,
-		reload:20
+		reload:20,
+		shotgun:3
 	}
         
 	 
@@ -191,7 +193,7 @@
 	      if(player2.Xpos > canvas.width - 40){player2.Xpos = canvas.width - 40;}
 	      if(player2.Ypos > canvas.height - 40){player2.Ypos = canvas.height - 40;}
 	      
-	      
+	      if(player1.cooldown > 0){player1.cooldown -= 1;}
 	      if(player1.shooting == 1){
 		      if(player1.cooldown == 0){
 			      bullet1[bulletNumber1].Xpos = player1.Xpos;
@@ -204,8 +206,9 @@
 			      
 			      player1.cooldown = player1.reload;
 		      }
-		      else {player1.cooldown -= 1;}
+		      
 	      }
+	      if(player2.cooldown > 0){player2.cooldown -= 1;}
 	      if(player2.shooting == 1){
 		      if(player2.cooldown == 0){
 			      bullet2[bulletNumber2].Xpos = player2.Xpos;
@@ -218,7 +221,7 @@
 			      
 			      player2.cooldown = player2.reload;
 		      }
-		      else {player2.cooldown -= 1;}
+		      
 	      }
 		
 	      
