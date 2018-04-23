@@ -243,30 +243,60 @@
 				bullet1[index].Yspeed = 0;
 				player1.score += 1;
 			}
-		      	if(bullet1[index].Xpos <= 5 || bullet1[index].Xpos >= canvas.width-5){
+		      	if(bullet1[index].Xpos <= 5){
 				if(bullet1[index].bounces <= maxBounces){
+					bullet1[index].Xpos     =  5;
+					bullet1[index].Xspeed  *= -1;
+					bullet1[index].bounces +=  1;
+				}
+				else{
+					bullet1[index].Xpos    = -10;
+					bullet1[index].Ypos    =   0;
+					bullet1[index].Xspeed  =   0;
+					bullet1[index].Yspeed  =   0;
+					bullet1[index].bounces =   0;
+				}
+			}
+		      	if(bullet1[index].Xpos >= canvas.width-5){
+				if(bullet1[index].bounces <= maxBounces){
+					bullet1[index].Xpos     =  canvas.width-5;
 					bullet1[index].Xspeed *= -1;
 					bullet1[index].bounces += 1;
 				}
 				else{
-					bullet1[index].Xpos = -10;
-					bullet1[index].Ypos = 0;
-					bullet1[index].Xspeed = 0;
-					bullet1[index].Yspeed = 0;
-					bullet1[index].bounces = 0;
+					bullet1[index].Xpos    = -10;
+					bullet1[index].Ypos    =   0;
+					bullet1[index].Xspeed  =   0;
+					bullet1[index].Yspeed  =   0;
+					bullet1[index].bounces =   0;
 				}
 			}
-		      	if(bullet1[index].Ypos <= 5 || bullet1[index].Ypos >= canvas.height-5){
+		      	if(bullet1[index].Ypos <= 5){
 				if(bullet1[index].bounces <= maxBounces){
+					bullet1[index].Ypos     =  5;
+					bullet1[index].Yspeed  *= -1;
+					bullet1[index].bounces +=  1;
+				}
+				else{
+					bullet1[index].Xpos    = -10;
+					bullet1[index].Ypos    =   0;
+					bullet1[index].Xspeed  =   0;
+					bullet1[index].Yspeed  =   0;
+					bullet1[index].bounces =   0;
+				}
+			}
+		      	if(bullet1[index].Ypos >= canvas.height-5){
+				if(bullet1[index].bounces <= maxBounces){
+					bullet1[index].Ypos     =  canvas.height-5;
 					bullet1[index].Yspeed *= -1;
 					bullet1[index].bounces += 1;
 				}
 				else{
-					bullet1[index].Xpos = -10;
-					bullet1[index].Ypos = 0;
-					bullet1[index].Xspeed = 0;
-					bullet1[index].Yspeed = 0;
-					bullet1[index].bounces = 0;
+					bullet1[index].Xpos    = -10;
+					bullet1[index].Ypos    =   0;
+					bullet1[index].Xspeed  =   0;
+					bullet1[index].Yspeed  =   0;
+					bullet1[index].bounces =   0;
 				}
 			}
 			      
