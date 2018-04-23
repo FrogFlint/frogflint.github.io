@@ -43,6 +43,7 @@
         var bullet1 = [];
         var bullet2 = [];
 	var index = 0;
+	var erase = 1;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
 	var maxBullets = 200;
@@ -108,9 +109,10 @@
         
         
       function draw() {
-				
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
+	      	if(erase == 1){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
         
         
         
