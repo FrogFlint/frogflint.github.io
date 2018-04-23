@@ -46,7 +46,7 @@
 	var erase = 1;
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
-	var maxBullets = 200;
+	var maxBullets = 1000;
 	var maxBounces = 5;
         
         //var pointScored = false;
@@ -319,6 +319,62 @@
 				bullet2[index].Xspeed = 0;
 				bullet2[index].Yspeed = 0;
 				player2.score += 1;
+			}
+		      	if(bullet2[index].Xpos <= 5){
+				if(bullet2[index].bounces <= maxBounces){
+					bullet2[index].Xpos     =  5;
+					bullet2[index].Xspeed  *= -1;
+					bullet2[index].bounces +=  1;
+				}
+				else{
+					bullet2[index].Xpos    = -10;
+					bullet2[index].Ypos    =   0;
+					bullet2[index].Xspeed  =   0;
+					bullet2[index].Yspeed  =   0;
+					bullet2[index].bounces =   0;
+				}
+			}
+		      	if(bullet2[index].Xpos >= canvas.width-5){
+				if(bullet2[index].bounces <= maxBounces){
+					bullet2[index].Xpos     =  canvas.width-5;
+					bullet2[index].Xspeed *= -1;
+					bullet2[index].bounces += 1;
+				}
+				else{
+					bullet2[index].Xpos    = -10;
+					bullet2[index].Ypos    =   0;
+					bullet2[index].Xspeed  =   0;
+					bullet2[index].Yspeed  =   0;
+					bullet2[index].bounces =   0;
+				}
+			}
+		      	if(bullet2[index].Ypos <= 5){
+				if(bullet2[index].bounces <= maxBounces){
+					bullet2[index].Ypos     =  5;
+					bullet2[index].Yspeed  *= -1;
+					bullet2[index].bounces +=  1;
+				}
+				else{
+					bullet2[index].Xpos    = -10;
+					bullet2[index].Ypos    =   0;
+					bullet2[index].Xspeed  =   0;
+					bullet2[index].Yspeed  =   0;
+					bullet2[index].bounces =   0;
+				}
+			}
+		      	if(bullet2[index].Ypos >= canvas.height-5){
+				if(bullet2[index].bounces <= maxBounces){
+					bullet2[index].Ypos     =  canvas.height-5;
+					bullet2[index].Yspeed *= -1;
+					bullet2[index].bounces += 1;
+				}
+				else{
+					bullet2[index].Xpos    = -10;
+					bullet2[index].Ypos    =   0;
+					bullet2[index].Xspeed  =   0;
+					bullet2[index].Yspeed  =   0;
+					bullet2[index].bounces =   0;
+				}
 			}
 			      
 			ctx.beginPath();
