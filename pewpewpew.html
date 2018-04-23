@@ -200,8 +200,25 @@
 			      bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle)*player1.bulletSpeed;
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle)*player1.bulletSpeed;
-			      
 			      bulletNumber1 += 1;
+			      
+			      if(player1.shotgun >= 3){
+				      	bullet1[bulletNumber1].Xpos = player1.Xpos;
+					bullet1[bulletNumber1].Ypos = player1.Ypos;
+					bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle+0.01)*player1.bulletSpeed;
+					bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle+0.01)*player1.bulletSpeed;
+					bulletNumber1 += 1;
+				      
+				      	bullet1[bulletNumber1].Xpos = player1.Xpos;
+			     		bullet1[bulletNumber1].Ypos = player1.Ypos;
+			      		bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle-0.01)*player1.bulletSpeed;
+			      		bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle-0.01)*player1.bulletSpeed;
+			      		bulletNumber1 += 1;
+			      }
+			      
+			      
+			      
+			      
 			      if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
 			      
 			      player1.cooldown = player1.reload;
