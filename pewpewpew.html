@@ -268,27 +268,27 @@
 				      	bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
 				      
-				      	bullet1[bulletNumber2].Xpos = player2.Xpos;
-			     		bullet1[bulletNumber1].Ypos = player2.Ypos;
-			      		bullet1[bulletNumber2].Xspeed = Math.sin(player2.angle-0.1)*player2.bulletSpeed;
-			      		bullet1[bulletNumber2].Yspeed = Math.cos(player2.angle-0.1)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].Xpos = player2.Xpos;
+			     		bullet2[bulletNumber2].Ypos = player2.Ypos;
+			      		bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle-0.1)*player2.bulletSpeed;
+			      		bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle-0.1)*player2.bulletSpeed;
 				      
 			      		bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
 			      }
-			      if(player1.shotgun >= 5){
-				      	bullet1[bulletNumber2].Xpos = player2.Xpos;
-					bullet1[bulletNumber2].Ypos = player2.Ypos;
-					bullet1[bulletNumber2].Xspeed = Math.sin(player2.angle+0.2)*player2.bulletSpeed;
-					bullet1[bulletNumber2].Yspeed = Math.cos(player2.angle+0.2)*player2.bulletSpeed;
+			      if(player2.shotgun >= 5){
+				      	bullet2[bulletNumber2].Xpos = player2.Xpos;
+					bullet2[bulletNumber2].Ypos = player2.Ypos;
+					bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle+0.2)*player2.bulletSpeed;
+					bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle+0.2)*player2.bulletSpeed;
 					
 				      	bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
 				      
-				      	bullet1[bulletNumber2].Xpos = player2.Xpos;
-			     		bullet1[bulletNumber2].Ypos = player2.Ypos;
-			      		bullet1[bulletNumber2].Xspeed = Math.sin(player2.angle-0.2)*player2.bulletSpeed;
-			      		bullet1[bulletNumber2].Yspeed = Math.cos(player2.angle-0.2)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].Xpos = player2.Xpos;
+			     		bullet2[bulletNumber2].Ypos = player2.Ypos;
+			      		bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle-0.2)*player2.bulletSpeed;
+			      		bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle-0.2)*player2.bulletSpeed;
 				      
 			      		bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
