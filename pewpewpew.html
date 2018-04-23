@@ -47,7 +47,7 @@
 	var bulletNumber1 = 0;
 	var bulletNumber2 = 0;
 	var maxBullets = 100;
-	var maxBounces = 0;
+	var maxBounces = 5;
         
         //var pointScored = false;
         
@@ -205,15 +205,19 @@
 			      if(player1.shotgun >= 3){
 				      	bullet1[bulletNumber1].Xpos = player1.Xpos;
 					bullet1[bulletNumber1].Ypos = player1.Ypos;
-					bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle+0.01)*player1.bulletSpeed;
-					bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle+0.01)*player1.bulletSpeed;
-					bulletNumber1 += 1;
+					bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle+0.1)*player1.bulletSpeed;
+					bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle+0.1)*player1.bulletSpeed;
+					
+				      	bulletNumber1 += 1;
+				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
 				      
 				      	bullet1[bulletNumber1].Xpos = player1.Xpos;
 			     		bullet1[bulletNumber1].Ypos = player1.Ypos;
-			      		bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle-0.01)*player1.bulletSpeed;
-			      		bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle-0.01)*player1.bulletSpeed;
+			      		bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle-0.1)*player1.bulletSpeed;
+			      		bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle-0.1)*player1.bulletSpeed;
+				      
 			      		bulletNumber1 += 1;
+				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
 			      }
 			      
 			      
