@@ -96,6 +96,7 @@
 			Ypos:0,
 			Xspeed:0,
 			Yspeed:0,
+			in:0,
 			bounces:0
 		}
 		bullet2[index] = {
@@ -103,6 +104,7 @@
 			Ypos:0,
 			Xspeed:0,
 			Yspeed:0,
+			in:0,
 			bounces:0
 		}
 	}
@@ -200,6 +202,7 @@
 			      bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle)*player1.bulletSpeed;
 			      bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle)*player1.bulletSpeed;
+			      bullet1[bulletNumber1].in = 1;
 			      
 			      bulletNumber1 += 1;
 			      if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
@@ -209,6 +212,7 @@
 					bullet1[bulletNumber1].Ypos = player1.Ypos;
 					bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle+0.1)*player1.bulletSpeed;
 					bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle+0.1)*player1.bulletSpeed;
+					bullet1[bulletNumber1].in = 1;
 					
 				      	bulletNumber1 += 1;
 				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
@@ -217,6 +221,7 @@
 			     		bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      		bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle-0.1)*player1.bulletSpeed;
 			      		bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle-0.1)*player1.bulletSpeed;
+				      	bullet1[bulletNumber1].in = 1;
 				      
 			      		bulletNumber1 += 1;
 				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
@@ -226,6 +231,7 @@
 					bullet1[bulletNumber1].Ypos = player1.Ypos;
 					bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle+0.2)*player1.bulletSpeed;
 					bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle+0.2)*player1.bulletSpeed;
+				      	bullet1[bulletNumber1].in = 1;
 					
 				      	bulletNumber1 += 1;
 				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
@@ -234,6 +240,7 @@
 			     		bullet1[bulletNumber1].Ypos = player1.Ypos;
 			      		bullet1[bulletNumber1].Xspeed = Math.sin(player1.angle-0.2)*player1.bulletSpeed;
 			      		bullet1[bulletNumber1].Yspeed = Math.cos(player1.angle-0.2)*player1.bulletSpeed;
+				      	bullet1[bulletNumber1].in = 1;
 				      
 			      		bulletNumber1 += 1;
 				      	if(bulletNumber1 >= maxBullets){bulletNumber1 = 0;}
@@ -255,6 +262,7 @@
 			      bullet2[bulletNumber2].Ypos = player2.Ypos;
 			      bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle)*player2.bulletSpeed;
 			      bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle)*player2.bulletSpeed;
+			      bullet2[bulletNumber2].in = 1;
 			      
 			      bulletNumber2 += 1;
 			      if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
@@ -264,6 +272,7 @@
 					bullet2[bulletNumber2].Ypos = player2.Ypos;
 					bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle+0.1)*player2.bulletSpeed;
 					bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle+0.1)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].in = 1;
 					
 				      	bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
@@ -272,6 +281,7 @@
 			     		bullet2[bulletNumber2].Ypos = player2.Ypos;
 			      		bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle-0.1)*player2.bulletSpeed;
 			      		bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle-0.1)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].in = 1;
 				      
 			      		bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
@@ -281,6 +291,7 @@
 					bullet2[bulletNumber2].Ypos = player2.Ypos;
 					bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle+0.2)*player2.bulletSpeed;
 					bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle+0.2)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].in = 1;
 					
 				      	bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
@@ -289,6 +300,7 @@
 			     		bullet2[bulletNumber2].Ypos = player2.Ypos;
 			      		bullet2[bulletNumber2].Xspeed = Math.sin(player2.angle-0.2)*player2.bulletSpeed;
 			      		bullet2[bulletNumber2].Yspeed = Math.cos(player2.angle-0.2)*player2.bulletSpeed;
+				      	bullet2[bulletNumber2].in = 1;
 				      
 			      		bulletNumber2 += 1;
 				      	if(bulletNumber2 >= maxBullets){bulletNumber2 = 0;}
@@ -317,7 +329,7 @@
 		ctx.fillText(player2.score, canvas.width/2 +300, canvas.height/2 +50);
 	      
 	      index = 0;
-	      for(;index < maxBullets;index++){
+	      for(;index < maxBullets;index++){ if(bullet1[index].in = 1){
 			bullet1[index].Xpos += bullet1[index].Xspeed;
 			bullet1[index].Ypos += bullet1[index].Yspeed;
 		      
@@ -329,7 +341,7 @@
 				player1.score += 1;
 			}
 		      	if(bullet1[index].Xpos <= 5){
-				if(bullet1[index].bounces < maxBounces){
+				if(bullet1[index].bounces <= maxBounces){
 					bullet1[index].Xpos     =  5;
 					bullet1[index].Xspeed  *= -1;
 					bullet1[index].bounces +=  1;
@@ -343,7 +355,7 @@
 				}
 			}
 		      	if(bullet1[index].Xpos >= canvas.width-5){
-				if(bullet1[index].bounces < maxBounces){
+				if(bullet1[index].bounces <= maxBounces){
 					bullet1[index].Xpos     =  canvas.width-5;
 					bullet1[index].Xspeed *= -1;
 					bullet1[index].bounces += 1;
@@ -357,7 +369,7 @@
 				}
 			}
 		      	if(bullet1[index].Ypos <= 5){
-				if(bullet1[index].bounces < maxBounces){
+				if(bullet1[index].bounces <= maxBounces){
 					bullet1[index].Ypos     =  5;
 					bullet1[index].Yspeed  *= -1;
 					bullet1[index].bounces +=  1;
@@ -371,7 +383,7 @@
 				}
 			}
 		      	if(bullet1[index].Ypos >= canvas.height-5){
-				if(bullet1[index].bounces < maxBounces){
+				if(bullet1[index].bounces <= maxBounces){
 					bullet1[index].Ypos     =  canvas.height-5;
 					bullet1[index].Yspeed *= -1;
 					bullet1[index].bounces += 1;
@@ -390,9 +402,11 @@
         	        ctx.fillStyle = "red";
                 	ctx.fill();
 		        ctx.closePath();
-	      }
+		}
+		if(bullet1[index].bounces > maxBounces){bullet1[index].in = 0;}
+		}
 	      index = 0;
-	      for(;index < maxBullets;index++){
+	      for(;index < maxBullets;index++){ if(bullet2[index].in = 1){
 			bullet2[index].Xpos += bullet2[index].Xspeed;
 			bullet2[index].Ypos += bullet2[index].Yspeed;
 		      
@@ -404,7 +418,7 @@
 				player2.score += 1;
 			}
 		      	if(bullet2[index].Xpos <= 5){
-				if(bullet2[index].bounces < maxBounces){
+				if(bullet2[index].bounces <= maxBounces){
 					bullet2[index].Xpos     =  5;
 					bullet2[index].Xspeed  *= -1;
 					bullet2[index].bounces +=  1;
@@ -418,7 +432,7 @@
 				}
 			}
 		      	if(bullet2[index].Xpos >= canvas.width-5){
-				if(bullet2[index].bounces < maxBounces){
+				if(bullet2[index].bounces <= maxBounces){
 					bullet2[index].Xpos     =  canvas.width-5;
 					bullet2[index].Xspeed *= -1;
 					bullet2[index].bounces += 1;
@@ -432,7 +446,7 @@
 				}
 			}
 		      	if(bullet2[index].Ypos <= 5){
-				if(bullet2[index].bounces < maxBounces){
+				if(bullet2[index].bounces <= maxBounces){
 					bullet2[index].Ypos     =  5;
 					bullet2[index].Yspeed  *= -1;
 					bullet2[index].bounces +=  1;
@@ -446,7 +460,7 @@
 				}
 			}
 		      	if(bullet2[index].Ypos >= canvas.height-5){
-				if(bullet2[index].bounces < maxBounces){
+				if(bullet2[index].bounces <= maxBounces){
 					bullet2[index].Ypos     =  canvas.height-5;
 					bullet2[index].Yspeed *= -1;
 					bullet2[index].bounces += 1;
@@ -465,7 +479,9 @@
         	        ctx.fillStyle = "lime";
          	   	ctx.fill();
           	   	ctx.closePath();
-	      }
+		}
+		if(bullet2[index].bounces > maxBounces){bullet2[index].in = 0;}
+		}
 	      
 	      
 	      
