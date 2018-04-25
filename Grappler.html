@@ -83,7 +83,12 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
 	
+	document.addEventListener("click", getMousePos);
 	
+	function getMousePos(event) {
+		player.Xpos = event.clientX;
+		player.Ypos = event.clientY;
+	}
 	
 	
 	
