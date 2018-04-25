@@ -32,6 +32,43 @@
 		<SCRIPT LANGUAGE="JavaScript">
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
+			
+			var player;
+			var enemy = [];
+			var friendlyBullet = [];
+			var enemyBullet = [];
+			
+			var playerBulletNumber = 0;
+			var enemyBulletNumber = 0;
+			
+			var level = 0;
+			var levelMap = [[[]]];
+			
+			
+			
+			
+			player = {
+				Xpos:0,
+				Ypos:0,
+				Xspeed:0,
+				Yspeed:0,
+				left:0,
+				right:0,
+				jump:0,
+				health:3,
+				isDead:0,
+				hook:1,
+			}
+			player.hook = {
+				Xpos:0,
+				Ypos:0,
+				Xspeed:0,
+				Yspeed:0,
+				atached:0,
+				distance:0
+			}
+			
+			
       
       		
         
@@ -45,8 +82,15 @@ function draw() {
 		
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
-
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
 
 
