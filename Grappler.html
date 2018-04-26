@@ -33,6 +33,9 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
+			var cursorX = 0;
+			var cursorY = 0;
+			
 			var player;
 			var enemy = [];
 			var friendlyBullet = [];
@@ -83,11 +86,31 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
 	
+	
+	document.addEventListener("keydown", keyDownHandler, false);
+	document.addEventListener("keyup", keyUpHandler, false);
+				
+	function keyDownHandler(e) {
+		if(e.keyCode == 37){player.left = 1;}
+		if(e.keyCode == 39){player.right = 1;}
+		if(e.keyCode == 38 && player.jump == 0){player.jump = 1;}
+	}
+        function keyUpHandler(e) {
+		if(e.keyCode == 37){player.left = 0;}
+		if(e.keyCode == 39){player.right = 0;}
+		if(e.keyCode == 38){player.jump = 0;}
+	}
+	
+	if(player.left  == 1){player.Xpos -= 5;}
+	if(player.right == 1){player.Xpos += 5;}
+	
+	
+	
 	document.addEventListener("click", getMousePos);
 	
 	function getMousePos(event) {
-		player.Xpos = event.clientX - 10;
-		player.Ypos = event.clientY;
+		cursorX = event.clientX - 12;
+		cursorY = event.clientY;
 	}
 	
 	
