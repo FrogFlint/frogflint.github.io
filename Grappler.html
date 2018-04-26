@@ -106,11 +106,15 @@ function draw() {
 	
 	
 	
-	document.addEventListener("click", getMousePos);
+	document.addEventListener("click", shootHook);
 	
-	function getMousePos(event) {
+	function shootHook(event) {
 		cursorX = event.clientX - 12;
 		cursorY = event.clientY;
+		
+		player.hook.atached = 0;
+		player.hook.Xspeed = 10*(sin(cursorX - player.Xpos))
+		
 	}
 	
 	
