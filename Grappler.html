@@ -116,8 +116,10 @@ function draw() {
 		cursorY = event.clientY;
 		
 		player.hook.atached = 0;
-		player.hook.Xspeed = 10*(Math.sin(cursorX - player.Xpos));
-		player.hook.Yspeed = 10*(Math.cos(cursorY - player.Ypos));
+		player.hook.Xpos = player.Xpos;
+		player.hook.Ypos = player.Ypos;
+		player.hook.Xspeed = 10*(Math.sin(player.Xpos - cursorX));
+		player.hook.Yspeed = 10*(Math.cos(player.Ypos - cursorY));
 		
 	}
 	
