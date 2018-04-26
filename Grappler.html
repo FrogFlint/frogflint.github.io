@@ -57,7 +57,8 @@
 				Yspeed:0,
 				left:0,
 				right:0,
-				jump:0,
+				up:0,
+				down:0,
 				health:3,
 				isDead:0,
 				hook:1,
@@ -91,14 +92,16 @@ function draw() {
 	document.addEventListener("keyup", keyUpHandler, false);
 				
 	function keyDownHandler(e) {
-		if(e.keyCode == 37){player.left = 1;}
-		if(e.keyCode == 39){player.right = 1;}
-		if(e.keyCode == 38 && player.jump == 0){player.jump = 1;}
+		if(e.keyCode == 65){player.left = 1;}
+		if(e.keyCode == 68){player.right = 1;}
+		if(e.keyCode == 87 && player.up == 0){player.up = 1;}
+		if(e.keyCode == 83){player.down = 1;}
 	}
         function keyUpHandler(e) {
-		if(e.keyCode == 37){player.left = 0;}
-		if(e.keyCode == 39){player.right = 0;}
-		if(e.keyCode == 38){player.jump = 0;}
+		if(e.keyCode == 65){player.left = 0;}
+		if(e.keyCode == 68){player.right = 0;}
+		if(e.keyCode == 38){player.up = 0;}
+		if(e.keyCode == 83){player.down = 1;}
 	}
 	
 	if(player.left  == 1){player.Xpos -= 5;}
