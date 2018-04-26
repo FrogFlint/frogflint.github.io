@@ -86,7 +86,7 @@ function draw() {
 	document.addEventListener("click", getMousePos);
 	
 	function getMousePos(event) {
-		player.Xpos = event.clientX;
+		player.Xpos = event.clientX - 10;
 		player.Ypos = event.clientY;
 	}
 	
