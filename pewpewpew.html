@@ -184,15 +184,15 @@
 		player2.shooting = keyState[191];
 		player2.boost = keyState[190];
 	      
-	      if(player1.boost == true){player1.speed = 50;}
+	      if(player1.boost == 1){player1.speed = 50;}
 	      else{player1.speed = 5;}
 	      
-	      if(player2.boost == true){player2.speed = 50;}
+	      if(player2.boost == 1){player2.speed = 50;}
 	      else{player2.speed = 5;}
 	      
 	      
-	      if(player1.left == true){player1.angle += 0.06;}// 0.07
-	      if(player1.right == true){player1.angle -= 0.06;}
+	      if(player1.left == 1){player1.angle += 0.06;}// 0.07
+	      if(player1.right == 1){player1.angle -= 0.06;}
 	      if(player2.left == 1){player2.angle += 0.06;}
 	      if(player2.right == 1){player2.angle -= 0.06;}
 	      
