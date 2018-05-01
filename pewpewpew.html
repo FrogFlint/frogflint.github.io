@@ -108,8 +108,15 @@
 			bounces:0
 		}
 	}
-			
-        
+	
+	
+        var keyState = {};    
+	window.addEventListener('keydown',function(e){
+	    keyState[e.keyCode || e.which] = true;
+	},true);    
+	window.addEventListener('keyup',function(e){
+	    keyState[e.keyCode || e.which] = false;
+	},true);
         
         
       function draw() {
@@ -131,7 +138,7 @@
         
         
         
-        		document.addEventListener("keydown", keyDownHandler, false);
+        		/*document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
 				
@@ -162,17 +169,30 @@
 				if(e.keyCode == 38){player2.forwards = 0;}
 				if(e.keyCode == 191){player2.shooting = 0;}
 				if(e.keyCode == 190){player2.boost = 0;}
-			}
+			}*/
 	      
-	      if(player1.boost == 1){player1.speed = 50;}
+	      
+	      	player1.left = keyState[65];
+		player1.right = keyState[68];
+		player1.forwards = keyState[87];
+		player1.shooting = keyState[81];
+		kplayer1.boost = eyState[69];
+		
+		player2.left = keyState[37];
+		player2.right = keyState[39];
+		player2.forwards = keyState[38];
+		player2.shooting = keyState[191];
+		player2.boost = keyState[190];
+	      
+	      if(player1.boost == true){player1.speed = 50;}
 	      else{player1.speed = 5;}
 	      
-	      if(player2.boost == 1){player2.speed = 50;}
+	      if(player2.boost == true){player2.speed = 50;}
 	      else{player2.speed = 5;}
 	      
 	      
-	      if(player1.left == 1){player1.angle += 0.06;}// 0.07
-	      if(player1.right == 1){player1.angle -= 0.06;}
+	      if(player1.left == true){player1.angle += 0.06;}// 0.07
+	      if(player1.right == true){player1.angle -= 0.06;}
 	      if(player2.left == 1){player2.angle += 0.06;}
 	      if(player2.right == 1){player2.angle -= 0.06;}
 	      
