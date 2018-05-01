@@ -87,22 +87,28 @@ function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
 	
-	
-	document.addEventListener("keydown", keyDownHandler, false);
-	document.addEventListener("keyup", keyUpHandler, false);
+	var keyState = {};    
+	window.addEventListener('keydown',function(e){
+	    keyState[e.keyCode || e.which] = true;
+	},true);    
+	window.addEventListener('keyup',function(e){
+	    keyState[e.keyCode || e.which] = false;
+	},true);
+	//document.addEventListener("keydown", keyDownHandler, false);
+	//document.addEventListener("keyup", keyUpHandler, false);
 				
-	function keyDownHandler(e) {
-		if(e.keyCode == 65){player.left = 1;}
-		if(e.keyCode == 68){player.right = 1;}
-		if(e.keyCode == 87 && player.up == 0){player.up = 1;}
-		if(e.keyCode == 83){player.down = 1;}
-	}
-        function keyUpHandler(e) {
+	//function keyDownHandler(e) {
+		if(keyState[65]){player.left = 1;} else{player.left = 0;}
+		if(keyState[68]){player.right = 1;} else{player.right = 0;}
+		if(keyState[87] && player.up == 0){player.up = 1;} else{player.up = 0;}
+		if(keyState[83]){player.down = 1;} else{player.down = 1;}
+	//}
+        /*function keyUpHandler(e) {
 		if(e.keyCode == 65){player.left = 0;}
 		if(e.keyCode == 68){player.right = 0;}
 		if(e.keyCode == 38){player.up = 0;}
 		if(e.keyCode == 83){player.down = 1;}
-	}
+	}*/
 	
 	if(player.left  == 1){player.Xpos -= 5;}
 	if(player.right == 1){player.Xpos += 5;}
@@ -110,6 +116,9 @@ function draw() {
 	
 	
 	document.addEventListener("click", shootHook);
+	window.oncontextmenu = function () {
+  		alert('Right Click')
+	}
 	
 	function shootHook(event) {
 		cursorX = event.clientX - 12;
