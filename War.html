@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: gray;
+			background: white;
 			display: block;
 			margin: 0 auto;
 		}
@@ -26,7 +26,7 @@
 
 	<canvas id="myCanvas" width="1340" height="625">   </canvas>
 
-	<body style="background-color:red;">
+	<body style="background-color:gray;">
 		
 
 		<SCRIPT LANGUAGE="JavaScript">
@@ -40,6 +40,8 @@
 			var map = [[[]]];
 			var mapNumber = 0;
 			
+			var Xoffset = 200;
+			var Yoddset = 100;
 			var selectedColumn = 0;
 			
 			var index1 = 0;
@@ -75,6 +77,35 @@
 					}
 				}
 			}
+			
+			
+			
+			
+			function draw() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				ctx.beginPath();
+				ctx.rect(Xoffset, Yoffset, 555, 555);
+				ctx.fillStyle = "gray";
+				ctx.fill();
+				ctx.closePath();
+				
+				for(index1 = 0; index1 < boardWidth; index1++){
+					for(index2 = 0; index2 < boardHeight; index2++){
+						tile[index1][index2] = {
+							
+							ctx.beginPath();
+							ctx.rect(index1*50 + 5 + Xoffset, index2*50 + 5 + Yoffset, 50, 50);
+							ctx.fillStyle = "lightGray";
+							ctx.fill();
+							ctx.closePath();
+							
+						}
+					}
+				}
+				
+			}
+			
 			
 			
       
