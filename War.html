@@ -32,14 +32,49 @@
 		<SCRIPT LANGUAGE="JavaScript">
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
-      
-      
-      
-      
-      
-      
-      
-      
+			
+			var player1; //Human player
+			var player2; //Non-human player
+			
+			var tile = [[]];
+			var map = [[[]]];
+			var mapNumber = 0;
+			
+			var selectedColumn = 0;
+			
+			var index1 = 0;
+			var index2 = 0;
+			var boardWidth = 10;
+			var boardHeight = 10;
+			
+			
+			
+			
+			
+			player1 = {
+				money:0,
+				life:100,
+				wins:0
+			}
+			player2 = {
+				money:0,
+				life:100,
+				wins:0
+			}
+			
+			
+			
+			for(index1 = 0; index1 < boardWidth; index1++){
+				tile[index1] = [];
+				for(index2 = 0; index2 < boardHeight; index2++){
+					tile[index1][index2] = {
+						unit:"none",
+						team:"none",
+						unitNext:"none",
+						teamNext:"none"
+			
+			
+			
       
       		</SCRIPT>
 
