@@ -117,7 +117,8 @@ function draw() {
 	
 	document.addEventListener("click", shootHook);
 	window.oncontextmenu = function () {
-  		alert('Right Click')
+  		alert("Right Click");
+		return false;
 	}
 	
 	function shootHook(event) {
