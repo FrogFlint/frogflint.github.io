@@ -31,18 +31,18 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var frame = 0;
+			
+			var turn = 1;
+			
+			
+      			var tile = [[]];
       
       
       
-      var tile = [[]];
       
-      
-      
-      
-      var mod = function (n, m) {
-		  	var remain = n % m;
-		  	return Math.floor(remain >= 0 ? remain : remain + m);
+    			var mod = function (n, m) {
+		  		var remain = n % m;
+		  		return Math.floor(remain >= 0 ? remain : remain + m);
 			};
 			
 			
@@ -51,7 +51,11 @@
 				tile[index1] = [];
 				for(index2 = 0; index2 < 20; index2++){
 					
-					tile[index1][index2] = 0;
+					tile[index1][index2] = {
+						color:"none",   //none, 1, 2
+						groupFound:0,
+						groupEyes:0
+						
 				}
 			}
 			
@@ -63,35 +67,26 @@
 			function draw() {
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
         setTimeout(draw, 10);
 	}    
 	draw();
