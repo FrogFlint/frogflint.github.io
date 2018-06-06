@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>bvguhdrsjtkbgvieusdfbvudhb urdsfh guids hikjna</title>
+<title>The game of Go</title>
 </head>
 
 <body>
@@ -33,13 +33,15 @@
 			
 			
 			var turn = 1;
+			var lastX = 0;
+			var lastY = 0;
 			
 			
       			var tile = [[]];
-      
-      
-      
-      
+			
+			
+			
+			
     			var mod = function (n, m) {
 		  		var remain = n % m;
 		  		return Math.floor(remain >= 0 ? remain : remain + m);
@@ -80,16 +82,20 @@
 				
 				
 				
+				ctx.beginPath();
+				ctx.rect(300 + 15, 15 + 5, 200, 200);
+				ctx.fillStyle = "gold";
+				ctx.fill();
+				ctx.closePath();
 				
 				
 				
 				
 				
 				
-				
-        setTimeout(draw, 10);
-	}    
-	draw();
+        			setTimeout(draw, 10);
+			}
+			draw();
   
   
    		 </SCRIPT>
