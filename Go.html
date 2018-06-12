@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: black;
+			background: yellow;
 			display: block;
 			margin: 0 auto;
 		}
@@ -23,7 +23,7 @@
 
 	<canvas id="myCanvas" width="1350" height="625">   </canvas> //1350   625
 
-	<body style="background-color:red;">
+	<body style="background-color:black;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -81,13 +81,14 @@
 				
 				
 				
-				
 				ctx.beginPath();
+        			ctx.rect(100, 100, 35, 60);
+        			ctx.fillStyle = "red";
+        			ctx.fill();
+        			ctx.closePath();
+				
 				//ctx.rect(315, 20, 200, 200);
-				ctx.rect(100, 20, 100, 100);
-				ctx.fillStyle = "yellow";
-				ctx.fill();
-				ctx.closePath();
+				
 				
 				
 				
