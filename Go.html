@@ -21,7 +21,7 @@
 
 <body>
 
-	<canvas id="myCanvas" width="450" height="450">   </canvas> //1350   625
+	<canvas id="myCanvas" width="450" height="450"></canvas>
 
 	<body style="background-color:black;">
 
@@ -64,7 +64,7 @@
 				for(index2 = 0; index2 < boardSize; index2++){
 					
 					tile[index1][index2] = {
-						player:0,
+						player:1,
 						blob: 0,
 						safe:0
 					}
@@ -127,14 +127,14 @@
 					for(index2 = 0; index2 < boardSize; index2++){
 						
 						
-						if(tile[index1][index2].player > 0){
+						//if(tile[index1][index2].player > 0){
 							ctx.beginPath();
 							ctx.rect(index1*50, index2*50, 50, 50);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = "blue";}
 							if(tile[index1][index2].player == 2){ctx.fillStyle = "lime";}
 							ctx.fill();
 							ctx.closePath();
-						}
+						//}
 					}
 				}
 				
