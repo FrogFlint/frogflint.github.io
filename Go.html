@@ -129,7 +129,7 @@
 						
 						//if(tile[index1][index2].player > 0){
 							ctx.beginPath();
-							ctx.rect(index1*50, index2*50, 50, 50);
+							ctx.arc(index1*50 +25, index2*50 +25, 20, 0, Math.PI * 2);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = "blue";}
 							if(tile[index1][index2].player == 2){ctx.fillStyle = "lime";}
 							ctx.fill();
