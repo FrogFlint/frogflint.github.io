@@ -10,60 +10,60 @@
 		}
 		
 		canvas {
-			background: yellow;
+			background: black;
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
 
-<title>The game of Go</title>
+<title>bvguhdrsjtkbgvieusdfbvudhb urdsfh guids hikjna</title>
 </head>
 
 <body>
 
-	<canvas id="myCanvas" width="1350" height="625"></canvas>
+	<canvas id="myCanvas" width="1350" height="625">   </canvas> //1350   625
 
 	<body style="background-color:black;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
 			
-			var c = document.getElementById("myCanvas");
-			var ctx = c.getContext("2d");
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
 			
-			/*
-			var turn = 1;
-			var lastX = 0;
-			var lastY = 0;
-			*/
+			var frame = 0;
+			var width = 16;
+			var scroll = 0;
+			var selection = 0;
 			
-			var tile = [[]];
 			var index1 = 0;
 			var index2 = 0;
 			
+			var tile = [[]];
+			
+			//keys
+			var left = 0;
+			var right = 0;
+			var up = 0;
+			var down = 0;
+			var space = 0;
+			
+			var mod = function (n, m) {
+		  	var remain = n % m;
+		  	return Math.floor(remain >= 0 ? remain : remain + m);
+			};
 			
 			
-			/*
-    			var mod = function (n, m) {
-		  		var remain = n % m;
-		  		return Math.floor(remain >= 0 ? remain : remain + m);
-			};*/
 			
-			
-			
-			for(index1 = 0; index1 < 9; index1++){
+			for(index1 = 0; index1 < width; index1++){
 				tile[index1] = [];
-				for(index2 = 0; index2 < 9; index2++){
+				for(index2 = 0; index2 < 20; index2++){
 					
-					tile[index1][index2] = {
-						color:"none",   //none, 1, 2
-						checking:0,
-						safe:0
-					}
-						
+					tile[index1][index2] = 0;
 				}
 			}
 			
+			//tile[4][0] = 1;
 			
 			
 			
@@ -76,35 +76,73 @@
 				
 				
 				
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
+				function keyDownHandler(e) {
+					
+					if(e.keyCode == 37){left = 1;}
+					if(e.keyCode == 39){right = 1;}
+					if(e.keyCode == 40){down = 1;}
+					if(e.keyCode == 38){up = 1;}
+					if(e.keyCode == 32){space = 1;}
+					
+					
+				}
+				function keyUpHandler(e) {
+					
+					if(e.keyCode == 37){left = 0;}
+					if(e.keyCode == 39){right = 0;}
+					if(e.keyCode == 40){down = 0;}
+					if(e.keyCode == 38){up = 0;}
+					if(e.keyCode == 32){space = 0;}
+					
+					
+				}
 				
 				
 				
-				/*
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				// draw the squares
+				for(index1 = 0; index1 < width; index1++){
+					for(index2 = 0; index2 < 200; index2++){
+						
+						
+						
+						ctx.beginPath();
+						ctx.rect(index1*50 +300, (index2-scroll)*50 + 5, 50, 50);
+						if(tile[index1][index2] == 0){ctx.fillStyle = "blue";}
+						if(tile[index1][index2] == 1){ctx.fillStyle = "lime";}
+						ctx.fill();
+						ctx.closePath();
+						
+						//delay(200);
+					
+						
+					}
+				}
+				
+				
 				ctx.beginPath();
-				ctx.arc(95, 50, 40, 0, 2 * Math.PI);
-				ctx.stroke();
-				*/
-				
-				
-				ctx.beginPath();
-				ctx.rect(315, 20, 200, 200);
-				ctx.fillStyle = "red";
+				ctx.rect(selection*50 +300 + 15, 15 + 5 - scroll*50, 20, 20);
+				ctx.fillStyle = "black";
 				ctx.fill();
 				ctx.closePath();
 				
 				
-				
-				
-				
-				
-				
-				
-				
-        			setTimeout(draw, 10);
 			}
-			draw();
-  
-  
+			setInterval(draw, 100);
    		 </SCRIPT>
 
 	</body>
