@@ -32,8 +32,6 @@
 			var ctx = canvas.getContext("2d");
 			
 			var boardSize = 8;
-			var scroll = 0;
-			var selection = 0;
 			
 			var index1 = 0;
 			var index2 = 0;
@@ -120,7 +118,7 @@
 						
 						
 						ctx.beginPath();
-						ctx.rect(index1*50 +300, (index2-scroll)*50 + 5, 50, 50);
+						ctx.rect(index1*50 +300, (index2)*50 + 5, 50, 50);
 						if(tile[index1][index2] == 0){ctx.fillStyle = "blue";}
 						if(tile[index1][index2] == 1){ctx.fillStyle = "lime";}
 						ctx.fill();
@@ -133,11 +131,6 @@
 				}
 				
 				
-				ctx.beginPath();
-				ctx.rect(selection*50 +300 + 15, 15 + 5 - scroll*50, 20, 20);
-				ctx.fillStyle = "black";
-				ctx.fill();
-				ctx.closePath();
 				
 				
 			}
