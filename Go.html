@@ -66,7 +66,7 @@
 				for(index2 = 0; index2 < boardSize; index2++){
 					
 					tile[index1][index2] = {
-						player:1,
+						player:Math.floor(Math.random()*2+1),
 						blob: 0,
 						safe:0
 					}
@@ -133,7 +133,7 @@
 							ctx.beginPath();
 							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = teamColor.p1;}
-							if(tile[index1][index2].player == 2){ctx.fillStyle = teamCOlor.p2;}
+							if(tile[index1][index2].player == 2){ctx.fillStyle = teamColor.p2;}
 							ctx.fill();
 							ctx.closePath();
 						}
