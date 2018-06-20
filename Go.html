@@ -147,7 +147,7 @@
 					for(index2 = 0; index2 < boardSize; index2++){
 						
 						
-						if(tile[index1][index2].player != 0){
+						if(tile[index1][index2].stone != 0){
 							ctx.beginPath();
 							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
 							if(tile[index1][index2].stone == 1){ctx.fillStyle = teamColor.p1;}
