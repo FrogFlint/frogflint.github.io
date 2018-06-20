@@ -129,9 +129,9 @@
 					for(index2 = 0; index2 < boardSize; index2++){
 						
 						
-						//if(tile[index1][index2].player > 0){
+						if(tile[index1][index2].player != 0){
 							ctx.beginPath();
-							ctx.arc(index1*scale +25 +25, index2*scale +25, 20, 0, Math.PI * 2);
+							ctx.arc(index1*scale +25 +50, index2*scale +25, 20, 0, Math.PI * 2);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = "blue";}
 							if(tile[index1][index2].player == 2){ctx.fillStyle = "lime";}
 							ctx.fill();
