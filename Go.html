@@ -23,7 +23,7 @@
 
 	<canvas id="myCanvas" width="700" height="600"></canvas>
 
-	<body style="background-color:gray;">
+	<body style="background-color:brown;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			var boardSize = 13; //9,13,19
-			var scale = 50;    //50,40,30
+			var scale = 600/boardSize;
 			
 			var index1 = 0;
 			var index2 = 0;
@@ -131,7 +131,7 @@
 						
 						//if(tile[index1][index2].player > 0){
 							ctx.beginPath();
-							ctx.arc(index1*50 +25 +25, index2*50 +25, 20, 0, Math.PI * 2);
+							ctx.arc(index1*scale +25 +25, index2*scale +25, 20, 0, Math.PI * 2);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = "blue";}
 							if(tile[index1][index2].player == 2){ctx.fillStyle = "lime";}
 							ctx.fill();
