@@ -42,7 +42,7 @@
 			var tilesMarked = 0;
 			
 			var turn = 1;
-			var teamColor = {1:"black",2:"white"}
+			var teamColor = {p1:"black",p2:"white"}
 			
 			
 			//keys
@@ -132,8 +132,8 @@
 						if(tile[index1][index2].player != 0){
 							ctx.beginPath();
 							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
-							if(tile[index1][index2].player == 1){ctx.fillStyle = teamColor.1;}
-							if(tile[index1][index2].player == 2){ctx.fillStyle = teamCOlor.2;}
+							if(tile[index1][index2].player == 1){ctx.fillStyle = teamColor.p1;}
+							if(tile[index1][index2].player == 2){ctx.fillStyle = teamCOlor.p2;}
 							ctx.fill();
 							ctx.closePath();
 						}
