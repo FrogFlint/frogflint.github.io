@@ -21,7 +21,7 @@
 
 <body>
 
-	<canvas id="myCanvas" width="700" height="600"></canvas>
+	<canvas id="myCanvas" width="700" height="620"></canvas>
 
 	<body style="background-color:saddleBrown;">
 
@@ -131,7 +131,7 @@
 						
 						if(tile[index1][index2].player != 0){
 							ctx.beginPath();
-							ctx.arc(index1*scale +25 +50, index2*scale +25, 20, 0, Math.PI * 2);
+							ctx.arc(index1*scale +scale/2 +50, index2*scale +scale/2, 20, 0, Math.PI * 2);
 							if(tile[index1][index2].player == 1){ctx.fillStyle = "blue";}
 							if(tile[index1][index2].player == 2){ctx.fillStyle = "lime";}
 							ctx.fill();
