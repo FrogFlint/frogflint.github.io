@@ -41,6 +41,8 @@
 			var tile = [[]];
 			var tilesMarked = 0;
 			
+			var selected = {x:0,y:0}
+			
 			var turn = 1;
 			var teamColor = {p1:"black",p2:"white"}
 			
@@ -66,16 +68,32 @@
 				for(index2 = 0; index2 < boardSize; index2++){
 					
 					tile[index1][index2] = {
-						player:Math.floor(Math.random()*2+1),
+						stone:Math.floor(Math.random()*2+1),
 						blob: 0,
 						safe:0
 					}
 				}
 			}
 			
-			//tile[4][0] = 1;
 			
 			
+			
+			
+			
+			
+			document.addEventListener("click", addStone);
+			
+			function addStone() {
+				
+				selected.x = Math.floor(event.clientX - 50)/50;
+				selected.y = Math.floor(event.clientY - 10)/50;
+				
+				if(tile[selected.x][selected.y].stone == 0){tile[selected.x][selected.y].stone = turn;}
+				
+				
+				
+				
+			}
 			
 			
 			
@@ -132,8 +150,8 @@
 						if(tile[index1][index2].player != 0){
 							ctx.beginPath();
 							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
-							if(tile[index1][index2].player == 1){ctx.fillStyle = teamColor.p1;}
-							if(tile[index1][index2].player == 2){ctx.fillStyle = teamColor.p2;}
+							if(tile[index1][index2].stone == 1){ctx.fillStyle = teamColor.p1;}
+							if(tile[index1][index2].stone == 2){ctx.fillStyle = teamColor.p2;}
 							ctx.fill();
 							ctx.closePath();
 						}
