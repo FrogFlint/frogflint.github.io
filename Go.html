@@ -86,8 +86,10 @@
 			function getMousePos(canvas, evt) {
     				var rect = canvas.getBoundingClientRect();
 				return {
-			      x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
-			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
+			      //x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
+			      //y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
+				x: evt.clientX - rect.left,
+      				y: evt.clientY - rect.top
 			   };
 			}
 			
@@ -128,7 +130,9 @@
 				
 				function addStone(canvas, evt) {
 					
-					selected = getMousePos(canvas, evt);
+					var selected = getMousePos(canvas, evt);
+					ctx.fillStyle = "#000000";
+    					ctx.fillRect (pos.x, pos.y, 4, 4);
 					
 					if(tile[selected.x][selected.y].stone == 0){
 						tile[selected.x][selected.y].stone = 1;
