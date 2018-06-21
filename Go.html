@@ -126,8 +126,8 @@
 				
 				function addStone() {
 					
-					selected.x = Math.floor(((event.clientX - offsetX) - 50)/scale);
-					selected.y = Math.floor(((event.clientY - offsetY) - 10)/scale);
+					selected.x = Math.floor(((event.clientX /*- offsetX*/) - 50)/scale);
+					selected.y = Math.floor(((event.clientY /*- offsetY*/) - 10)/scale);
 					
 					if(tile[selected.x][selected.y].stone == 0){
 						tile[selected.x][selected.y].stone = 1;
