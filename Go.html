@@ -120,7 +120,7 @@
 					return false;
 				}
 				
-				function addStone(canvas, evt) {
+				function addStone(canvas, event) {
 					var rect = canvas.getBoundingClientRect();
 					
 					selected.x = Math.floor(((event.clientX - rect.left) - 50)/scale);
