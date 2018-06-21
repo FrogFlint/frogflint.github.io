@@ -101,7 +101,9 @@
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
-				
+				var selected = getMousePos(canvas, evt);
+				ctx.fillStyle = "#000000";
+    				ctx.fillRect (selected.x, selected.y, 4, 4);
 				
 				
 				
@@ -130,9 +132,7 @@
 				
 				function addStone(canvas, evt) {
 					
-					var selected = getMousePos(canvas, evt);
-					ctx.fillStyle = "#000000";
-    					ctx.fillRect (selected.x, selected.y, 4, 4);
+					
 					/*
 					if(tile[selected.x][selected.y].stone == 0){
 						tile[selected.x][selected.y].stone = 1;
