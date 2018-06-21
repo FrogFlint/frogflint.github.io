@@ -120,10 +120,11 @@
 					return false;
 				}
 				
-				function addStone() {
+				function addStone(canvas, evt) {
+					var rect = canvas.getBoundingClientRect();
 					
-					selected.x = Math.floor(((event.clientX /*- offsetX*/) - 50)/scale);
-					selected.y = Math.floor(((event.clientY /*- offsetY*/) - 10)/scale);
+					selected.x = Math.floor(((event.clientX - rect.left) - 50)/scale);
+					selected.y = Math.floor(((event.clientY - rect.top) - 10)/scale);
 					
 					if(tile[selected.x][selected.y].stone == 0){
 						tile[selected.x][selected.y].stone = 1;
