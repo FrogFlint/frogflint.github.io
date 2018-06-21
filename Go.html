@@ -89,8 +89,8 @@
 			function getMousePos(canvas, evt) {
 			    var rect = canvas.getBoundingClientRect();
 			    return {
-			      x: evt.clientX - rect.left,
-			      y: evt.clientY - rect.top
+			      x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
+			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
 			    };
 			}
 			
@@ -98,10 +98,10 @@
 			function addStone(evt) {
 				
 				selected = getMousePos(canvas, evt);
-				
+				/*
 				if(tile[selected.x][selected.y].stone == 0){
 					tile[selected.x][selected.y].stone = 1;
-				}
+				}*/
 				teamColor.p1 = "lime";
 				
 			}
