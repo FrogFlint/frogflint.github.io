@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var boardSize = 9; //9,13,19
+			var boardSize = 5; //9,13,19
 			var scale = 600/boardSize;
 			
 			
@@ -78,7 +78,6 @@
 				}
 			}
 			
-			tile[3][5].stone = 1;
 			
 			
 			
@@ -156,6 +155,7 @@
 				ctx.beginPath();
 				ctx.fillStyle = teamColor[turn];
 				ctx.fillRect(20, 200, 10, 220);
+				ctx.fillRect(670, 200, 10, 220);
 				ctx.fill();
 				ctx.closePath();
 				
