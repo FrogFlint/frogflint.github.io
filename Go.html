@@ -46,11 +46,9 @@
 			
 			
 			var turn = 1;
-			var teamColor = {p1:"black",p2:"white"}
+			var teamColor = [0,"black","white"]
 			
 			
-			//x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
-			//y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
 			
 			//keys
 			var left = 0;
@@ -154,6 +152,15 @@
 				
 				
 				
+				
+				ctx.beginPath();
+				ctx.fillStyle = teamColor[turn];
+				ctx.fillRect(10, 10, 30, 680);
+				ctx.fill();
+				ctx.closePath();
+				
+				
+				
 				// draw the squares
 				for(index1 = 0; index1 < boardSize; index1++){
 					for(index2 = 0; index2 < boardSize; index2++){
@@ -162,8 +169,7 @@
 						if(tile[index1][index2].stone != 0){
 							ctx.beginPath();
 							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
-							if(tile[index1][index2].stone == 1){ctx.fillStyle = teamColor.p1;}
-							if(tile[index1][index2].stone == 2){ctx.fillStyle = teamColor.p2;}
+							ctx.fillStyle = teamColor[tile[index1][index2].stone];
 							ctx.fill();
 							ctx.closePath();
 						}
