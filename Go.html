@@ -112,7 +112,7 @@
 					  	tile[selected.x - 1][selected.y].blob == 0){
 						tile[selected.x - 1][selected.y].blob = 1;
 						tilesMarked += 1;}
-					ifselected.y < boardSize - 1 &&
+					if(selected.y < boardSize - 1 &&
 					   	(tile[selected.x][selected.y].stone + tile[selected.x][selected.y + 1].stone == 3 &&
 					  	tile[selected.x][selected.y + 1].blob == 0){
 						tile[selected.x][selected.y + 1].blob = 1;
