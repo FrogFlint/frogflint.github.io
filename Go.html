@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var boardSize = 19; //9,13,19
+			var boardSize = 9; //9,13,19
 			var scale = 600/boardSize;
 			
 			
@@ -96,6 +96,7 @@
 				
 				selected = getMousePos(canvas, evt);
 				
+				if(selected.x >= 0 && selected.x < boardSize && selected.y >= 0 && selected.y < boardSize){
 				if(tile[selected.x][selected.y].stone == 0){
 					tile[selected.x][selected.y].stone = turn;
 					
@@ -124,7 +125,7 @@
 					
 					
 					turn = turn % 2 + 1;
-				}
+				}}
 				
 			}
 			
