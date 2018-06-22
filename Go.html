@@ -41,6 +41,7 @@
 			
 			var tile = [[]];
 			var tilesMarked = 0;
+			var blobCheck = 0;
 			
 			var selected = {x:0,y:0}
 			
@@ -123,6 +124,8 @@
 						tile[selected.x][selected.y - 1].blob = 1;
 						tilesMarked += 1;}
 					
+					blobCheck = 0;
+					
 					while(tilesMarked > 0){
 						tilesMarked = 0;
 						
@@ -155,7 +158,39 @@
 								}
 							}
 						}
+						if(tilesMarked > 0){blobCheck = 1;}
 					}
+					
+					if(blobCheck == 1){
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+								
+								if(index1 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
+								   tile[index1+1][index2].blob == 1){
+									tile[index1+1][index2].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index1 > 0 && tile[index1][index2].stone == 0 &&
+								   tile[index1-1][index2].blob == 1){
+									tile[index1-1][index2].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index2 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
+								   tile[index1][index2+1].blob == 1){
+									tile[index1][index2+1].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index2 > 0 && tile[index1][index2].stone == 0 &&
+								   tile[index1][index2-1].blob == 1){
+									tile[index1][index2-1].safe = 1;
+									tilesMarked += 1;
+								}
+							}
+						}
+					
+					
+					
+					
 					
 					
 					
