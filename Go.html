@@ -189,7 +189,50 @@
 						}
 					}
 					
+					while(tilesMarked > 0){
+						tilesMarked = 0;
+						
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+								
+								if(index1 < (boardSize - 1) && tile[index1][index2].stone == tile[index1+1][index2].stone &&
+								   tile[index1  ][index2].safe == 1 &&
+								   tile[index1+1][index2].safe == 0){
+									tile[index1+1][index2].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index1 > 0 && tile[index1][index2].stone == tile[index1-1][index2].stone &&
+								   tile[index1  ][index2].safe == 1 &&
+								   tile[index1-1][index2].safe == 0){
+									tile[index1-1][index2].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index2 < (boardSize - 1) && tile[index1][index2].stone == tile[index1][index2+1].stone &&
+								   tile[index1][index2  ].safe == 1 &&
+								   tile[index1][index2+1].safe == 0){
+									tile[index1][index2+1].safe = 1;
+									tilesMarked += 1;
+								}
+								if(index2 > 0 && tile[index1][index2].stone == tile[index1][index2-1].stone &&
+								   tile[index1][index2  ].safe == 1 &&
+								   tile[index1][index2-1].safe == 0){
+									tile[index1][index2-1].safe = 1;
+									tilesMarked += 1;
+								}
+							}
+						}
+					}
 					
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+							
+							if(tile[index1][index2].blob == 1 && tile[index1][index2].safe == 0){
+								tile[index1][index2].stone = 0;
+							}
+							tile[index1][index2].blob = 0;
+							tile[index1][index2].safe = 0;
+						}
+					}
 					
 					
 					
