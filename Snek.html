@@ -10,28 +10,55 @@
 		}
 		
 		canvas {
-			background: black;
+			background: gray;
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
 
-<title>Territory wars</title>
+<title>Snek</title>
 </head>
 
 <body>
-
-	<canvas id="myCanvas" width="1350" height="625">   </canvas>
-
-	<body style="background-color:black;">
-
+	
+	<canvas id="myCanvas" width="700" height="620">   </canvas>
+	
+	<body style="background-color:gray;">
+		
 		<SCRIPT LANGUAGE="JavaScript">
-    
+			
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
 			
+			var temp1 = 0;
+			var temp2 = 0;
+			
+			
+			var scale = 40;
+			var boardSize = {x:Math.floor(canvas.width/scale),y:Math.floor(canvas.height/scale)}
+			
+			var frame = 0;
+			var speed = 7;
+			
+			var score = 1;
+			var highScore = getCookie("Highscore");
+			//if(!(highScore > 0){highScore = 0;}
+			
+			var head = {
+				x:0,
+				y:0,
+				direction:"",
+				lastDirection:"",
+				dead:false
+			}
+			var tailCount = 0;
+			var foodCount = 0;
+			
 			var tile = [[]];
+			var index1 = 0;
+			var index2 = 0;
+			
 			
 			
 			
@@ -39,6 +66,16 @@
 			//========================================================================
 			
 			
+			for(index1 = 0; index1 < boardSize.x; index1++){
+				tile[index1] = [];
+				for(index2 = 0; index2 < boardSize.x; index2++){
+					
+					tile[index1][index2] = {
+						tail:0,
+						food:false
+					}
+				}
+			}
 			
 			
 			
@@ -48,59 +85,171 @@
 			
 			
 			
-		
+			
+			
+			
+			
+			
+			
+			
+			
+			function setCookie(name, value, days) {
+				var d = new Date;
+				d.setTime(d.getTime() + 24*60*60*1000*days);
+				document.cookie = name + "=" + value + ";path=/;expires=" + d.toGMTString();
+			}
+			
+			function getCookie(name) {
+				var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+				return v ? v[2] : null;
+			}
+			
+			function deleteCookie(name) { setCookie(name, '', -1); }
+			
+			
+			
+			
+			
 			//========================================================================
 			function draw() {
-				
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          
-				//document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
-				
-				//function keyDownHandler(e) {}
-        			//function keyUpHandler(e) {}
-        
+			
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
+				document.addEventListener("keydown", keyDownHandler, false);
 				
-				
-        
+				function keyDownHandler(e) {
+					if((e.keyCode == 87 || e.keyCode == 38) && head.lastDirection != "down" ){head.direction = "up";}
+					if((e.keyCode == 83 || e.keyCode == 40) && head.lastDirection != "up"   ){head.direction = "down";}
+					if((e.keyCode == 65 || e.keyCode == 37) && head.lastDirection != "right"){head.direction = "left";}
+					if((e.keyCode == 68 || e.keyCode == 39) && head.lastDirection != "left" ){head.direction = "right";}
+				}
 				
 				
 				
-				/*
-				index1 = 0;
-				while(index1 <= index1Max){
-					index2 = 0;
-					while(index2 <= index2Max){
+				
+				frame = (frame + 1) % speed;
+				if(frame == 0 && head.dead == false){
+					if(head.direction == "up"   ){head.y --;}
+					if(head.direction == "down" ){head.y ++;}
+					if(head.direction == "left" ){head.x --;}
+					if(head.direction == "right"){head.x ++;}
+					head.lastDirection = head.direction;
+				}
+				
+				if(head.x < 0
+				|| head.y < 0
+				|| head.x >= boardSize.x
+				|| head.y >= boardSize.y
+				|| (tile[head.x][head.y].tail > 0 && head.direction != "" && frame == 0)
+				){
+					head.dead = true;
+					head.direction = "";
+				}
+				
+				
+				
+				
+				if(head.dead == false){
+					if(tile[head.x][head.y].food == true){tile[head.x][head.y].food = false; score ++;}
+					tile[head.x][head.y].tail = (score + 1);
+				}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				//==============================================================================================================
+				
+				tailCount = 0;
+				foodCount = 0;
+				
+				for(index1 = 0;index1 < boardSize.x;index1 ++){
+					for(index2 = 0;index2 < boardSize.y;index2 ++){
 						
-						tile[index1][index2].color = tile[index1][index2].nextColor;
+						
+						if (tile[index1][index2].tail > 0){if(frame == 0){tile[index1][index2].tail --;} tailCount++;}
+						if (tile[index1][index2].food == true){
+							foodCount ++;
+							if(head.dead == true){tile[index1][index2].food = false;}
+						}
+						
+						
+						
 						
 						ctx.beginPath();
-						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
-						ctx.fillStyle = tile[index1][index2].color;
+						ctx.rect(index1*scale, index2*scale, scale, scale);
+						
+						ctx.fillStyle = "black";
+						if(head.x == index1 && head.y == index2 && head.dead == false){ctx.fillStyle = "#00ff00";}
+						else if(tile[index1][index2].tail > 0){ctx.fillStyle = "#00EF00";
+							/*if(score < 20){}*/}
+						else if(tile[index1][index2].food == true){ctx.fillStyle = "#FF0000";}
+							
+							
 						ctx.fill();
 						ctx.closePath();
 						
-						index2 += 1;
 					}
-					index1 += 1;
+					
 				}
-        */
-        
-        
-        
-        
-        
-        
-        
-        
-        
-			}
-			setInterval(draw, speed);
+				
+				while(foodCount == 0){
+					temp1 = Math.floor(Math.random() * boardSize.x);
+					temp2 = Math.floor(Math.random() * boardSize.y);
+					if(tile[temp1][temp2].tail == 0 && !(temp1 == head.x && temp2 == head.y)){
+						tile[temp1][temp2].food = true;
+						foodCount++;
+					}
+				}
+				
+				
+				
+				
+				if(head.dead == true && tailCount == 0){
+					head.dead = false;
+					if(score > highScore){highScore = score;}
+					setCookie('Highscore',highScore,10);
+					score = 1;
+					
+					head.x = 0;
+					head.y = 0;
+					head.direction = "";
+				}
+				
+				
+				
+				
+				
+				
+				
+				ctx.font = "15px Arial";
+		    	ctx.fillStyle = "#ffffff";
+		    	ctx.textAlign = "left";
+				ctx.fillText("score: " + score, 10, canvas.height - 25);
+		    	ctx.textAlign = "right";
+				ctx.fillText("Highscore: " + highScore, canvas.width - 30, canvas.height - 25);
+				
+				
+				
+				
+				
+				
+				
+       			setTimeout(draw, 10);
+			}    
+			draw();
+			
 		</SCRIPT>
-
+		
 	</body>
-
+	
 </html>
