@@ -104,7 +104,6 @@
 				return v ? v[2] : null;
 			}
 			
-			function deleteCookie(name) { setCookie(name, '', -1); }
 			
 			
 			
@@ -190,8 +189,8 @@
 						
 						ctx.fillStyle = "black";
 						if(head.x == index1 && head.y == index2 && head.dead == false){ctx.fillStyle = "#00ff00";}
-						else if(tile[index1][index2].tail > 0){ctx.fillStyle = "#00EF00";
-							/*if(score < 20){}*/}
+						else if(tile[index1][index2].tail > 0){ctx.fillStyle = "#00" + (250 - 10*(score - tile[index1][index2].tail)).toString(16) + "00";
+							if(score > 18){ctx.fillStyle = "#00" + (250 - (Math.round(180/score))*(score - tile[index1][index2].tail)).toString(16) + "00";}}
 						else if(tile[index1][index2].food == true){ctx.fillStyle = "#FF0000";}
 							
 							
