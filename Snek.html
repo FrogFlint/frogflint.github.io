@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: gray;
+			background: black;
 			display: block;
 			margin: 0 auto;
 		}
@@ -21,9 +21,9 @@
 
 <body>
 	
-	<canvas id="myCanvas" width="700" height="620">   </canvas>
+	<canvas id="myCanvas" width="710" height="630">   </canvas>
 	
-	<body style="background-color:gray;">
+	<body style="background-color:black;">
 		
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -36,7 +36,7 @@
 			
 			
 			var scale = 20;
-			var boardSize = {x:Math.floor(canvas.width/scale),y:Math.floor(canvas.height/scale)}
+			var boardSize = {x:Math.floor((canvas.width-10)/scale),y:Math.floor((canvas.height-30)/scale)}
 			
 			var frame = 0;
 			var speed = 4;
@@ -168,6 +168,15 @@
 				
 				//==============================================================================================================
 				
+				ctx.beginPath();
+				ctx.rect(0, 0, 710, 610);
+				ctx.fillStyle = "darkGray";
+				ctx.fill();
+				ctx.closePath();
+				
+				
+				
+				
 				tailCount = 0;
 				foodCount = 0;
 				
@@ -185,7 +194,7 @@
 						
 						
 						ctx.beginPath();
-						ctx.rect(index1*scale, index2*scale, scale, scale);
+						ctx.rect(index1*scale + 5, index2*scale + 5, scale, scale);
 						
 						ctx.fillStyle = "black";
 						if(head.x == index1 && head.y == index2 && head.dead == false){ctx.fillStyle = "#00ff00";}
@@ -233,9 +242,9 @@
 				ctx.font = "15px Arial";
 		    	ctx.fillStyle = "#ffffff";
 		    	ctx.textAlign = "left";
-				ctx.fillText("score: " + score, 10, canvas.height - 25);
+				ctx.fillText("Score: " + score, 10, canvas.height - 5);
 		    	ctx.textAlign = "right";
-				ctx.fillText("Highscore: " + highScore, canvas.width - 30, canvas.height - 25);
+				ctx.fillText("Highscore: " + highScore, canvas.width - 30, canvas.height - 5);
 				
 				
 				
