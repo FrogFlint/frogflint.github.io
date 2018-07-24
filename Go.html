@@ -53,6 +53,8 @@
 			var turn = 1;
 			var teamColor = [0,"black","white"]
 			
+			var winner = 0;
+			var score = ["",0,0]
 			
 			
 			//keys
@@ -78,7 +80,10 @@
 					tile[index1][index2] = {
 						stone: 0,
 						blob: 0,
-						safe:0
+						safe:0,
+						
+						scoreBlob1:0,
+						scoreBlob2:0
 					}
 				}
 			}
@@ -386,6 +391,80 @@
 					turn = turn % 2 + 1;
 				}
 				
+			}
+			
+			function countScore() {
+				
+				for(index1 = 0; index1 < boardSize; index1++){
+					for(index2 = 0; index2 < boardSize; index2++){
+						tile[index1][index2].scoreBlob1 = 0;
+						tile[index1][index2].scoreBlob2 = 0;
+						if(tile[index1][index2].stone == 1){tile[index1][index2].scoreBlob1 = 1;}
+						if(tile[index1][index2].stone == 2){tile[index1][index2].scoreBlob2 = 1;}
+					}
+				}
+				
+				
+				
+				tilesMarked = 1; 
+				
+				while(tilesMarked > 0){
+					tilesMarked = 0;
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+							
+							if(tile[index1][index2].stone == 0){
+								if(tile[index1+1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
+									tile[index1][index2].scoreBlob1 = 1;
+									tilesMarked ++;
+								}
+								if(tile[index1-1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
+									tile[index1][index2].scoreBlob1 = 1;
+									tilesMarked ++;
+								}
+								if(tile[index1][index2+1].scoreBlob1 > tile[index1][index2].scoreBlob1){
+									tile[index1][index2].scoreBlob1 = 1;
+									tilesMarked ++;
+								}
+								if(tile[index1][index2-1].scoreBlob1 > tile[index1][index2].scoreBlob1){
+									tile[index1][index2].scoreBlob1 = 1;
+									tilesMarked ++;
+								}
+								//======================================================================
+								if(tile[index1+1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob2 = 1;
+									tilesMarked ++;
+								}
+								if(tile[index1-1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob1 = 2;
+									tilesMarked ++;
+								}
+								if(tile[index1][index2+1].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob1 = 2;
+									tilesMarked ++;
+								}
+								if(tile[index1][index2-1].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob1 = 2;
+									tilesMarked ++;
+								}
+							}
+						}
+					}
+				}
+				score[1] = 0;
+				score[2] = 0;
+				for(index1 = 0; index1 < boardSize; index1++){
+					for(index2 = 0; index2 < boardSize; index2++){
+						
+						if(tile[index1][index2].scoreBlob1 + tile[index1][index2].scoreBlob2 == 1){
+							score[1] += tile[index1][index2].scoreBlob1;
+							score[2] += tile[index1][index2].scoreBlob2;
+						}
+					}
+				}
+				if (score[1] > score[2]){winner = 1;}
+				if (score[1] < score[2]){winner = 2;}
+				if (score[1] = score[2]){winner = 3;}
 			}
 			
 			
