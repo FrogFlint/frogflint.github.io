@@ -43,7 +43,7 @@
 			var tilesMarked = 0;
 			var blobCheck = 0;
 			
-			var selected = {x:0,y:0}
+			var selected = {x:0,y:0};
 			
 			
 			var lastTile = [[]];
@@ -51,18 +51,21 @@
 			
 			
 			var turn = 1;
-			var teamColor = [0,"black","white"]
+			var teamColor = ["","Black","White"];
 			
 			var winner = 0;
-			var score = ["",0,0]
+			var score = ["",0,0];
+			
+			var box = [0,0]
 			
 			
 			//keys
+			/*
 			var left = 0;
 			var right = 0;
 			var up = 0;
 			var down = 0;
-			var space = 0;
+			var space = 0;*/
 			
 			
 			/*
@@ -117,7 +120,8 @@
 				
 				
 				
-				if(tile[selected.x][selected.y].stone == 0){
+				if(selected.x >= 0 && selected.x < boardSize && selected.y >= 0 && selected.y < boardSize
+				&& tile[selected.x][selected.y].stone == 0  &&  winner == 0){
 					
 					//save board
 					for(index1 = 0; index1 < boardSize; index1++){
@@ -414,37 +418,37 @@
 						for(index2 = 0; index2 < boardSize; index2++){
 							
 							if(tile[index1][index2].stone == 0){
-								if(tile[index1+1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
+								if(index1 < (boardSize - 1) && tile[index1+1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
 									tile[index1][index2].scoreBlob1 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1-1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
+								if(index1 > 0 && tile[index1-1][index2].scoreBlob1 > tile[index1][index2].scoreBlob1){
 									tile[index1][index2].scoreBlob1 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1][index2+1].scoreBlob1 > tile[index1][index2].scoreBlob1){
+								if(index2 < (boardSize - 1) && tile[index1][index2+1].scoreBlob1 > tile[index1][index2].scoreBlob1){
 									tile[index1][index2].scoreBlob1 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1][index2-1].scoreBlob1 > tile[index1][index2].scoreBlob1){
+								if(index2 > 0 && tile[index1][index2-1].scoreBlob1 > tile[index1][index2].scoreBlob1){
 									tile[index1][index2].scoreBlob1 = 1;
 									tilesMarked ++;
 								}
 								//======================================================================
-								if(tile[index1+1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
+								if(index1 < (boardSize - 1) && tile[index1+1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
 									tile[index1][index2].scoreBlob2 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1-1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
-									tile[index1][index2].scoreBlob1 = 2;
+								if(index1 > 0 && tile[index1-1][index2].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob2 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1][index2+1].scoreBlob2 > tile[index1][index2].scoreBlob2){
-									tile[index1][index2].scoreBlob1 = 2;
+								if(index2 < (boardSize - 1) && tile[index1][index2+1].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob2 = 1;
 									tilesMarked ++;
 								}
-								if(tile[index1][index2-1].scoreBlob2 > tile[index1][index2].scoreBlob2){
-									tile[index1][index2].scoreBlob1 = 2;
+								if(index2 > 0 && tile[index1][index2-1].scoreBlob2 > tile[index1][index2].scoreBlob2){
+									tile[index1][index2].scoreBlob2 = 1;
 									tilesMarked ++;
 								}
 							}
@@ -462,10 +466,10 @@
 						}
 					}
 				}
-				if(score[1] + score[2] > 0.9 * (boardSize^2){
+				if(score[1] + score[2] > 0.9 * (boardSize*boardSize)){
 					if (score[1] > score[2]){winner = 1;}
 					if (score[1] < score[2]){winner = 2;}
-					if (score[1] = score[2]){winner = 3;}
+					if (score[1] ==score[2]){winner = 3;}
 				}
 			
 			}
@@ -484,6 +488,8 @@
 				document.addEventListener("keydown", keyDownHandler, false);
 				//document.addEventListener("keyup", keyUpHandler, false);
 				function keyDownHandler(e) {
+				
+					if(e.keyCode == 87){countScore();}
 					
 					if(e.keyCode == 85 && undid == 0){
 						for(index1 = 0; index1 < boardSize; index1++){
@@ -542,7 +548,7 @@
 				
 				
 				
-				// draw the squares
+				// draw the stones
 				for(index1 = 0; index1 < boardSize; index1++){
 					for(index2 = 0; index2 < boardSize; index2++){
 						
@@ -555,6 +561,32 @@
 							ctx.closePath();
 						}
 					}
+				}
+				
+				
+				// when game is over
+				if(winner > 0 && winner < 3){
+					
+					box[1] = (200 + (20 * teamColor[winner].length));
+					box[2] = (50 + 20 * (score[winner].toString().length + score[3 - winner].toString().length));
+					
+					ctx.fillStyle = teamColor[3 - winner];
+					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
+					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
+					
+					ctx.font = "70px Arial";
+		    		ctx.fillStyle = teamColor[winner];
+		    		ctx.textAlign = "center";
+					ctx.fillText(teamColor[winner] + " Team wins!", canvas.width/2, 200);
+					ctx.fillText(score[winner] + " - " + score[3 - winner], canvas.width/2, 300);
+				}
+				if(winner == 3){
+				
+					ctx.font = "70px Arial";
+		    		ctx.fillStyle = "Black";
+		    		ctx.textAlign = "center";
+					ctx.fillText("It's a Tie!", canvas.width/2, 200);
+					ctx.fillText(score[1] + " - " + score[2], canvas.width/2, 300);
 				}
 				
 				
