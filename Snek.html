@@ -225,7 +225,7 @@
 				if(head.dead == true && tailCount == 0){
 					head.dead = false;
 					if(score > highScore){highScore = score;}
-					setCookie('Highscore',highScore,10);
+					setCookie('Highscore',highScore,365);
 					score = 1;
 					
 					head.x = 0;
