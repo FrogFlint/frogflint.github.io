@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: blue;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Survive</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="650"></canvas>
+
+	<body style="background-color:blue;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var speed = 3;
+			
+			var player = {
+				Xpos:canvas.width/2,
+				Ypos:canvas.height/2,
+				up:0,
+				down:0,
+				left:0,
+				right:0,
+				score:0,
+				highscore:getCookie("Highscore"),
+				dead:1,
+				start:1
+			}
+			if(!(player.highscore > 0)){player.highscore = 0;}
+			
+			var projectile = [];
+			var index = 0;
+			var indexMax = 100;
+			var nextProjectile = 0;
+			var frame = 0;
+			
+			
+			
+			for(index = 0; index < indexMax; index++){
+				projectile[index] = {
+					Xpos:-100,
+					Ypos:0,
+					direction:0,
+					split:0
+				}
+			}
+			
+			
+			
+			function setCookie(name, value, days) {
+				var d = new Date;
+				d.setTime(d.getTime() + 24*60*60*1000*days);
+				document.cookie = name + "=" + value + ";path=/;expires=" + d.toGMTString();
+			}
+			
+			function getCookie(name) {
+				var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+				return v ? v[2] : null;
+			}
+			
+			
+			
+			
+			function draw() {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				window.oncontextmenu = function(){return false;}
+				
+				
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
+				
+				function keyDownHandler(e) {
+					if((e.keyCode == 87 || e.keyCode == 38) && player.up    == 0){player.up    = 1;}
+					if((e.keyCode == 83 || e.keyCode == 40) && player.down  == 0){player.down  = 1;}
+					if((e.keyCode == 65 || e.keyCode == 37) && player.left  == 0){player.left  = 1;}
+					if((e.keyCode == 68 || e.keyCode == 39) && player.right == 0){player.right = 1;}
+					
+					if(e.keyCode == 32 && player.dead == 1){
+						player.dead = 0;
+						player.start = 0;
+						player.score = 0;
+						player.Xpos = canvas.width/2;
+						player.Ypos = canvas.height/2;
+						for(index = 0; index < indexMax; index++){
+							projectile[index] = {
+								Xpos:-100,
+								Ypos:0,
+								direction:0,
+								split:0
+							}
+						}
+					}
+				}
+				function keyUpHandler(e) {
+					if(e.keyCode == 87 || e.keyCode == 38){player.up = 0;}
+					if(e.keyCode == 83 || e.keyCode == 40){player.down = 0;}
+					if(e.keyCode == 65 || e.keyCode == 37){player.left = 0;}
+					if(e.keyCode == 68 || e.keyCode == 39){player.right = 0;}
+				}
+				
+				
+				
+				
+				
+				
+				
+				//move projectiles
+				for(index = 0; index < indexMax; index++){
+					projectile[index].Xpos += Math.sin(projectile[index].direction) * speed;
+					projectile[index].Ypos += Math.cos(projectile[index].direction) * speed;
+				}
+				
+				//create new projectiles
+				if(frame == 0 && player.dead == 0){
+					player.score++;
+					
+					projectile[nextProjectile].direction = Math.random() * 2 * Math.PI;
+					projectile[nextProjectile].Xpos = player.Xpos - Math.sin(projectile[nextProjectile].direction)*1000;
+					projectile[nextProjectile].Ypos = player.Ypos - Math.cos(projectile[nextProjectile].direction)*1000;
+					projectile[nextProjectile].split = 0;
+					
+					nextProjectile = (nextProjectile + 1) % indexMax;
+				}
+				frame = (frame + 1) % 10;
+				
+				
+				//splitting
+				for(index = 0; index < indexMax; index++){
+					if(player.score >= 200 && projectile[index].split == 0 &&
+					   Math.sqrt(Math.pow(player.Xpos - projectile[index].Xpos,2) + Math.pow(player.Ypos - projectile[index].Ypos,2)) <= 600 &&
+					
+						projectile[index].Xpos > 20 &&
+						projectile[index].Xpos < canvas.width - 20 &&
+						projectile[index].Ypos > 20 &&
+						projectile[index].Ypos < canvas.height - 20
+					){
+						projectile[index].split = 1;
+						
+						projectile[nextProjectile].Xpos = projectile[index].Xpos;
+						projectile[nextProjectile].Ypos = projectile[index].Ypos;
+						projectile[nextProjectile].direction = projectile[index].direction + 0.5;
+						projectile[nextProjectile].split = 1;
+						
+						nextProjectile = (nextProjectile + 1) % indexMax;
+						
+						projectile[nextProjectile].Xpos = projectile[index].Xpos;
+						projectile[nextProjectile].Ypos = projectile[index].Ypos;
+						projectile[nextProjectile].direction = projectile[index].direction - 0.5;
+						projectile[nextProjectile].split = 1;
+						
+						nextProjectile = (nextProjectile + 1) % indexMax;
+					}
+					
+				}
+				
+				
+				
+				
+				
+				if(player.dead == 0){
+					
+					if(player.up    == 1 && player.Ypos >                 10){player.Ypos -= speed;}
+					if(player.down  == 1 && player.Ypos < canvas.height - 10){player.Ypos += speed;}
+					if(player.left  == 1 && player.Xpos >                 10){player.Xpos -= speed;}
+					if(player.right == 1 && player.Xpos < canvas.width  - 10){player.Xpos += speed;}
+					
+				}
+				
+				
+				for(index = 0; index < indexMax; index++){
+					if(Math.sqrt(Math.pow(player.Xpos - projectile[index].Xpos,2) + Math.pow(player.Ypos - projectile[index].Ypos,2)) <= 12){
+						player.dead = 1;
+						
+						if(player.score > player.highscore){
+							player.highscore = player.score;
+							setCookie('Highscore',player.highscore,365);
+						}
+					}
+				}
+				
+				
+				
+				
+				
+				ctx.beginPath();
+                ctx.arc(player.Xpos, player.Ypos, 6, 0, Math.PI * 2);
+                ctx.fillStyle = "lime";
+                ctx.fill();
+                ctx.closePath();
+				
+				for(index = 0; index < indexMax; index++){
+					
+					ctx.beginPath();
+					ctx.moveTo(projectile[index].Xpos + Math.sin(projectile[index].direction)*15,      projectile[index].Ypos + Math.cos(projectile[index].direction)*15);
+					ctx.lineTo(projectile[index].Xpos + Math.sin(projectile[index].direction + 2.5)*8, projectile[index].Ypos + Math.cos(projectile[index].direction + 2.5)*8);
+					ctx.lineTo(projectile[index].Xpos + Math.sin(projectile[index].direction - 2.5)*8, projectile[index].Ypos + Math.cos(projectile[index].direction - 2.5)*8);
+					ctx.fillStyle = "red";
+					ctx.fill();
+					ctx.closePath();
+				}
+				
+				
+				ctx.font = "15px Arial";
+		    	ctx.fillStyle = "white";
+		    	ctx.textAlign = "left";
+				ctx.fillText("Score: " + player.score, 10, canvas.height - 5);
+		    	ctx.textAlign = "right";
+				ctx.fillText("Highscore: " + player.highscore, canvas.width - 30, canvas.height - 5);
+				
+				
+				if(player.dead == 1 && player.start == 0){
+					ctx.font = "150px Arial";
+					ctx.fillStyle = "black";
+					ctx.textAlign = "center";
+					ctx.fillText("GAME OVER",canvas.width/2,canvas.height/2);
+				}
+				
+				
+				
+				
+				
+				setTimeout(draw, 10);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
