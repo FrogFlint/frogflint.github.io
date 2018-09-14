@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -30,20 +31,20 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var speed = 10;
+			var speed = 0;
+            var colors = "green";//0 for rgb spectrum, "green" for greenscale
 			
 			var setup = "random"; //random, sides
 			var squish = 1;
-			var scale = 10; // between 1 and 50
+			var scale = 5; // between 1 and 50
 			var index1 = 0;
-     			var index2 = 0;
+     		var index2 = 0;
 			var index1Max = 20*scale;
 			var index2Max = 10*scale;
 			var tileSize = 50/scale;
 			var rand = 0;
 			var spreadChance = 8;  //fraction
 			var tile = [[]];
-			//var tileArray = [];
 			
 			
 			
@@ -59,19 +60,33 @@
 					while(index2 <= index2Max){
 						
 						if(setup == "random"){
-							rand = Math.random()*2;
-							if(rand <= 1){tile[index1][index2] = {
-								color:"lime",
-								nextColor:"lime",
-							}}
-							else if(rand <= 2){tile[index1][index2] = {
-								color:"blue",
-								nextColor:"blue",
-							}}
-							else{tile[index1][index2] = {
-								color:"red",
-								nextColor:"red",
-							}}
+                            if(colors == "green"){
+                                tile[index1][index2] = {
+							    	color:"rgb(0,"+Math.floor(Math.random()*255)+",0)",
+							    	nextColor:"rgb(0,"+Math.floor(Math.random()*255)+",0)"
+							    }
+                            }
+                            else if(colors == 0){
+                                tile[index1][index2] = {
+							    	color:"rgb("+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+")",
+							    	nextColor:"rgb("+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+")"
+							    }
+                            }
+                            else{
+							    rand = Math.random()*colors;
+							    if(rand <= 1){tile[index1][index2] = {
+							    	color:"lime",
+							    	nextColor:"lime",
+							    }}
+					       	    else if(rand <= 2){tile[index1][index2] = {
+							    	color:"blue",
+							    	nextColor:"blue",
+							    }}
+							    else{tile[index1][index2] = {
+							    	color:"red",
+							    	nextColor:"red",
+							    }}
+                            }
 						}
 						if(setup == "sides"){
 							if(index1 >= index1Max/2){tile[index1][index2] = {
@@ -108,20 +123,19 @@
 				//document.addEventListener("keyup", keyUpHandler, false);
 				
 				//function keyDownHandler(e) {}
-        			//function keyUpHandler(e) {}
+        		//function keyUpHandler(e) {}
         
 				
 				
 				
 				
-        			index1 = 0;
+        		index1 = 0;
 				while(index1 <= index1Max){
 					index2 = 0;
 					while(index2 <= index2Max){
 						
 						
 						rand = Math.random()*4;
-						
 						if(rand <= 1){
 						if(index1 != 0){
 							rand = Math.random()*spreadChance;
@@ -129,56 +143,40 @@
 								tile[index1 - 1][index2].nextColor = tile[index1][index2].color;
 							}
 						}}
-						if(rand <= 2){
+                        rand = Math.random()*4;
+						if(rand <= 1){
 						if(index2 != 0){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1][index2 - 1].nextColor = tile[index1][index2].color;
 							}
 						}}
-						if(rand <= 3){
+                        rand = Math.random()*4;
+						if(rand <= 1){
 						if(index1 != index1Max){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
 							}
 						}}
-						//always
+                        rand = Math.random()*4;
+                        if(rand <= 1){
 						if(index2 != index2Max){
 							rand = Math.random()*spreadChance;
 							if(rand <= 1){
 								tile[index1][index2 + 1].nextColor = tile[index1][index2].color;
 							}
-						}
-						if(rand >= 1){
-						if(index1 != 0){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1 - 1][index2].nextColor = tile[index1][index2].color;
-							}
-						}}
-						if(rand >= 2){
-						if(index2 != 0){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1][index2 - 1].nextColor = tile[index1][index2].color;
-							}
-						}}
-						if(rand >= 3){
-						if(index1 != index1Max){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
-							}
 						}}
 						
 						
 						if(squish == 1){
-							/*if(tile[index1+1][index2].color == tile[index1-1][index2].color &&
-							   tile[index1+1][index2].color == tile[index1][index2+1].color &&
-							   tile[index1+1][index2].color == tile[index1][index2-1].color){
-								tile[index1][index2].color = tile[index1+1][index2].color;
-							}*/
+                            if(index2 != index2Max && index1 != 0 && index2 != 0 && index1 != index1Max){
+								if(tile[index1+1][index2].color == tile[index1-1][index2].color &&
+							       tile[index1+1][index2].color == tile[index1][index2+1].color &&
+								   tile[index1][index2+1].color == tile[index1][index2-1].color){
+								       tile[index1][index2].nextColor = tile[index1+1][index2].color;
+								}
+                            }
 						}
 						
 						
@@ -200,7 +198,7 @@
 						tile[index1][index2].color = tile[index1][index2].nextColor;
 						
 						ctx.beginPath();
-						ctx.rect(index1*tileSize, index2*tileSize, tileSize, tileSize);
+						ctx.rect(index1*tileSize, index2*tileSize, tileSize+1, tileSize+1);
 						ctx.fillStyle = tile[index1][index2].color;
 						ctx.fill();
 						ctx.closePath();
