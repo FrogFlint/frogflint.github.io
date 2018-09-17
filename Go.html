@@ -32,7 +32,9 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var boardSize = 19; //9,13,19
+            var sizeSelect = 0;
+            
+			var boardSize = 5; //9,13,19
 			var scale = 600/boardSize;
 			
 			
@@ -516,52 +518,47 @@
 				
 				
 				
-				
-				
-				
-				
-				
-				
-				
-				ctx.beginPath();
-				ctx.fillStyle = teamColor[turn];
-				ctx.fillRect(20, 200, 10, 220);
-				ctx.fillRect(670, 200, 10, 220);
-				ctx.fill();
-				ctx.closePath();
-				
-				
-				// draw the squares
-				for(index1 = 0; index1 < boardSize; index1++){
-					
-					ctx.beginPath();
-					ctx.moveTo(index1*scale + scale/2 +50, 10  + scale/2);
-					ctx.lineTo(index1*scale + scale/2 +50, 610 - scale/2);
-					ctx.stroke();
-					
-					ctx.beginPath();
-					ctx.moveTo(50  + scale/2, index1*scale + scale/2 + 10);
-					ctx.lineTo(650 - scale/2, index1*scale + scale/2 + 10);
-					ctx.stroke();
-					
-				}
-				
-				
-				
-				// draw the stones
-				for(index1 = 0; index1 < boardSize; index1++){
-					for(index2 = 0; index2 < boardSize; index2++){
-						
-						
-						if(tile[index1][index2].stone != 0){
-							ctx.beginPath();
-							ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
-							ctx.fillStyle = teamColor[tile[index1][index2].stone];
-							ctx.fill();
-							ctx.closePath();
-						}
-					}
-				}
+                
+                
+                if(sizeSelect == 0){
+                    
+                    ctx.beginPath();
+				    ctx.fillStyle = teamColor[turn];
+				    ctx.fillRect(20, 200, 10, 220);
+				    ctx.fillRect(670, 200, 10, 220);
+				    ctx.fill();
+				    ctx.closePath();
+                    
+                    
+				    // draw the squares
+				    for(index1 = 0; index1 < boardSize; index1++){
+				    	
+				    	ctx.beginPath();
+				    	ctx.moveTo(index1*scale + scale/2 +50, 10  + scale/2);
+				    	ctx.lineTo(index1*scale + scale/2 +50, 610 - scale/2);
+				    	ctx.stroke();
+				    	
+				    	ctx.beginPath();
+				    	ctx.moveTo(50  + scale/2, index1*scale + scale/2 + 10);
+				    	ctx.lineTo(650 - scale/2, index1*scale + scale/2 + 10);
+				    	ctx.stroke();
+				    }
+                    
+				    // draw the stones
+				    for(index1 = 0; index1 < boardSize; index1++){
+				    	for(index2 = 0; index2 < boardSize; index2++){
+				    		
+				    		
+				    		if(tile[index1][index2].stone != 0){
+				    			ctx.beginPath();
+				    			ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
+				    			ctx.fillStyle = teamColor[tile[index1][index2].stone];
+				    			ctx.fill();
+				    			ctx.closePath();
+				    		}
+				    	}
+				    }
+                }
 				
 				
 				// when game is over
@@ -581,9 +578,16 @@
 					ctx.fillText(score[winner] + " - " + score[3 - winner], canvas.width/2, 300);
 				}
 				if(winner == 3){
+                    
+                    box[1] = 150;
+                    box[2] = (50 + 20 * (score[1].toString().length + score[2].toString().length));
+                    
+                    ctx.fillStyle = teamColor[2];
+					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
+					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
 				
 					ctx.font = "70px Arial";
-		    		ctx.fillStyle = "Black";
+		    		ctx.fillStyle = teamColor[1];
 		    		ctx.textAlign = "center";
 					ctx.fillText("It's a Tie!", canvas.width/2, 200);
 					ctx.fillText(score[1] + " - " + score[2], canvas.width/2, 300);
