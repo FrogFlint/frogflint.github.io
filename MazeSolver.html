@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lightGray;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Maze Solver</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="650"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			
+			var tile = [[]];
+			var nextTile = [[]];
+			var index1 = 0;
+			var index2 = 0;
+			
+			var mazeSize = {x:12,y:7};
+			var tileSize = 75;
+			
+			var sizeButton = 15;
+			
+			
+			var editing = true;
+			var clicking = false;
+			var addWall = 0;
+			
+			var mouse = {x:0,y:0};
+			
+			
+			var splitPath = 0;
+			
+			for(index1 = 0;index1 < 60;index1++){
+				tile[index1] = [];
+				nextTile[index1] = [];
+				for(index2 = 0;index2 < 60;index2++){
+					tile[index1][index2] = {
+						wall:0,
+						edge:0,
+						green:0,
+						red:0,
+						path:0
+						
+					}
+					nextTile[index1][index2] = {
+						green:0,
+						red:0,
+						path:0
+					}
+				}
+			}
+			
+			
+			
+			changeSize();
+			
+			
+			function changeSize(){
+				mazeSize.x = sizeButton + 2;
+				tileSize = 900/mazeSize.x;
+				mazeSize.y = Math.floor(550/tileSize);
+			}
+			
+			function getMousePos(canvas, evt) {
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: Math.floor(evt.clientX - rect.left),
+			      y: Math.floor(evt.clientY - rect.top)
+			    };
+			}
+			
+			
+			window.addEventListener('mousedown', function(canvas, evt) {
+				if(event.button == 0){
+					var mouse = getMousePos(evt);
+					
+					if(editing == true
+					&& mouse.x >= 50
+					&& mouse.x < 950
+					&& mouse.y >= 50
+					&& mouse.y < 600){
+						mouse.x = Math.floor((mouse.x - 50)/tileSize);
+						mouse.y = Math.floor((mouse.y - 50)/tileSize);
+						clicking = true;
+						//addWall = 1 - tile[mouse.x][mouse.y].wall;
+					}
+				}
+			});
+			window.addEventListener('mouseup', function() {
+				if(event.button == 0){
+					clicking = false;
+				}
+			});
+			
+			window.oncontextmenu = function(evt){
+				mouse = getMousePos(canvas, evt);
+				//clickButton(mouse.x,mouse.y,10);
+				return false;
+			}
+			
+			
+			
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				for(index1 = 0;index1 < mazeSize.x;index1++){
+					for(index2 = 0;index2 < mazeSize.y;index2++){
+						ctx.beginPath();
+						ctx.fillStyle = "White";
+						if(tile[index1][index2].wall == 1){ctx.fillStyle = "Black";}
+						ctx.fillRect(50 + index1*tileSize, 50 + index2*tileSize, tileSize, tileSize);
+						ctx.closePath();
+						
+					}
+				}
+				for(index1 = 0;index1 <= mazeSize.x;index1++){
+					ctx.beginPath();
+					ctx.moveTo(index1*tileSize + 50, 50);
+					ctx.lineTo(index1*tileSize + 50, 50 + mazeSize.y * tileSize);
+					ctx.stroke();
+				}
+				for(index1 = 0;index1 <= mazeSize.y;index1++){
+					ctx.beginPath();
+					ctx.moveTo(50, index1*tileSize + 50);
+					ctx.lineTo(950, index1*tileSize + 50);
+					ctx.stroke();
+				}
+				
+				
+				
+				
+				if(editing == true){
+					tile[3][1].wall = 0;
+					if(clicking == true){
+						tile[3][1].wall = 1;
+						var mouse = getMousePos(evt);
+				
+						if(mouse.x >= 50
+						&& mouse.x < 950
+						&& mouse.y >= 50
+						&& mouse.y < 600){
+							mouse.x = Math.floor((mouse.x - 50)/tileSize);
+							mouse.y = Math.floor((mouse.y - 50)/tileSize);
+							//tile[mouse.x][mouse.y].wall = 1; //addWall;
+							alert("hi");
+						}
+					}
+				}
+				if(editing == false){}
+				
+				
+				setTimeout(draw, 1);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
