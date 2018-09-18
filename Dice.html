@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lightGray;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>D&D dice simulator</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="650"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var temp;
+			
+			
+			var dice = [["d2",1,2],["d4",1,4],["d6",1,6],["d8",1,8],["d10",1,10],["d12",1,12],["d20",1,20],["d100",1,100]]; //name, min, max
+			var customDice = [[]];
+			
+			var dieGroup = [[]]; //normal or custom, index, amount, pick top x, multiply by x
+			var bonus = 0;
+			var dieTypesUsed = 0; //max 11
+			
+			
+			var index = 0;
+			
+			var data = [];
+			for(index = 0;index < 1000;index++){data[index] = 0;}
+			
+			var highestRoll = 0;
+			var lowestRoll = 0;
+			
+			
+			
+			var mouse = {x:0,y:0};
+			var button = [[]]; //part of die groups?, x, y, x size, y size, variable/function, + or - (optional)
+			
+			
+			
+			
+			var scroll = 0;
+			
+			var menu = "Dice"; //Dice, Chart
+			var menuSwoop = 0;
+			
+			//rounded rectangle variables
+			var rectSize = {x:437,y:150};
+			var rectBorder = 10;
+			var rectCornerRadius = 10;
+			
+			var rectPos = {x:0,y:0};
+			
+			
+			
+			
+			
+			document.addEventListener("click", onClick);
+			function onClick(evt){
+				mouse = getMousePos(canvas, evt);
+				clickButton(mouse.x,mouse.y,1);
+			}
+				
+			window.oncontextmenu = function(evt){
+				mouse = getMousePos(canvas, evt);
+				clickButton(mouse.x,mouse.y,10);
+				return false;
+			}
+			
+			
+			function clickButton(x,y,amount){
+				
+			}
+			
+			
+			
+			function runDiceSim(){
+				//double-nested custom-nested for loops
+				//with two indices and a seperate array for when you pick some of the dice
+			}
+			
+			
+			
+			
+			
+			function getMousePos(canvas, evt) {
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: evt.clientX - rect.left,
+			      y: evt.clientY - rect.top
+			    };
+			}
+			
+			
+			
+			
+			
+			
+			function drawRoundRect(x,y,xSize,ySize,radius,color){
+				ctx.beginPath();
+				ctx.fillStyle = color;
+				ctx.fillRect(x + radius, y         , xSize - 2*radius, ySize           );
+				ctx.fillRect(x         , y + radius, xSize           , ySize - 2*radius);
+				
+				ctx.arc(x + radius        , y + radius        , radius, 0, Math.PI * 2);
+				ctx.arc(x - radius + xSize, y + radius        , radius, 0, Math.PI * 2);
+				ctx.arc(x + radius        , y - radius + ySize, radius, 0, Math.PI * 2);
+				ctx.arc(x - radius + xSize, y - radius + ySize, radius, 0, Math.PI * 2);
+				ctx.fill();
+				ctx.closePath();
+			}
+			
+			
+			
+			
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				if(menu == "Dice"){
+					for(index = 0;index < 12;index++){
+						rectPos.x = (index % 3) * (rectSize.x + rectBorder) + rectBorder;
+						rectPos.y = ((index - index % 3) / 3) * (rectSize.y + rectBorder) + rectBorder;
+						
+						drawRoundRect(rectPos.x,rectPos.y,rectSize.x,rectSize.y,rectCornerRadius,"Gray");
+					}
+					
+					drawRoundRect(1200,520,100,100,10,"red");
+				}
+				
+				if(menu == "Chart"){
+					for(index = 0;index < 100;index++){
+						ctx.beginPath();
+						ctx.fillStyle = "blue";
+						ctx.fillRect(index*30, 600, 28, data[index]*-0.5);
+						ctx.closePath();
+						
+						
+						
+					}
+				}
+				
+				
+				
+				
+				
+			
+				setTimeout(draw, 1);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
