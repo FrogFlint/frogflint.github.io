@@ -41,6 +41,7 @@
 			
 			var index1 = 0;
 			var index2 = 0;
+            var index3 = 0;
             var adjacent = [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1}];
 			
 			var tile = [[]];
@@ -119,7 +120,6 @@
             function spreadTile(type, loop){
                 
             }
-            
 			
 			
 			function addStone(evt) {
@@ -176,26 +176,14 @@
 					
 					tilesMarked = 0;
 					
-					if(selected.x < (boardSize - 1) &&
-					   	tile[selected.x][selected.y].stone + tile[selected.x + 1][selected.y].stone == 3 &&
-					  	tile[selected.x + 1][selected.y].blob == 0){
-						tile[selected.x + 1][selected.y].blob = 1;
-						tilesMarked += 1;}
-					if(selected.x > 0 &&
-					   	tile[selected.x][selected.y].stone + tile[selected.x - 1][selected.y].stone == 3 &&
-					  	tile[selected.x - 1][selected.y].blob == 0){
-						tile[selected.x - 1][selected.y].blob = 1;
-						tilesMarked += 1;}
-					if(selected.y < (boardSize - 1) &&
-					   	tile[selected.x][selected.y].stone + tile[selected.x][selected.y + 1].stone == 3 &&
-					  	tile[selected.x][selected.y + 1].blob == 0){
-						tile[selected.x][selected.y + 1].blob = 1;
-						tilesMarked += 1;}
-					if(selected.y > 0 &&
-					   	tile[selected.x][selected.y].stone + tile[selected.x][selected.y - 1].stone == 3 &&
-					  	tile[selected.x][selected.y - 1].blob == 0){
-						tile[selected.x][selected.y - 1].blob = 1;
-						tilesMarked += 1;}
+                    for(index3 = 0;index3 < 4;index3++){
+                        if(selected.x > 0 && selected.x < (boardSize - 1) && selected.y > 0 && selected.y < (boardSize - 1) &&
+					   	   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
+					  	   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
+						      tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
+						      tilesMarked += 1;
+                        }
+                    }
 					
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
@@ -206,6 +194,18 @@
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
 								
+                                for(index3 = 0;index3 < 4;index3++){
+                                    if(index1 > 0 && index1 < (boardSize - 1) && index2 > 0 && index2 < (boardSize - 1) && 
+                                       tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+								       tile[index1][index2].blob == 1 &&
+								       tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+									      tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
+									      tilesMarked += 1;
+								    }//there are problems here
+                                }
+                                
+                                
+                                /*
 								if(index1 < (boardSize - 1) && tile[index1][index2].stone == tile[index1+1][index2].stone &&
 								   tile[index1  ][index2].blob == 1 &&
 								   tile[index1+1][index2].blob == 0){
@@ -229,7 +229,7 @@
 								   tile[index1][index2-1].blob == 0){
 									tile[index1][index2-1].blob = 1;
 									tilesMarked += 1;
-								}
+								}*/
 							}
 						}
 						if(tilesMarked > 0){blobCheck = 1;}
@@ -582,12 +582,26 @@
 				    	ctx.stroke();
 				    }
                     
-				    // draw the stones
+				    // draw the stones and dot markers
 				    for(index1 = 0; index1 < boardSize; index1++){
 				    	for(index2 = 0; index2 < boardSize; index2++){
 				    		
-				    		
-				    		if(tile[index1][index2].stone != 0){
+                            //dots
+                            if(index1 == (boardSize - 1)/2 && index2 == index1 ||
+                               boardSize >= 13 && (index1 == 3 || index1 == boardSize - 4) && (index2 == 3 || index2 == boardSize - 4) ||
+                               boardSize >= 19 && (((index1 == 3 || index1 == boardSize - 4) && index2 == (boardSize - 1)/2) ||
+                                                   ((index2 == 3 || index2 == boardSize - 4) && index1 == (boardSize - 1)/2)
+                                                  )
+                               ){
+                                ctx.beginPath();
+				    			ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*0.07, 0, Math.PI * 2);
+				    			ctx.fillStyle = "black";
+				    			ctx.fill();
+				    			ctx.closePath();
+                            }
+                            
+				    		//stones
+				    		if(tile[index1][index2].stone > 0){
 				    			ctx.beginPath();
 				    			ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
 				    			ctx.fillStyle = teamColor[tile[index1][index2].stone];
