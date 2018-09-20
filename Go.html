@@ -35,12 +35,13 @@
 			
             var sizeSelect = 1;
             
-			var boardSize = 2; //9,13,19
+			var boardSize = 5; //9,13,19
 			var scale = 600/boardSize;
 			
 			
 			var index1 = 0;
 			var index2 = 0;
+            var adjacent = [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1}];
 			
 			var tile = [[]];
 			var tilesMarked = 0;
@@ -114,6 +115,11 @@
 			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
 			    };
 			}
+            
+            function spreadTile(type, loop){
+                
+            }
+            
 			
 			
 			function addStone(evt) {
@@ -128,16 +134,19 @@
                     if(selected.y >= canvas.height/2 - 50 && selected.y <= canvas.height/2 + 50){
                         boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
                         switch(boardSize){
-                            case 1:
+                            case 0:
                                 boardSize = 9;
+                                scale = 600/boardSize;
                                 createBoard();
                                 break;
                             case 2:
                                 boardSize = 13;
+                                scale = 600/boardSize;
                                 createBoard();
                                 break;
-                            case 5:
+                            case 4:
                                 boardSize = 19;
+                                scale = 600/boardSize;
                                 createBoard();
                                 break;
                             default:
