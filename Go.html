@@ -41,8 +41,8 @@
 			
 			var index1 = 0;
 			var index2 = 0;
-            		var index3 = 0;
-            		var adjacent = [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1}];
+			var index3 = 0;
+			var adjacent = [{x:1,y:1},{x:-1,y:1},{x:-1,y:-1},{x:1,y:-1}];
 			
 			var tile = [[]];
 			var tilesMarked = 0;
@@ -75,46 +75,45 @@
 			
 			/*
 			var mod = function (n, m) {
-		  		var remain = n % m;
-		  		return Math.floor(remain >= 0 ? remain : remain + m);
+				var remain = n % m;
+				return Math.floor(remain >= 0 ? remain : remain + m);
 			};*/
 			
 			
 			
-            function createBoard(){
-			    for(index1 = 0; index1 < boardSize; index1++){
-			    	tile[index1] = [];
-			    	for(index2 = 0; index2 < boardSize; index2++){
-			    		
-			    		tile[index1][index2] = {
-			    			stone: 0,
-			    			blob: 0,
-			    			safe:0,
-			    			
-			    			scoreBlob1:0,
-			    			scoreBlob2:0
-			    		}
-			    	}
-			    }
-			    for(index1 = 0; index1 < boardSize; index1++){
-			    	lastTile[index1] = [];
-			    	for(index2 = 0; index2 < boardSize; index2++){
-			    		lastTile[index1][index2] = {stone: 0}
-			    	}
-			    }
-                sizeSelect = 0;
-            }
+			function createBoard(){
+				for(index1 = 0; index1 < boardSize; index1++){
+					tile[index1] = [];
+					for(index2 = 0; index2 < boardSize; index2++){
+						tile[index1][index2] = {
+							stone: 0,
+							blob: 0,
+							safe:0,
+							
+							scoreBlob1:0,
+							scoreBlob2:0
+						}
+					}
+				}
+				for(index1 = 0; index1 < boardSize; index1++){
+					lastTile[index1] = [];
+					for(index2 = 0; index2 < boardSize; index2++){
+						lastTile[index1][index2] = {stone: 0}
+					}
+				}
+				sizeSelect = 0;
+			}
 			
 			
 			
 			
 			
 			function getMousePos(canvas, evt) {
-			    var rect = canvas.getBoundingClientRect();
-			    return {
-			      x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
-			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
-			    };
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
+					y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
+				};
 			}
             
             function spreadTile(type, loop){
@@ -128,33 +127,33 @@
 				
 				if(sizeSelect == 1){
                     
-                    			var rect = canvas.getBoundingClientRect();
-                    			selected = {x: Math.floor(evt.clientX - rect.left), y: Math.floor(evt.clientY - rect.top)}
-                    			
-                    			if(selected.y >= canvas.height/2 - 50 && selected.y <= canvas.height/2 + 50){
-                    				boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
-                    				switch(boardSize){
-                    					case 0:
-                    					    boardSize = 9;
-                    					    scale = 600/boardSize;
-                    					    createBoard();
-                    					    break;
-                    					case 2:
-                    					    boardSize = 13;
-                    					    scale = 600/boardSize;
-                    					    createBoard();
-                    					    break;
-                    					case 4:
-                    					    boardSize = 19;
-                    					    scale = 600/boardSize;
-                    					    createBoard();
-                    					    break;
-                    					default:
-                    					    break;
-                    				}
-                    			//alert(boardSize);
-          				}
-          			}
+					var rect = canvas.getBoundingClientRect();
+					selected = {x: Math.floor(evt.clientX - rect.left), y: Math.floor(evt.clientY - rect.top)}
+					
+					if(selected.y >= canvas.height/2 - 50 && selected.y <= canvas.height/2 + 50){
+						boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
+						switch(boardSize){
+							case 0:
+							    boardSize = 9;
+							    scale = 600/boardSize;
+							    createBoard();
+							    break;
+							case 2:
+							    boardSize = 13;
+							    scale = 600/boardSize;
+							    createBoard();
+							    break;
+							case 4:
+							    boardSize = 19;
+							    scale = 600/boardSize;
+							    createBoard();
+							    break;
+							default:
+							    break;
+						}
+					//alert(boardSize);
+					}
+				}
 				else{
                     
                     
@@ -176,14 +175,15 @@
 					
 					tilesMarked = 0;
 					
-                    			for(index3 = 0;index3 < 4;index3++){
-                        			if(selected.x > 0 && selected.x < (boardSize - 1) && selected.y > 0 && selected.y < (boardSize - 1) &&
-					   	   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
-					  	   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
-						      tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
-						      tilesMarked += 1;
-                  			      }
-                			    }
+					for(index3 = 0;index3 < 4;index3++){
+						if(selected.x > 0 && selected.x < (boardSize - 1) && selected.y > 0 && selected.y < (boardSize - 1) &&
+						   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
+						   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0
+						){
+							tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
+							tilesMarked += 1;
+						}
+					}
 					
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
@@ -191,8 +191,8 @@
 					while(tilesMarked > 0){
 						tilesMarked = 0;
 						
-						for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
+						/*for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){*/
 								
                                 for(index3 = 0;index3 < 4;index3++){
                                     if((index1 + adjacent[index3].x)  >= 0 && (index1 + adjacent[index3].x) < boardSize && (index2 + adjacent[index3].y) >= 0 && (index2 + adjacent[index3].y) < boardSize && 
