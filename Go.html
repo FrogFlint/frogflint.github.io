@@ -16,7 +16,7 @@
 			margin: 0 auto;
 		}
 	</style>
-
+		
 <title>The game of Go</title>
 </head>
 
@@ -612,22 +612,22 @@
 				    }
                 }
                 else{
-                    ctx.beginPath();
-				    ctx.fillStyle = "#ffc107";
-				    ctx.fillRect(canvas.width/2 - 250, canvas.height/2 - 50, 100, 100);
-				    ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
-				    ctx.fillRect(canvas.width/2 + 150, canvas.height/2 - 50, 100, 100);
-				    ctx.closePath();
+                    	ctx.beginPath();
+			ctx.fillStyle = "#ffc107";
+			ctx.fillRect(canvas.width/2 - 250, canvas.height/2 - 50, 100, 100);
+			ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
+			ctx.fillRect(canvas.width/2 + 150, canvas.height/2 - 50, 100, 100);
+			ctx.closePath();
                     
-                    ctx.beginPath();
-                    ctx.font = "70px Arial";
-		    		ctx.fillStyle = "#BA4A00";
-		    		ctx.textAlign = "center";
-					ctx.fillText("Select board size",  canvas.width/2, canvas.height/2 - 150);
-					ctx.fillText("9",  canvas.width/2 - 200, canvas.height/2 + 20);
-					ctx.fillText("13", canvas.width/2      , canvas.height/2 + 20);
-					ctx.fillText("19", canvas.width/2 + 200, canvas.height/2 + 20);
-				    ctx.closePath();
+			ctx.beginPath();
+                    	ctx.font = "70px Arial";
+			ctx.fillStyle = "#BA4A00";
+		    	ctx.textAlign = "center";
+			ctx.fillText("Select board size",  canvas.width/2, canvas.height/2 - 150);
+			ctx.fillText("9",  canvas.width/2 - 200, canvas.height/2 + 20);
+			ctx.fillText("13", canvas.width/2      , canvas.height/2 + 20);
+			ctx.fillText("19", canvas.width/2 + 200, canvas.height/2 + 20);
+			ctx.closePath();
                 }
 				
 				
@@ -642,8 +642,8 @@
 					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
 					
 					ctx.font = "70px Arial";
-		    		ctx.fillStyle = teamColor[winner];
-		    		ctx.textAlign = "center";
+					ctx.fillStyle = teamColor[winner];
+					ctx.textAlign = "center";
 					ctx.fillText(teamColor[winner] + " Team wins!", canvas.width/2, 200);
 					ctx.fillText(score[winner] + " - " + score[3 - winner], canvas.width/2, 300);
 				}
@@ -657,18 +657,18 @@
 					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
 				
 					ctx.font = "70px Arial";
-		    		ctx.fillStyle = teamColor[1];
-		    		ctx.textAlign = "center";
+					ctx.fillStyle = teamColor[1];
+					ctx.textAlign = "center";
 					ctx.fillText("It's a Tie!", canvas.width/2, 200);
 					ctx.fillText(score[1] + " - " + score[2], canvas.width/2, 300);
 				}
 				
 				
 				
-       				setTimeout(draw, 10);
-			}    
+				setTimeout(draw, 10);
+			}
 			draw();
-        		
-   		 </SCRIPT>
+				
+		 </SCRIPT>
 	</body>
 </html>
