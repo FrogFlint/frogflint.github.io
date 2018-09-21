@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lightGray;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Gravity</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="650"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			
+			var planet = [];
+			var index = 0;
+			
+			
+			
+			for(index = 0;index < 100;index++){
+				planet[index] = {
+					Xpos:0,
+					Ypos:0,
+					Xspeed:0,
+					Yspeed:0,
+					size:0,
+					color:"#b02000",
+					off:0
+				}
+			}
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				setTimeout(draw, 1);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
