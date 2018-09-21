@@ -115,10 +115,10 @@
 					y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
 				};
 			}
-            
-            function spreadTile(type, loop){
-                
-            }
+			
+			function spreadTile(type, loop){
+				
+			}
 			
 			
 			function addStone(evt) {
@@ -191,18 +191,18 @@
 					while(tilesMarked > 0){
 						tilesMarked = 0;
 						
-						/*for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){*/
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
 								
-                                for(index3 = 0;index3 < 4;index3++){
-                                    if((index1 + adjacent[index3].x)  >= 0 && (index1 + adjacent[index3].x) < boardSize && (index2 + adjacent[index3].y) >= 0 && (index2 + adjacent[index3].y) < boardSize && 
-                                    	tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-					tile[index1][index2].blob == 1 &&
-					tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
-						tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
-						tilesMarked += 1;
-					}//there are problems here
-                                }
+                                				for(index3 = 0;index3 < 4;index3++){
+                                				    if((index1 + adjacent[index3].x)  >= 0 && (index1 + adjacent[index3].x) < boardSize && (index2 + adjacent[index3].y) >= 0 && (index2 + adjacent[index3].y) < boardSize && 
+									tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+									tile[index1][index2].blob == 1 &&
+									tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
+										tilesMarked += 1;
+									}//there are problems here
+                                				}
                                 
                                 
                                 /*
