@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lightGray;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Maze Solver</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="650"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			var margin = {x:400,y:50};
+			
+			var bigMargin = 50;
+			var smallMargin = 15;
+			var bigSquare = 450;
+			var smallSquare = 120;
+			
+			
+			var board = [[[[]]]];
+			var bigBoard = [[]];
+			var index = [0,0,0,0];
+			
+			var row = [[[0,0],[0,1],[0,2]],[[1,0],[1,1],[1,2]],[[2,0],[2,1],[2,2]],
+					   [[0,0],[1,0],[2,0]],[[0,1],[1,1],[2,1]],[[0,2],[1,2],[2,2]],
+					   [[0,0],[1,1],[2,2]],[[0,2],[1,1],[2,0]]];
+			
+			
+			var turn = 1;
+			var teamColor = ["Lime","Red","Blue","Purple"]; //Lime should never happen, Purple means a tie
+			var winner = 0;
+			
+			var mouse = {x:0,y:0};
+			var selected = {X:0,Y:0,x:0,y:0}; //Uppercase is large board
+			var mustUseBoard = {x:-1,y:1}; //-1 means any
+			var mustUseBox = [0,0,0,0]; //left, up, right, down
+			
+			
+			
+			for(index[0] = 0;index[0] < 3;index[0]++){
+				bigBoard[index[0]] = [];
+				board[index[0]] = [[[]]];
+				for(index[1] = 0;index[1] < 3;index[1]++){
+					board[index[0]][index[1]] = [[]];
+					for(index[2] = 0;index[2] < 3;index[2]++){
+						board[index[0]][index[1]][index[2]] = [];
+						for(index[3] = 0;index[3] < 3;index[3]++){
+							board[index[0]][index[1]][index[2]][index[3]] = 0;
+						}
+					}
+					bigBoard[index[0]][index[1]] = 0;
+				}
+			}
+			
+			
+			
+			
+			
+			window.oncontextmenu = function(){
+				//turn = 3 - turn;
+				return false;
+			}
+			
+			document.addEventListener("click", onClick);
+			
+			function onClick(evt){
+				
+				mouse = getMousePos(canvas, evt);
+				mouse.x -= margin.x + bigMargin;
+				mouse.y -= margin.y + bigMargin;
+				
+				if(mouse.x > 0 && mouse.x < bigSquare && mouse.x % (bigSquare/3) > smallMargin && mouse.x % (bigSquare/3) < smallSquare + smallMargin && 
+				   mouse.y > 0 && mouse.y < bigSquare && mouse.y % (bigSquare/3) > smallMargin && mouse.y % (bigSquare/3) < smallSquare + smallMargin)
+				{
+					
+					selected.X = Math.floor(mouse.x / (bigSquare/3));
+					selected.Y = Math.floor(mouse.y / (bigSquare/3));
+					selected.x = Math.floor((mouse.x % (bigSquare/3) - smallMargin)/(smallSquare/3));
+					selected.y = Math.floor((mouse.y % (bigSquare/3) - smallMargin)/(smallSquare/3));
+					
+					
+					//if square is empty
+					if(board[selected.X][selected.Y][selected.x][selected.y] == 0 && winner == 0 && (mustUseBoard.x == -1 || (mustUseBoard.x == selected.X && mustUseBoard.y == selected.Y))){
+						board[selected.X][selected.Y][selected.x][selected.y] = turn;
+						turn = 3 - turn;
+						rowCheck("board[" + selected.X + "][" + selected.Y + "]","bigBoard[" + selected.X + "][" + selected.Y + "]");
+						
+						mustUseBoard.x = selected.x;
+						mustUseBoard.y = selected.y;
+						if(bigBoard[mustUseBoard.x][mustUseBoard.y] > 0){
+							mustUseBoard.x = -1;
+						}
+					}
+				}
+				
+				
+			}
+			
+			function getMousePos(canvas, evt) {
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: evt.clientX - rect.left,
+			      y: evt.clientY - rect.top
+			    };
+			}
+			
+			
+			function rowCheck(location, win){ //location is the name of a board array as a string, win is the value that gets changed in the case of a win
+				var temp = [0,0,0];
+				var tie = 1; //0 means true
+				for(index[0] = 0;index[0] < 8;index[0]++){
+					for(index[1] = 0;index[1] < 3;index[1]++){
+						eval("temp[index[1]] = " + location + "[row[index[0]][index[1]][0]][row[index[0]][index[1]][1]];");
+						tie *= temp[index[1]];
+					}
+					if(temp[0] == temp[1] && temp[1] == temp[2] && temp[1] > 0 && temp[1] < 3){
+						tie = 0;
+						eval(win + " = temp[1];");
+						if(win.includes("bigBoard")){
+							rowCheck("bigBoard","winner");
+						}
+						break;
+					}
+				}
+				if(tie > 0){
+					eval(win + " = 3;");
+				}
+			}
+			
+			
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				if (winner > 0){
+					ctx.beginPath();
+					ctx.fillStyle = teamColor[winner];
+					ctx.fillRect(0,0,canvas.width,canvas.height);
+					ctx.fillStyle = "lightGray";
+					ctx.fillRect(margin.x,margin.y,550,550);
+					ctx.closePath;
+				}
+				
+				
+				
+				
+				//outside square
+				ctx.beginPath();
+				ctx.moveTo(margin.x      ,       margin.y);
+				ctx.lineTo(margin.x + 550,       margin.y);
+				ctx.lineTo(margin.x + 550, 550 + margin.y);
+				ctx.lineTo(margin.x      , 550 + margin.y);
+				ctx.lineTo(margin.x      ,       margin.y);
+				ctx.stroke();
+				
+				//big board
+				ctx.beginPath();
+				ctx.moveTo(margin.x + bigMargin + bigSquare * 1/3, margin.y + bigMargin      );
+				ctx.lineTo(margin.x + bigMargin + bigSquare * 1/3, margin.y + bigMargin + bigSquare);
+				
+				ctx.moveTo(margin.x + bigMargin + bigSquare * 2/3, margin.y + bigMargin      );
+				ctx.lineTo(margin.x + bigMargin + bigSquare * 2/3, margin.y + bigMargin + bigSquare);
+				
+				ctx.moveTo(margin.x + bigMargin,             margin.y + bigMargin + bigSquare * 1/3);
+				ctx.lineTo(margin.x + bigMargin + bigSquare, margin.y + bigMargin + bigSquare * 1/3);
+				
+				ctx.moveTo(margin.x + bigMargin,             margin.y + bigMargin + bigSquare * 2/3);
+				ctx.lineTo(margin.x + bigMargin + bigSquare, margin.y + bigMargin + bigSquare * 2/3);
+				ctx.stroke();
+				
+				//small boards
+				for(index[0] = 0;index[0] < 3;index[0]++){
+					for(index[1] = 0;index[1] < 3;index[1]++){
+						ctx.beginPath();
+						ctx.moveTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare) * 1/3,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin      );
+						ctx.lineTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare) * 1/3,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare));
+						
+						ctx.moveTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare) * 2/3,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin      );
+						ctx.lineTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare) * 2/3,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare));
+						
+						ctx.moveTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin                                        ,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare) * 1/3);
+						ctx.lineTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare)      ,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare) * 1/3);
+				
+						ctx.moveTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin                                        ,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare) * 2/3);
+						ctx.lineTo(margin.x + bigMargin + bigSquare/3 * index[0] + smallMargin + (smallSquare)      ,  margin.y + bigMargin + bigSquare/3 * index[1] + smallMargin + (smallSquare) * 2/3);
+						ctx.stroke();
+					}
+				}
+				
+				
+				
+				
+				
+				
+				//Game pieces
+				for(index[0] = 0;index[0] < 3;index[0]++){
+					for(index[1] = 0;index[1] < 3;index[1]++){
+						for(index[2] = 0;index[2] < 3;index[2]++){
+							for(index[3] = 0;index[3] < 3;index[3]++){
+								ctx.beginPath();
+								ctx.arc(margin.x  +  bigMargin + (bigSquare) * index[0]/3 + smallMargin  + (smallSquare) * (index[2] * 2 + 1)/6,
+										margin.y  +  bigMargin + (bigSquare) * index[1]/3 + smallMargin  + (smallSquare) * (index[3] * 2 + 1)/6,
+										10, 0, Math.PI * 2);
+								ctx.fillStyle = teamColor[board[index[0]][index[1]][index[2]][index[3]]];
+								if(board[index[0]][index[1]][index[2]][index[3]] > 0){  ctx.fill();  }
+								ctx.closePath();
+							}
+						}//big pieces
+						ctx.beginPath();
+						ctx.arc(margin.x  +  bigMargin + (bigSquare) * (index[0] * 2 + 1)/6,
+								margin.y  +  bigMargin + (bigSquare) * (index[1] * 2 + 1)/6,
+								50, 0, Math.PI * 2);
+						ctx.fillStyle = teamColor[bigBoard[index[0]][index[1]]];
+						ctx.globalAlpha = 0.7;
+						if(bigBoard[index[0]][index[1]] > 0){  ctx.fill();  }
+						ctx.closePath();
+						ctx.globalAlpha = 1;
+					}
+				}
+				
+				
+				//Turn/required board square indicator
+				if(winner == 0){
+					if(mustUseBoard.x == -1){
+						mustUseBox[0] = margin.x + bigMargin * 0.7;
+						mustUseBox[1] = margin.y + bigMargin * 0.7;
+						mustUseBox[2] = margin.x + bigMargin * 1.3 + bigSquare;
+						mustUseBox[3] = margin.y + bigMargin * 1.3 + bigSquare;
+					}
+					else{
+						mustUseBox[0] = margin.x + bigMargin + bigSquare * mustUseBoard.x/3 + Math.floor(smallMargin/2);
+						mustUseBox[1] = margin.y + bigMargin + bigSquare * mustUseBoard.y/3 + Math.floor(smallMargin/2);
+						mustUseBox[2] = margin.x + bigMargin + bigSquare * (mustUseBoard.x + 1)/3 - Math.floor(smallMargin/2);
+						mustUseBox[3] = margin.y + bigMargin + bigSquare * (mustUseBoard.y + 1)/3 - Math.floor(smallMargin/2);
+					}
+					ctx.beginPath();
+					ctx.fillStyle = teamColor[turn];
+					ctx.globalAlpha = 0.3;
+					ctx.fillRect(margin.x, margin.y, 550, mustUseBox[1] - margin.y);
+					ctx.fillRect(margin.x, mustUseBox[1], mustUseBox[0] - margin.x, mustUseBox[3] - mustUseBox[1]);
+					ctx.fillRect(mustUseBox[2], mustUseBox[1], margin.x + 550 - mustUseBox[2], mustUseBox[3] - mustUseBox[1]);
+					ctx.fillRect(margin.x, mustUseBox[3], 550, margin.y + 550 - mustUseBox[3]);
+					ctx.closePath();
+					ctx.globalAlpha = 1;
+				}
+				
+				
+				setTimeout(draw, 1);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
