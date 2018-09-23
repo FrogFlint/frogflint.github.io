@@ -217,7 +217,30 @@
 				
 				
 				
-				
+				//Turn/required board square indicator
+				if(winner == 0){
+					if(mustUseBoard.x == -1){
+						mustUseBox[0] = margin.x + bigMargin * 0.7;
+						mustUseBox[1] = margin.y + bigMargin * 0.7;
+						mustUseBox[2] = margin.x + bigMargin * 1.3 + bigSquare;
+						mustUseBox[3] = margin.y + bigMargin * 1.3 + bigSquare;
+					}
+					else{
+						mustUseBox[0] = margin.x + bigMargin + bigSquare * mustUseBoard.x/3 + Math.floor(smallMargin/2);
+						mustUseBox[1] = margin.y + bigMargin + bigSquare * mustUseBoard.y/3 + Math.floor(smallMargin/2);
+						mustUseBox[2] = margin.x + bigMargin + bigSquare * (mustUseBoard.x + 1)/3 - Math.floor(smallMargin/2);
+						mustUseBox[3] = margin.y + bigMargin + bigSquare * (mustUseBoard.y + 1)/3 - Math.floor(smallMargin/2);
+					}
+					ctx.beginPath();
+					ctx.fillStyle = teamColor[turn];
+					ctx.globalAlpha = 0.3;
+					ctx.fillRect(margin.x, margin.y, 550, mustUseBox[1] - margin.y);
+					ctx.fillRect(margin.x, mustUseBox[1], mustUseBox[0] - margin.x, mustUseBox[3] - mustUseBox[1]);
+					ctx.fillRect(mustUseBox[2], mustUseBox[1], margin.x + 550 - mustUseBox[2], mustUseBox[3] - mustUseBox[1]);
+					ctx.fillRect(margin.x, mustUseBox[3], 550, margin.y + 550 - mustUseBox[3]);
+					ctx.closePath();
+					ctx.globalAlpha = 1;
+				}
 				
 				
 				//Game pieces
@@ -247,30 +270,7 @@
 				}
 				
 				
-				//Turn/required board square indicator
-				if(winner == 0){
-					if(mustUseBoard.x == -1){
-						mustUseBox[0] = margin.x + bigMargin * 0.7;
-						mustUseBox[1] = margin.y + bigMargin * 0.7;
-						mustUseBox[2] = margin.x + bigMargin * 1.3 + bigSquare;
-						mustUseBox[3] = margin.y + bigMargin * 1.3 + bigSquare;
-					}
-					else{
-						mustUseBox[0] = margin.x + bigMargin + bigSquare * mustUseBoard.x/3 + Math.floor(smallMargin/2);
-						mustUseBox[1] = margin.y + bigMargin + bigSquare * mustUseBoard.y/3 + Math.floor(smallMargin/2);
-						mustUseBox[2] = margin.x + bigMargin + bigSquare * (mustUseBoard.x + 1)/3 - Math.floor(smallMargin/2);
-						mustUseBox[3] = margin.y + bigMargin + bigSquare * (mustUseBoard.y + 1)/3 - Math.floor(smallMargin/2);
-					}
-					ctx.beginPath();
-					ctx.fillStyle = teamColor[turn];
-					ctx.globalAlpha = 0.3;
-					ctx.fillRect(margin.x, margin.y, 550, mustUseBox[1] - margin.y);
-					ctx.fillRect(margin.x, mustUseBox[1], mustUseBox[0] - margin.x, mustUseBox[3] - mustUseBox[1]);
-					ctx.fillRect(mustUseBox[2], mustUseBox[1], margin.x + 550 - mustUseBox[2], mustUseBox[3] - mustUseBox[1]);
-					ctx.fillRect(margin.x, mustUseBox[3], 550, margin.y + 550 - mustUseBox[3]);
-					ctx.closePath();
-					ctx.globalAlpha = 1;
-				}
+				
 				
 				
 				setTimeout(draw, 1);
