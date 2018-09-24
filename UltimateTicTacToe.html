@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Ultimate Tic-Tac-Toe</title>
+<title>Maze Solver</title>
 </head>
 
 <body>
@@ -100,7 +100,7 @@
 					
 					
 					//if square is empty
-					if(board[selected.X][selected.Y][selected.x][selected.y] == 0 && winner == 0 && (mustUseBoard.x == -1 || (mustUseBoard.x == selected.X && mustUseBoard.y == selected.Y))){
+					if(board[selected.X][selected.Y][selected.x][selected.y] == 0 && bigBoard[selected.X][selected.Y] == 0 && winner == 0 && (mustUseBoard.x == -1 || (mustUseBoard.x == selected.X && mustUseBoard.y == selected.Y))){
 						board[selected.X][selected.Y][selected.x][selected.y] = turn;
 						turn = 3 - turn;
 						rowCheck("board[" + selected.X + "][" + selected.Y + "]","bigBoard[" + selected.X + "][" + selected.Y + "]");
