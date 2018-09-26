@@ -116,9 +116,9 @@
 			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
 			    };
 			}
-            
+			
 			function spreadTile(type, loop){
-			    
+				
 			}
 			
 			
@@ -174,15 +174,15 @@
 					
 					tilesMarked = 0;
 					
-                    for(index3 = 0;index3 < 4;index3++){
-                        if(selected.x + adjacent[index3].x >= 0 && selected.x + adjacent[index3].x < boardSize &&
-                           selected.y + adjacent[index3].y >= 0 && selected.y + adjacent[index3].y < boardSize &&
-					   	   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
-					  	   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
-						      tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
-						      tilesMarked += 1;
-                        }
-                    }
+					for(index3 = 0;index3 < 4;index3++){
+						if(selected.x + adjacent[index3].x >= 0 && selected.x + adjacent[index3].x < boardSize &&
+						   selected.y + adjacent[index3].y >= 0 && selected.y + adjacent[index3].y < boardSize &&
+						   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
+						   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
+							tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
+							tilesMarked += 1;
+						}
+					}
 					
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
@@ -193,16 +193,16 @@
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
 								
-                                for(index3 = 0;index3 < 4;index3++){
-                                    if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-                                       index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
-                                       tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-								       tile[index1][index2].blob == 1 &&
-								       tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
-									      tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
-									      tilesMarked += 1;
-								    }
-                                }
+								for(index3 = 0;index3 < 4;index3++){
+									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
+									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+									   tile[index1][index2].blob == 1 &&
+									   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
+										tilesMarked += 1;
+									}
+								}
 							}
 						}
 						if(tilesMarked > 0){blobCheck = 1;}
@@ -211,17 +211,17 @@
 					if(blobCheck == 1){
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
-                                
-                                for(index3 = 0;index3 < 4;index3++){
-                                    if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-                                       index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
-                                       tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
-									       tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
-									       tilesMarked += 1;
-								    }
-                                }
-                                
-                                
+								
+								for(index3 = 0;index3 < 4;index3++){
+									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
+									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+										tilesMarked += 1;
+									}
+								}
+								
+								/*
 								
 								if(index1 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
 								   tile[index1+1][index2].blob == 1){
@@ -242,7 +242,7 @@
 								   tile[index1][index2-1].blob == 1){
 									tile[index1][index2-1].safe = 1;
 									tilesMarked += 1;
-								}
+								}*/
 							}
 						}
 					}
@@ -418,7 +418,7 @@
 					
 					turn = turn % 2 + 1;
 				}
-                }
+				}
 			}
 			
 			function countScore() {
@@ -495,7 +495,7 @@
 					if (score[1] < score[2]){winner = 2;}
 					if (score[1] ==score[2]){winner = 3;}
 				}
-			
+				
 			}
 			
 			
@@ -512,7 +512,7 @@
 				document.addEventListener("keydown", keyDownHandler, false);
 				//document.addEventListener("keyup", keyUpHandler, false);
 				function keyDownHandler(e) {
-				
+					
 					if(e.keyCode == 87){countScore();}
 					
 					if(e.keyCode == 85 && undid == 0){
@@ -540,79 +540,78 @@
 				
 				
 				
-                
-                
-                if(sizeSelect == 0){
-                    
-                    ctx.beginPath();
-				    ctx.fillStyle = teamColor[turn];
-				    ctx.fillRect(20, 200, 10, 220);
-				    ctx.fillRect(670, 200, 10, 220);
-				    ctx.fill();
-				    ctx.closePath();
-                    
-                    
-				    // draw the squares
-				    for(index1 = 0; index1 < boardSize; index1++){
-				    	
-				    	ctx.beginPath();
-				    	ctx.moveTo(index1*scale + scale/2 +50, 10  + scale/2);
-				    	ctx.lineTo(index1*scale + scale/2 +50, 610 - scale/2);
-				    	ctx.stroke();
-				    	
-				    	ctx.beginPath();
-				    	ctx.moveTo(50  + scale/2, index1*scale + scale/2 + 10);
-				    	ctx.lineTo(650 - scale/2, index1*scale + scale/2 + 10);
-				    	ctx.stroke();
-				    }
-                    
-				    // draw the stones and dot markers
-				    for(index1 = 0; index1 < boardSize; index1++){
-				    	for(index2 = 0; index2 < boardSize; index2++){
-				    		
-                            //dots
-                            if(index1 == (boardSize - 1)/2 && index2 == index1 ||
-                               boardSize >= 13 && (index1 == 3 || index1 == boardSize - 4) && (index2 == 3 || index2 == boardSize - 4) ||
-                               boardSize >= 19 && (((index1 == 3 || index1 == boardSize - 4) && index2 == (boardSize - 1)/2) ||
-                                                   ((index2 == 3 || index2 == boardSize - 4) && index1 == (boardSize - 1)/2)
-                                                  )
-                               ){
-                                ctx.beginPath();
-				    			ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*0.07, 0, Math.PI * 2);
-				    			ctx.fillStyle = "black";
-				    			ctx.fill();
-				    			ctx.closePath();
-                            }
-                            
-				    		//stones
-				    		if(tile[index1][index2].stone > 0){
-				    			ctx.beginPath();
-				    			ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
-				    			ctx.fillStyle = teamColor[tile[index1][index2].stone];
-				    			ctx.fill();
-				    			ctx.closePath();
-				    		}
-				    	}
-				    }
-                }
-                else{
-                    ctx.beginPath();
-				    ctx.fillStyle = "#ffc107";
-				    ctx.fillRect(canvas.width/2 - 250, canvas.height/2 - 50, 100, 100);
-				    ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
-				    ctx.fillRect(canvas.width/2 + 150, canvas.height/2 - 50, 100, 100);
-				    ctx.closePath();
-                    
-                    ctx.beginPath();
-                    ctx.font = "70px Arial";
-		    		ctx.fillStyle = "#BA4A00";
-		    		ctx.textAlign = "center";
+				
+				
+				if(sizeSelect == 0){
+					
+					ctx.beginPath();
+					ctx.fillStyle = teamColor[turn];
+					ctx.fillRect(20, 200, 10, 220);
+					ctx.fillRect(670, 200, 10, 220);
+					ctx.fill();
+					ctx.closePath();
+					
+					
+					// draw the squares
+					for(index1 = 0; index1 < boardSize; index1++){
+						
+						ctx.beginPath();
+						ctx.moveTo(index1*scale + scale/2 +50, 10  + scale/2);
+						ctx.lineTo(index1*scale + scale/2 +50, 610 - scale/2);
+						ctx.stroke();
+						
+						ctx.beginPath();
+						ctx.moveTo(50  + scale/2, index1*scale + scale/2 + 10);
+						ctx.lineTo(650 - scale/2, index1*scale + scale/2 + 10);
+						ctx.stroke();
+					}
+					
+					// draw the stones and dot markers
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+							
+							//dots
+							if(index1 == (boardSize - 1)/2 && index2 == index1 ||
+							   boardSize >= 13 && (index1 == 3 || index1 == boardSize - 4) && (index2 == 3 || index2 == boardSize - 4) ||
+							   boardSize >= 19 && (((index1 == 3 || index1 == boardSize - 4) && index2 == (boardSize - 1)/2) ||
+							                       ((index2 == 3 || index2 == boardSize - 4) && index1 == (boardSize - 1)/2)
+							                      )){
+								ctx.beginPath();
+								ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*0.07, 0, Math.PI * 2);
+								ctx.fillStyle = "black";
+								ctx.fill();
+								ctx.closePath();
+							}
+							
+							//stones
+							if(tile[index1][index2].stone > 0){
+								ctx.beginPath();
+								ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
+								ctx.fillStyle = teamColor[tile[index1][index2].stone];
+								ctx.fill();
+								ctx.closePath();
+							}
+						}
+					}
+				}
+				else{
+					ctx.beginPath();
+					ctx.fillStyle = "#ffc107";
+					ctx.fillRect(canvas.width/2 - 250, canvas.height/2 - 50, 100, 100);
+					ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
+					ctx.fillRect(canvas.width/2 + 150, canvas.height/2 - 50, 100, 100);
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.font = "70px Arial";
+					ctx.fillStyle = "#BA4A00";
+					ctx.textAlign = "center";
 					ctx.fillText("Select board size",  canvas.width/2, canvas.height/2 - 150);
 					ctx.fillText("9",  canvas.width/2 - 200, canvas.height/2 + 20);
 					ctx.fillText("13", canvas.width/2      , canvas.height/2 + 20);
 					ctx.fillText("19", canvas.width/2 + 200, canvas.height/2 + 20);
-				    ctx.closePath();
-                }
+					ctx.closePath();
+				}
 				
 				
 				// when game is over
@@ -626,33 +625,34 @@
 					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
 					
 					ctx.font = "70px Arial";
-		    		ctx.fillStyle = teamColor[winner];
-		    		ctx.textAlign = "center";
+					ctx.fillStyle = teamColor[winner];
+					ctx.textAlign = "center";
 					ctx.fillText(teamColor[winner] + " Team wins!", canvas.width/2, 200);
 					ctx.fillText(score[winner] + " - " + score[3 - winner], canvas.width/2, 300);
 				}
 				if(winner == 3){
                     
-                    box[1] = 150;
-                    box[2] = (50 + 20 * (score[1].toString().length + score[2].toString().length));
-                    
-                    ctx.fillStyle = teamColor[2];
+					box[1] = 150;
+					box[2] = (50 + 20 * (score[1].toString().length + score[2].toString().length));
+					
+					ctx.fillStyle = teamColor[2];
 					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
 					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
-				
+					
 					ctx.font = "70px Arial";
-		    		ctx.fillStyle = teamColor[1];
-		    		ctx.textAlign = "center";
+					ctx.fillStyle = teamColor[1];
+					ctx.textAlign = "center";
 					ctx.fillText("It's a Tie!", canvas.width/2, 200);
 					ctx.fillText(score[1] + " - " + score[2], canvas.width/2, 300);
 				}
 				
 				
 				
-       				setTimeout(draw, 10);
-			}    
+				
+				setTimeout(draw, 10);
+			}
 			draw();
-        		
-   		 </SCRIPT>
+			
+		</SCRIPT>
 	</body>
 </html>
