@@ -209,7 +209,7 @@
 					}
 					
 					if(blobCheck == 1){
-						for(index1 = 0; index1 < boardSize; index1++){
+						for(index1 = 0; index1 < boardSize; index1++){//bfhbhukgbersugbsbvsd
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
@@ -220,29 +220,6 @@
 										tilesMarked += 1;
 									}
 								}
-								
-								/*
-								
-								if(index1 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
-								   tile[index1+1][index2].blob == 1){
-									tile[index1+1][index2].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index1 > 0 && tile[index1][index2].stone == 0 &&
-								   tile[index1-1][index2].blob == 1){
-									tile[index1-1][index2].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index2 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
-								   tile[index1][index2+1].blob == 1){
-									tile[index1][index2+1].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index2 > 0 && tile[index1][index2].stone == 0 &&
-								   tile[index1][index2-1].blob == 1){
-									tile[index1][index2-1].safe = 1;
-									tilesMarked += 1;
-								}*/
 							}
 						}
 					}
@@ -253,29 +230,14 @@
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
 								
-								if(index1 < (boardSize - 1) && tile[index1][index2].stone == tile[index1+1][index2].stone &&
-								   tile[index1  ][index2].safe == 1 &&
-								   tile[index1+1][index2].safe == 0){
-									tile[index1+1][index2].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index1 > 0 && tile[index1][index2].stone == tile[index1-1][index2].stone &&
-								   tile[index1  ][index2].safe == 1 &&
-								   tile[index1-1][index2].safe == 0){
-									tile[index1-1][index2].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index2 < (boardSize - 1) && tile[index1][index2].stone == tile[index1][index2+1].stone &&
-								   tile[index1][index2  ].safe == 1 &&
-								   tile[index1][index2+1].safe == 0){
-									tile[index1][index2+1].safe = 1;
-									tilesMarked += 1;
-								}
-								if(index2 > 0 && tile[index1][index2].stone == tile[index1][index2-1].stone &&
-								   tile[index1][index2  ].safe == 1 &&
-								   tile[index1][index2-1].safe == 0){
-									tile[index1][index2-1].safe = 1;
-									tilesMarked += 1;
+								for(index3 = 0;index3 < 4;index3++){
+									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
+									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+									   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+										tilesMarked += 1;
+									}
 								}
 							}
 						}
@@ -293,7 +255,7 @@
 					}
 					
 					
-					//========================================================================================
+					//===============================================================================================================================================
 					
 					
 					
@@ -305,8 +267,18 @@
 						tilesMarked = 0;
 						
 						for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
-								
+							for(index2 = 0; index2 < boardSize; index2++){ //very problematic
+								/*
+								for(index3 = 0;index3 < 4;index3++){
+									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
+									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									   //tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+									   tile[index1][index2].blob == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+										tilesMarked += 1;
+									}
+								}*/
+								/*
 								if(index1 < (boardSize - 1) && tile[index1][index2].stone == tile[index1+1][index2].stone &&
 								   tile[index1  ][index2].blob == 1 &&
 								   tile[index1+1][index2].blob == 0){
@@ -330,7 +302,7 @@
 								   tile[index1][index2-1].blob == 0){
 									tile[index1][index2-1].blob = 1;
 									tilesMarked += 1;
-								}
+								}*/
 							}
 						}
 						if(tilesMarked > 0){blobCheck = 1;}
@@ -339,6 +311,8 @@
 					if(blobCheck == 1){
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
+								
+								
 								
 								if(index1 < (boardSize - 1) && tile[index1][index2].stone == 0 &&
 								   tile[index1+1][index2].blob == 1){
@@ -623,7 +597,7 @@
 					ctx.fillStyle = teamColor[3 - winner];
 					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
 					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
-					
+
 					ctx.font = "70px Arial";
 					ctx.fillStyle = teamColor[winner];
 					ctx.textAlign = "center";
