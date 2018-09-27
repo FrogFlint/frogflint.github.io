@@ -107,8 +107,19 @@
 			    };
 			}
 			
-			function spreadTile(type, loop){
-				
+			
+			//while loop ";condition;"
+			function spreadTile(layer, start, loop, condition, statement){  //start, loop, contition, and statement are arrays
+				for(index3 = 0;index3 < start.length;index3++){
+					eval(start[index3] + ";");
+				}
+				if(layer < loop.length){
+					
+					eval("for(" + loop[layer] + "){" + 
+					     "spreadTile(" + layer - 1 + ",\"\", loop, condition, statement);"
+					     );
+				}
+				else{}
 			}
 			
 			
