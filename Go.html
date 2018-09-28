@@ -52,6 +52,7 @@
 			
 			var lastTile = [[]];
 			var undid = 0;
+			var nestIfs = 0;
 			
 			
 			var turn = 1;
@@ -77,7 +78,7 @@
 					for(index2 = 0; index2 < boardSize; index2++){
 						
 						tile[index1][index2] = {
-							stone: 0,//Math.floor(Math.random()*3),
+							stone: 0,
 							blob: 0,
 							safe:0,
 							
@@ -107,19 +108,37 @@
 			    };
 			}
 			
+			function onBoard(x,y){
+				if(x >= 0 && x < boardSize && y >= 0 && y < boardSize){return true;}
+				else{return false;}
+			}
+			
 			
 			//while loop ";condition;"
-			function spreadTile(layer, start, loop, condition, statement){  //start, loop, contition, and statement are arrays
-				for(index3 = 0;index3 < start.length;index3++){
-					eval(start[index3] + ";");
+			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
+				for(index3 = 0;index3 < start[layer].length;index3++){
+					eval(start[layer][index3]);
 				}
 				if(layer < loop.length){
 					
 					eval("for(" + loop[layer] + "){" + 
-					     "spreadTile(" + layer - 1 + ",\"\", loop, condition, statement);"
+					     "spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);"
 					     );
+					for(index3 = 0;index3 < end[layer].length;index3++){
+						eval(end[layer][index3]);
+					}
 				}
-				else{}
+				else{
+					nestIfs = 1;
+					for(index3 = 0;index3 < condition.length;index3++){
+						eval("if(!(" + condition[index3] + ")){ nestIfs = 0;}");
+					}
+					if(nestIfs == 1){
+						for(index3 = 0;index3 < statement.length;index3++){
+							eval(statement[index3]);
+						}
+					}
+				}
 			}
 			
 			
@@ -176,14 +195,17 @@
 					tilesMarked = 0;
 					
 					for(index3 = 0;index3 < 4;index3++){
-						if(selected.x + adjacent[index3].x >= 0 && selected.x + adjacent[index3].x < boardSize &&
-						   selected.y + adjacent[index3].y >= 0 && selected.y + adjacent[index3].y < boardSize &&
+						if(onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y) == true &&
 						   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
 						   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
 							tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
 							tilesMarked += 1;
 						}
 					}
+					
+					
+					//spreadTile(0, [["blobCheck = 0;","if(tilesMarked > 0){blobCheck = 1;}"],["tilesMarked = 0;"]], 
+					//	   [";tilesMarked > 0;","index1 = 0; index1 < boardSize; index1++","index2 = 0; index2 < boardSize; index2++","index3 = 0;index3 < 4;index3++"], condition, statement);
 					
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
