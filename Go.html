@@ -41,6 +41,7 @@
 			var index1 = 0;
 			var index2 = 0;
 			var index3 = 0;
+			var index4 = 0;
 			var adjacent = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
 			
 			var tile = [[]];
@@ -116,26 +117,24 @@
 			
 			//while loop ";condition;"
 			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
-				for(index3 = 0;index3 < start[layer].length;index3++){
-					eval(start[layer][index3]);
+				for(index4 = 0;layer < start.length && index4 < start[layer].length;index4++){
+					eval(start[layer][index4]);
 				}
 				if(layer < loop.length){
 					
-					eval("for(" + loop[layer] + "){" + 
-					     "spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);"
-					     );
-					for(index3 = 0;index3 < end[layer].length;index3++){
-						eval(end[layer][index3]);
+					eval("for(" + loop[layer] + "){spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);}");
+					for(index4 = 0;index4 < end[layer].length;index4++){
+						eval(end[layer][index4]);
 					}
 				}
 				else{
 					nestIfs = 1;
-					for(index3 = 0;index3 < condition.length;index3++){
-						eval("if(!(" + condition[index3] + ")){ nestIfs = 0;}");
+					for(index4 = 0;index4 < condition.length;index4++){
+						eval("if(!(" + condition[index4] + ")){ nestIfs = 0;}");
 					}
 					if(nestIfs == 1){
-						for(index3 = 0;index3 < statement.length;index3++){
-							eval(statement[index3]);
+						for(index4 = 0;index4 < statement.length;index4++){
+							eval(statement[index4]);
 						}
 					}
 				}
@@ -155,22 +154,22 @@
 						boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
 						switch(boardSize){
 						    case 0:
-							boardSize = 9;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 9;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    case 2:
-							boardSize = 13;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 13;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    case 4:
-							boardSize = 19;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 19;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    default:
-							break;
+								break;
 						}
 					}
 				}
@@ -195,7 +194,7 @@
 					tilesMarked = 0;
 					
 					for(index3 = 0;index3 < 4;index3++){
-						if(onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y) == true &&
+						if(onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y) &&
 						   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
 						   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
 							tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
@@ -204,9 +203,12 @@
 					}
 					
 					
-					//spreadTile(0, [["blobCheck = 0;","if(tilesMarked > 0){blobCheck = 1;}"],["tilesMarked = 0;"]], 
-					//	   [";tilesMarked > 0;","index1 = 0; index1 < boardSize; index1++","index2 = 0; index2 < boardSize; index2++","index3 = 0;index3 < 4;index3++"], condition, statement);
-					
+					spreadTile(0, [["blobCheck = 0;","if(tilesMarked > 0){blobCheck = 1;}"],["tilesMarked = 0;"]], [[""],["if(tilesMarked > 0){blobCheck = 1;}"]],
+						   [";tilesMarked > 0;","index1 = 0; index1 < boardSize; index1++","index2 = 0; index2 < boardSize; index2++","index3 = 0;index3 < 4;index3++"],
+						   ["onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y)","tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone",
+						   "tile[index1][index2].blob == 1","tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0"], 
+						   ["tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;","tilesMarked += 1;"]);
+					/*
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
 					
@@ -217,8 +219,7 @@
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
 									   tile[index1][index2].blob == 1 &&
 									   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
@@ -229,15 +230,14 @@
 							}
 						}
 						if(tilesMarked > 0){blobCheck = 1;}
-					}
+					}*/
 					
 					if(blobCheck == 1){
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
 										tilesMarked += 1;
@@ -254,8 +254,7 @@
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
 									   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
@@ -293,8 +292,7 @@
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
 									   tile[index1][index2].blob == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
@@ -311,8 +309,7 @@
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
 										tilesMarked += 1;
@@ -329,8 +326,7 @@
 							for(index2 = 0; index2 < boardSize; index2++){
 								
 								for(index3 = 0;index3 < 4;index3++){
-									if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-									   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+									if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 									   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
 									   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
@@ -386,8 +382,7 @@
 								
 							for(index3 = 0;index3 < 4;index3++){
 								
-								if(index1 + adjacent[index3].x >= 0 && index1 + adjacent[index3].x < boardSize &&
-								   index2 + adjacent[index3].y >= 0 && index2 + adjacent[index3].y < boardSize &&
+								if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
 								   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone == 0){
 									if(tile[index1][index2].scoreBlob1 > tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob1){	
 										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob1 = 1;
