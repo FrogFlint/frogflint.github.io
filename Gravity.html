@@ -42,7 +42,7 @@
 			var Ydistance = 0;
 			var speed = 0;
 			
-			var G = 100;
+			var G = 1;
 			
 			
 			
@@ -50,9 +50,9 @@
 				planet[index] = {
 					Xpos:Math.random()*canvas.width,
 					Ypos:Math.random()*canvas.height,
-					Xspeed:0,
-					Yspeed:0,
-					size:5,
+					Xspeed:Math.random()*6 - 3,
+					Yspeed:Math.random()*6 - 3,
+					size:Math.random()*10 + 1,
 					color:"#b02000",
 					off:0
 				}
@@ -78,52 +78,54 @@
 				
 				for(index = 0;index < maxPlanets;index++){
 					for(index2 = 0;index2 < maxPlanets;index2++){
-						Xdistance = planet[index].Xpos + planet[index2].Xpos;
-						Ydistance = planet[index].Ypos + planet[index2].Ypos;
-						distance = -Math.sqrt(Math.pow(Xdistance, 2) + Math.pow(Ydistance, 2));
-						
-						if(distance == 0){Xdistance = 0;Ydistance = 0;speed = 0;}
-						else{
-							Xdistance /= distance;
-							Ydistance /= distance;
-							speed = G * (planet[index].size + planet[index2].size) / (Math.pow(distance,2) * planet[index].size);
+						if(planet[index].off + planet[index2].off == 0){
+							Xdistance = planet[index].Xpos - planet[index2].Xpos;
+							Ydistance = planet[index].Ypos - planet[index2].Ypos;
+							distance = Math.sqrt(Math.pow(Xdistance, 2) + Math.pow(Ydistance, 2));
+							
+							if(distance == 0){Xdistance = 0;Ydistance = 0;speed = 0;}
+							else{
+								Xdistance /= distance;
+								Ydistance /= distance;
+								speed = G * planet[index2].size / Math.pow(distance,1);
+							}
+							
+							planet[index].Xspeed -= Xdistance * speed;
+							planet[index].Yspeed -= Ydistance * speed;
 						}
-						
-						planet[index].Xspeed += Xdistance * speed;
-						planet[index].Yspeed += Ydistance * speed;
 					}
 				}
 				
 				
 				
 				for(index = 0;index < maxPlanets;index++){
-					planet[index].Xpos += planet[index].Xspeed;
-					planet[index].Ypos += planet[index].Yspeed;
+					planet[index].Xpos += planet[index].Xspeed / planet[index].size;
+					planet[index].Ypos += planet[index].Yspeed / planet[index].size;
 					
-					if(planet[index].Xpos < 0){
-						planet[index].Xpos = 0;
-						planet[index].Xspeed *= -1;
-					}
-					if(planet[index].Xpos > canvas.width){
-						planet[index].Xpos = canvas.width;
-						planet[index].Xspeed *= -1;
-					}
-					if(planet[index].Ypos < 0){
-						planet[index].Ypos = 0;
-						planet[index].Yspeed *= -1;
-					}
-					if(planet[index].Ypos > canvas.height){
-						planet[index].Ypos = canvas.height;
-						planet[index].Yspeed *= -1;
+					
+					for(index2 = 0;index2 < maxPlanets;index2++){
+						if(planet[index].off + planet[index2].off == 0){
+							Xdistance = planet[index].Xpos - planet[index2].Xpos;
+							Ydistance = planet[index].Ypos - planet[index2].Ypos;
+							distance = Math.sqrt(Math.pow(Xdistance, 2) + Math.pow(Ydistance, 2));
+							if(distance <= planet[index].size + planet[index2].size){
+								planet[index].size += planet[index2].size;
+								planet[index].Xspeed += planet[index2].Xspeed;
+								planet[index].Yspeed += planet[index2].Yspeed;
+								planet[index2].off = 1;
+							}
+						}
 					}
 					
 					
 					
-					ctx.beginPath();
-					ctx.arc(planet[index].Xpos,planet[index].Ypos,planet[index].size, 0, Math.PI * 2);
-					ctx.fillStyle = planet[index].color;
-					ctx.fill();
-					ctx.closePath();
+					if(planet[index].off == 0){
+						ctx.beginPath();
+						ctx.arc(planet[index].Xpos,planet[index].Ypos,planet[index].size, 0, Math.PI * 2);
+						ctx.fillStyle = planet[index].color;
+						ctx.fill();
+						ctx.closePath();
+					}
 				}
 				
 				
