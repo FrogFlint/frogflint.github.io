@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var maxPlanets = 300;
+			var maxPlanets = 150;
 			var planet = [];
 			var index = 0;
 			var index2 = 0;
@@ -45,21 +45,19 @@
 			var G = 1;
 			
 			
-			var camera = {x:0,y:0,zoom:1};
-			
-			var max,min = {x:0,y:0};
-			//var sum = 0;
-			//var count = 0;
+			var camera = {x:0,y:0,slide:false,speed:0.05,zoom:1};
+			var center = 0;
+			var center2 = 0;
 			
 			
 			
 			for(index = 0;index < maxPlanets;index++){
 				planet[index] = {
-					Xpos:Math.random()*canvas.width,
-					Ypos:Math.random()*canvas.height,
+					Xpos:(Math.random()*1.5 - 0.25)*canvas.width,
+					Ypos:(Math.random()*1.5 - 0.25)*canvas.height,
 					Xspeed:Math.random()*18 - 9,
 					Yspeed:Math.random()*18 - 9,
-					size:Math.random()*0 + 5,
+					size:(Math.random()*17 + 5) ,//* 100/maxPlanets,
 					mass:0,
 					color:"#b02000",
 					collisions:0,
@@ -86,6 +84,9 @@
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
 				
+				
+				
+				//gravity
 				for(index = 0;index < maxPlanets;index++){
 					for(index2 = 0;index2 < maxPlanets;index2++){
 						if(planet[index].off + planet[index2].off == 0){
@@ -107,11 +108,8 @@
 				}
 				
 				
-				
+				//collisions
 				for(index = 0;index < maxPlanets;index++){
-					
-					
-					//collisions
 					for(index2 = 0;index2 < maxPlanets;index2++){
 						if(index != index2 && planet[index].off + planet[index2].off == 0){
 							Xdistance = planet[index].Xpos - planet[index2].Xpos;
@@ -132,13 +130,39 @@
 				}
 				
 				//camera
-				min,max = 0;
+				center,center2 = 0;
 				for(index = 0;index < maxPlanets;index++){
-					if(planet[index].size >= 3){
-						max.x = Math.max(max.x,planet[index].Xpos);
+					if(planet[index].off == 0){
+						if(planet[index].mass > planet[center2].mass){
+							center2 = index;
+						}
+						if(planet[center2].mass > planet[center].mass){
+							center += center2;
+							center2 = center - center2;
+							center = center - center2;
+							camera.slide = true;
+						}
 					}
 				}
-				camera.zoom = (max.x - min.x)/canvas.width;
+				
+				//move the camera
+				if(planet[center].size >= 30){
+					if(camera.slide == true){
+						if(planet[center].mass / planet[center2].mass <= 2){
+							camera.x += (((planet[center].Xpos + planet[center2].Xpos)/2 - canvas.width /2) - camera.x) * camera.speed;
+							camera.y += (((planet[center].Ypos + planet[center2].Ypos)/2 - canvas.height/2) - camera.y) * camera.speed;
+						}else{
+							camera.x += ((planet[center].Xpos - canvas.width /2) - camera.x) * camera.speed;
+							camera.y += ((planet[center].Ypos - canvas.height/2) - camera.y) * camera.speed;
+						}
+					}
+					else{
+						camera.x = planet[center].Xpos;
+						camera.y = planet[center].Ypos;
+					}
+					
+					if(planet[center].mass / planet[center2].mass <= 1.5){camera.slide = true;}
+				}
 				
 				
 				
@@ -149,7 +173,7 @@
 						planet[index].Ypos += planet[index].Yspeed / planet[index].size;
 						
 						ctx.beginPath();
-						ctx.arc(planet[index].Xpos,planet[index].Ypos,planet[index].size, 0, Math.PI * 2);
+						ctx.arc((planet[index].Xpos - camera.x)*camera.zoom + (canvas.width/2)*(1 - camera.zoom),(planet[index].Ypos - camera.y)*camera.zoom + (canvas.height/2)*(1 - camera.zoom),planet[index].size * camera.zoom, 0, Math.PI * 2);
 						ctx.fillStyle = "hsla(" + planet[index].collisions * 314/(maxPlanets*2) + ", 100%, 50%, 1)";//planet[index].color;
 						ctx.fill();
 						ctx.closePath();
