@@ -45,7 +45,7 @@
 			var G = 1;
 			
 			
-			var camera = {x:0,y:0,slide:false,speed:0.05,zoom:1,zoomRange:3000};
+			var camera = {x:0,y:0,slide:false,speed:0.05,zoom:1,zoomRange:2000};
 			var center = 0;
 			var center2 = 0;
 			var binaryRatio = 2;
@@ -63,7 +63,7 @@
 					Ypos:Math.cos(rand[0]) * rand[1] + canvas.height/2,
 					Xspeed:Math.random()*18 - 9,
 					Yspeed:Math.random()*18 - 9,
-					size:(Math.random()*17 + 5) ,//* 100/maxPlanets,
+					size:(Math.random()*17 + 5),
 					mass:0,
 					color:"#b02000",
 					collisions:0,
@@ -201,6 +201,8 @@
 				camera.zoom = Math.min(camera.zoom, 1);
 				
 				
+				
+				//camera.zoom = 0.2; //temporary
 				
 				//draw
 				for(index = 0;index < maxPlanets;index++){
