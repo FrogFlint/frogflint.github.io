@@ -55,6 +55,13 @@
 			var undid = 0;
 			var nestIfs = 0;
 			
+			var a = {start:0, end:0, loop:0, condition:0, statement:0};
+			a.start = ["","tilesMarked = 0;","blobCheck = 0;","tile[selected.x][selected.y].blob = 1;","blobCheck = 1;","tilesMarked = 1;","if(tilesMarked > 0){blobCheck = 1;}","","",""];
+			a.end = ["","if(tilesMarked > 0){blobCheck = 1;}","undid = 0;"];
+			a.loop = ["tilesMarked > 0","index1 = 0; index1 < boardSize; index1++","index2 = 0; index2 < boardSize; index2++","index3 = 0;index3 < 4;index3++"];
+			a.condition = ["onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y)","","","","","","","","",""];
+			a.statement = ["","","","","","","","","",""];
+			
 			
 			var turn = 1;
 			var teamColor = ["","Black","White"];
@@ -62,7 +69,7 @@
 			var winner = 0;
 			var score = ["",0,0];
 			
-			var box = [0,0]
+			var box = [0,0];
 			
 			
 			/*
@@ -202,13 +209,13 @@
 						}
 					}
 					
-					
+					/*
 					spreadTile(0, [["blobCheck = 0;","if(tilesMarked > 0){blobCheck = 1;}"],["tilesMarked = 0;"]], [[""],["if(tilesMarked > 0){blobCheck = 1;}"]],
 						   [";tilesMarked > 0;","index1 = 0; index1 < boardSize; index1++","index2 = 0; index2 < boardSize; index2++","index3 = 0;index3 < 4;index3++"],
 						   ["onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y)","tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone",
 						   "tile[index1][index2].blob == 1","tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0"], 
-						   ["tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;","tilesMarked += 1;"]);
-					/*
+						   ["tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;","tilesMarked += 1;"]);*/
+					
 					blobCheck = 0;
 					if(tilesMarked > 0){blobCheck = 1;}
 					
@@ -230,7 +237,7 @@
 							}
 						}
 						if(tilesMarked > 0){blobCheck = 1;}
-					}*/
+					}
 					
 					if(blobCheck == 1){
 						for(index1 = 0; index1 < boardSize; index1++){
