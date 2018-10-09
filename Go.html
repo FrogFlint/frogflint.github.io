@@ -132,7 +132,7 @@
 			}
 			
 			
-			//while loop ";condition;"
+			
 			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
 				for(index4 = 0;layer < start.length && index4 < start[layer].length;index4++){
 					eval(a.start[start[layer][index4]]);
@@ -144,6 +144,7 @@
 					nestIfs = 1;
 					for(index4 = 0;index4 < condition.length;index4++){
 						eval("if(!(" + a.condition[condition[index4]] + ")){ nestIfs = 0;}");
+						if(nestIfs == 0){break;}
 					}
 					if(nestIfs == 1){
 						for(index4 = 0;index4 < statement.length;index4++){
@@ -208,9 +209,9 @@
 						undid = 0;*/
 
 						
-						//spreadTile(0,[[7,1]],[[]],[3],[1,2,3],[1,0]);
+						spreadTile(0,[[7,1]],[[]],[3],[1,2,3],[1,0]);
 
-						tile[selected.x][selected.y].stone = turn;
+						/*tile[selected.x][selected.y].stone = turn;
 						tilesMarked = 0;
 
 						for(index3 = 0;index3 < 4;index3++){
@@ -220,12 +221,12 @@
 								tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
 								tilesMarked += 1;
 							}
-						}
+						}*/
 
 
-						//spreadTile(0,[[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
+						spreadTile(0,[[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
 
-						blobCheck = 0;
+						/*blobCheck = 0;
 						if(tilesMarked > 0){blobCheck = 1;}
 
 						while(tilesMarked > 0){
@@ -246,9 +247,11 @@
 								}
 							}
 							if(tilesMarked > 0){blobCheck = 1;}
-						}
-
+						}*/
+						
 						if(blobCheck == 1){
+							spreadTile(0,[[]],[[]],[1,2,3],[0,7,8],[3,0]);
+							/*
 							for(index1 = 0; index1 < boardSize; index1++){
 								for(index2 = 0; index2 < boardSize; index2++){
 
@@ -260,9 +263,12 @@
 										}
 									}
 								}
-							}
+							}*/
 						}
-
+						
+						
+						//spreadTile(0,[[],[1]],[[]],[0,1,2,3],[0,4,8,9],[3,0]);
+						
 						while(tilesMarked > 0){
 							tilesMarked = 0;
 
@@ -293,7 +299,7 @@
 						}
 
 
-						//===========================================================================================================================================================
+						//=============================================================================================================================================================================
 
 
 
