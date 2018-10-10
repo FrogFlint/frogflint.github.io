@@ -126,7 +126,7 @@
 			}
 			
 			function onBoard(x,y){
-				return x >= 0 && x < boardSize && y >= 0 && y < boardSize ? true : false;
+				return (x >= 0 && x < boardSize && y >= 0 && y < boardSize) ? true : false;
 				//if(x >= 0 && x < boardSize && y >= 0 && y < boardSize){return true;}
 				//else{return false;}
 			}
@@ -134,13 +134,15 @@
 			
 			
 			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
-				for(index4 = 0;layer < start.length && index4 < start[layer].length;index4++){
-					eval(a.start[start[layer][index4]]);
+				if(layer < start.length){
+					for(index4 = 0;index4 < start[layer].length;index4++){
+						eval(a.start[start[layer][index4]]);
+					}
 				}
 				if(layer < loop.length){
 					eval("for(" + a.loop[loop[layer]] + "){spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);}");
 				}
-				else if(layer == loop.length){
+				else{
 					nestIfs = 1;
 					for(index4 = 0;index4 < condition.length;index4++){
 						eval("if(!(" + a.condition[condition[index4]] + ")){ nestIfs = 0;}");
@@ -152,8 +154,10 @@
 						}
 					}
 				}
-				for(index4 = 0;layer < end.length && index4 < end[layer].length;index4++){
-					eval(a.end[end[layer][index4]]);
+				if(layer < end.length){
+					for(index4 = 0;index4 < end[layer].length;index4++){
+						eval(a.end[end[layer][index4]]);
+					}
 				}
 			}
 			
@@ -225,7 +229,7 @@
 
 
 						spreadTile(0,[[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
-
+						
 						/*blobCheck = 0;
 						if(tilesMarked > 0){blobCheck = 1;}
 
@@ -251,8 +255,8 @@
 						
 						if(blobCheck == 1){
 							spreadTile(0,[[]],[[]],[1,2,3],[0,7,8],[3,0]);
-							/*
-							for(index1 = 0; index1 < boardSize; index1++){
+							
+							/*for(index1 = 0; index1 < boardSize; index1++){
 								for(index2 = 0; index2 < boardSize; index2++){
 
 									for(index3 = 0;index3 < 4;index3++){
@@ -267,9 +271,9 @@
 						}
 						
 						
-						//spreadTile(0,[[],[1]],[[]],[0,1,2,3],[0,4,8,9],[3,0]);
+						spreadTile(0,[[],[1]],[[]],[0,1,2,3],[0,4,8,9],[3,0]);
 						
-						while(tilesMarked > 0){
+						/*while(tilesMarked > 0){
 							tilesMarked = 0;
 
 							for(index1 = 0; index1 < boardSize; index1++){
@@ -285,7 +289,7 @@
 									}
 								}
 							}
-						}
+						}*/
 
 						for(index1 = 0; index1 < boardSize; index1++){
 							for(index2 = 0; index2 < boardSize; index2++){
