@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Color Game</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="810" height="630"></canvas>
+
+	<body style="background-color:#535353;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			
+			var tile = [[]];
+			var player = [];
+			var bullet = [];
+			
+			var index1 = 0;
+			var index2 = 0;
+			
+			var tileSize = 30;
+			var humanPlayers = 1;
+			var teamcolor = ["","White","Black"];
+			
+			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
+			
+			var mouse = {x:0,y:0};
+			
+			
+			
+			
+			
+			for(index1 = 0;index1 < Math.floor(canvas.width / tileSize);index1++){
+				tile[index1] = [];
+				for(index2 = 0;index2 < Math.floor(canvas.height / tileSize);index2++){
+					tile[index1][index2] = Math.floor(2 * index2 / Math.floor(canvas.height / tileSize)) + 1;
+				}
+			}
+			
+			
+			
+			function getMousePos(canvas, evt) {
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: (evt.clientX - rect.left),
+			      y: (evt.clientY - rect.top)
+			    };
+			}
+			
+			
+			function distance(x1,y1,x2,y2){
+				return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+			}
+			
+			
+			function movePlayer(team, index){}
+			function moveBullet(team, index){}
+			function shoot(team, player, x, y){}
+			
+			function drawBoard(){
+				for(index1 = 0;index1 < )
+			}
+			function drawPlayers(){}
+			function drawBullets(){}
+			
+			
+			
+			
+			
+			
+			
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				
+				
+				document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keyup", keyUpHandler, false);
+				function keyDownHandler(e) {
+					
+					
+				}
+				function keyUpHandler(e) {
+					
+					
+				}
+				
+				
+				
+				//document.addEventListener("click", functionName);
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				setTimeout(draw, 50);
+			}
+			draw();
+			
+		</SCRIPT>
+	</body>
+</html>
