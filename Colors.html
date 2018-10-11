@@ -21,7 +21,7 @@
 
 <body>
 
-	<canvas id="myCanvas" width="810" height="630"></canvas>
+	<canvas id="myCanvas" width="800" height="600"></canvas>
 
 	<body style="background-color:#535353;">
 
@@ -33,17 +33,19 @@
 			
 			
 			var tile = [[]];
-			var player = [];
+			var player = [[]];
 			var bullet = [];
 			
 			var index1 = 0;
 			var index2 = 0;
 			
-			var tileSize = 30;
-			var humanPlayers = 1;
-			var teamcolor = ["","White","Black"];
-			
+			var tileSize = 50;
 			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
+			var teamSize = 4;
+			
+			var humanPlayers = 1;
+			var teamColor = ["","White","Black"];
+			
 			
 			var mouse = {x:0,y:0};
 			
@@ -51,10 +53,21 @@
 			
 			
 			
-			for(index1 = 0;index1 < Math.floor(canvas.width / tileSize);index1++){
+			
+			
+			for(index1 = 0;index1 < boardSize.x;index1++){
 				tile[index1] = [];
-				for(index2 = 0;index2 < Math.floor(canvas.height / tileSize);index2++){
-					tile[index1][index2] = Math.floor(2 * index2 / Math.floor(canvas.height / tileSize)) + 1;
+				for(index2 = 0;index2 < boardSize.y;index2++){
+					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
+					if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
+						tile[index1][index2] = 3 - tile[index1][index2];
+					}
+				}
+			}
+			for(index1 = 1;index1 <= 2;index1++){
+				tile[index1] = [];
+				for(index2 = 0;index2 < boardSize.y;index2++){
+					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
 				}
 			}
 			
@@ -79,10 +92,19 @@
 			function shoot(team, player, x, y){}
 			
 			function drawBoard(){
-				for(index1 = 0;index1 < )
+				for(index1 = 0;index1 < boardSize.x;index1++){
+					for(index2 = 0;index2 < boardSize.y;index2++){
+						ctx.beginPath();
+						ctx.fillStyle = teamColor[tile[index1][index2]];
+						ctx.fillRect(index1 * tileSize, index2 * tileSize, tileSize, tileSize);
+						ctx.closePath();
+					}
+				}
 			}
 			function drawPlayers(){}
 			function drawBullets(){}
+			
+			function AI(){}
 			
 			
 			
@@ -118,7 +140,7 @@
 				
 				
 				
-				
+				drawBoard();
 				
 				
 				
