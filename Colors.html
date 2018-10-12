@@ -33,18 +33,19 @@
 			
 			
 			var tile = [[]];
-			var player = [[]];
-			var bullet = [];
+			var player = [null,[],[]];
+			var bullet = [null,[],[]];
 			
 			var index1 = 0;
 			var index2 = 0;
 			
 			var tileSize = 50;
 			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
-			var teamSize = 4;
+			var teamSize = 3;
+			var maxMoveSpeed = 6;
 			
-			var humanPlayers = 1;
-			var teamColor = ["","White","Black"];
+			var humanPlayer = {team:2,index:0};
+			var teamColor = ["Red","White","Black"];
 			
 			
 			var mouse = {x:0,y:0};
@@ -59,26 +60,44 @@
 				tile[index1] = [];
 				for(index2 = 0;index2 < boardSize.y;index2++){
 					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
-					if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
+					/*if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
 						tile[index1][index2] = 3 - tile[index1][index2];
-					}
+					}*/
 				}
 			}
 			for(index1 = 1;index1 <= 2;index1++){
-				tile[index1] = [];
-				for(index2 = 0;index2 < boardSize.y;index2++){
-					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
+				player[index1] = [];
+				for(index2 = 0;index2 < teamSize;index2++){
+					player[index1][index2] = {
+						Xpos:0,
+						Ypos:0,
+						Xspeed:0,
+						Yspeed:0,
+						dead:false,
+						reload:0,
+						human:false,
+						AI:"easy",
+						
+						up:0,
+						down:0,
+						left:0,
+						right:0
+					}
 				}
 			}
+			player[humanPlayer.team][humanPlayer.index].human = true;
+			player[humanPlayer.team][humanPlayer.index].AI = "none";
+			player[humanPlayer.team][humanPlayer.index].Xpos = 500;
+			player[humanPlayer.team][humanPlayer.index].Ypos = 500;
 			
 			
 			
 			function getMousePos(canvas, evt) {
-			    var rect = canvas.getBoundingClientRect();
-			    return {
-			      x: (evt.clientX - rect.left),
-			      y: (evt.clientY - rect.top)
-			    };
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: (evt.clientX - rect.left),
+					y: (evt.clientY - rect.top)
+				};
 			}
 			
 			
@@ -87,8 +106,15 @@
 			}
 			
 			
-			function movePlayer(team, index){}
-			function moveBullet(team, index){}
+			function movePlayers(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < teamSize;index2++){
+						player[index1][index2].Xpos += player[index1][index2].Xspeed;
+						player[index1][index2].Ypos += player[index1][index2].Yspeed;
+					}
+				}
+			}
+			function moveBullets(){}
 			function shoot(team, player, x, y){}
 			
 			function drawBoard(){
@@ -101,18 +127,79 @@
 					}
 				}
 			}
-			function drawPlayers(){}
+			function drawPlayers(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < teamSize;index2++){
+						ctx.beginPath();
+						ctx.fillStyle = teamColor[3 - index1];
+						ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 15, 0, Math.PI*2);
+						if(!player[index1][index2].dead){
+							ctx.fill();
+						}
+						ctx.closePath();
+					}
+				}
+			}
 			function drawBullets(){}
 			
+			function humanInput(){
+				if(player[humanPlayer.team][humanPlayer.index].up + player[humanPlayer.team][humanPlayer.index].down == 1){
+					player[humanPlayer.team][humanPlayer.index].Yspeed += 1*(player[humanPlayer.team][humanPlayer.index].down - player[humanPlayer.team][humanPlayer.index].up);
+					//player[humanPlayer.team][humanPlayer.index].Yspeed = Math.max(Math.min(player[humanPlayer.team][humanPlayer.index].Yspeed, ));
+				}
+				if(player[humanPlayer.team][humanPlayer.index].left + player[humanPlayer.team][humanPlayer.index].right == 1){
+					player[humanPlayer.team][humanPlayer.index].Xspeed += 1*(player[humanPlayer.team][humanPlayer.index].right - player[humanPlayer.team][humanPlayer.index].left);
+				}
+			}
 			function AI(){}
 			
 			
 			
 			
 			
+			//document.addEventListener("click", functionName);
 			
 			
-			function draw(evt) {
+
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+
+				if(e.keyCode == 87){
+					player[humanPlayer.team][humanPlayer.index].up = 1;
+				}
+				if(e.keyCode == 65){
+					player[humanPlayer.team][humanPlayer.index].left = 1;
+				}
+				if(e.keyCode == 83){
+					player[humanPlayer.team][humanPlayer.index].down = 1;
+				}
+				if(e.keyCode == 68){
+					player[humanPlayer.team][humanPlayer.index].right = 1;
+				}
+			}
+			function keyUpHandler(e) {
+
+				if(e.keyCode == 87){
+					player[humanPlayer.team][humanPlayer.index].up = 0;
+				}
+				if(e.keyCode == 65){
+					player[humanPlayer.team][humanPlayer.index].left = 0;
+				}
+				if(e.keyCode == 83){
+					player[humanPlayer.team][humanPlayer.index].down = 0;
+				}
+				if(e.keyCode == 68){
+					player[humanPlayer.team][humanPlayer.index].right = 0;
+				}
+			}
+			
+			
+			
+			
+			
+			
+			function draw(evt) {     //==============================================================================================
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
@@ -121,31 +208,18 @@
 				
 				
 				
-				document.addEventListener("keydown", keyDownHandler, false);
-				document.addEventListener("keyup", keyUpHandler, false);
-				function keyDownHandler(e) {
-					
-					
-				}
-				function keyUpHandler(e) {
-					
-					
-				}
+				humanInput();
 				
-				
-				
-				//document.addEventListener("click", functionName);
-				
-				
-				
+				movePlayers();
 				
 				
 				drawBoard();
+				drawPlayers();
 				
 				
 				
 				
-				setTimeout(draw, 50);
+				setTimeout(draw, 20);
 			}
 			draw();
 			
