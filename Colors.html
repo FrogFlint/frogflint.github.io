@@ -42,7 +42,9 @@
 			var tileSize = 50;
 			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
 			var teamSize = 3;
+			
 			var maxMoveSpeed = 6;
+			var playerAcceleration = 2;
 			
 			var humanPlayer = {team:2,index:0};
 			var teamColor = ["Red","White","Black"];
@@ -109,8 +111,14 @@
 			function movePlayers(){
 				for(index1 = 1;index1 <= 2;index1++){
 					for(index2 = 0;index2 < teamSize;index2++){
+						player[index1][index2].Xspeed = Math.max(Math.min(player[index1][index2].Xspeed, maxMoveSpeed), -maxMoveSpeed);
+						player[index1][index2].Yspeed = Math.max(Math.min(player[index1][index2].Yspeed, maxMoveSpeed), -maxMoveSpeed);
+						
 						player[index1][index2].Xpos += player[index1][index2].Xspeed;
 						player[index1][index2].Ypos += player[index1][index2].Yspeed;
+						
+						
+						if(player[index1][index2].Xpos - 15 < 0 || (index1 < 0 && )){}
 					}
 				}
 			}
@@ -142,13 +150,23 @@
 			}
 			function drawBullets(){}
 			
-			function humanInput(){
-				if(player[humanPlayer.team][humanPlayer.index].up + player[humanPlayer.team][humanPlayer.index].down == 1){
-					player[humanPlayer.team][humanPlayer.index].Yspeed += 1*(player[humanPlayer.team][humanPlayer.index].down - player[humanPlayer.team][humanPlayer.index].up);
-					//player[humanPlayer.team][humanPlayer.index].Yspeed = Math.max(Math.min(player[humanPlayer.team][humanPlayer.index].Yspeed, ));
-				}
-				if(player[humanPlayer.team][humanPlayer.index].left + player[humanPlayer.team][humanPlayer.index].right == 1){
-					player[humanPlayer.team][humanPlayer.index].Xspeed += 1*(player[humanPlayer.team][humanPlayer.index].right - player[humanPlayer.team][humanPlayer.index].left);
+			function translateInputs(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < teamSize;index2++){
+						
+						if(player[index1][index2].up + player[index1][index2].down == 1){
+							player[index1][index2].Yspeed += playerAcceleration * (player[index1][index2].down - player[index1][index2].up);
+						}
+						else if(player[index1][index2].Yspeed != 0){
+							player[index1][index2].Yspeed -= playerAcceleration * player[index1][index2].Yspeed / Math.abs(player[index1][index2].Yspeed);
+						}
+						if(player[index1][index2].left + player[index1][index2].right == 1){
+							player[index1][index2].Xspeed += playerAcceleration * (player[index1][index2].right - player[index1][index2].left);
+						}
+						else if(player[index1][index2].Xspeed != 0){
+							player[index1][index2].Xspeed -= playerAcceleration * player[index1][index2].Xspeed / Math.abs(player[index1][index2].Xspeed);
+						}
+					}
 				}
 			}
 			function AI(){}
@@ -208,7 +226,7 @@
 				
 				
 				
-				humanInput();
+				translateInputs();
 				
 				movePlayers();
 				
