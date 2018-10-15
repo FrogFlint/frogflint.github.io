@@ -39,6 +39,8 @@
 			var index1 = 0;
 			var index2 = 0;
 			
+			var cornerDistance = 0;
+			
 			var tileSize = 50;
 			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
 			var teamSize = 3;
@@ -106,6 +108,9 @@
 			function distance(x1,y1,x2,y2){
 				return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
 			}
+			function round(base, factor){
+				return base - (base % factor);
+			}
 			
 			
 			function movePlayers(){
@@ -140,6 +145,35 @@
 						  (Math.floor((player[index1][index2].Ypos + 15)/tileSize) != Math.floor((player[index1][index2].Ypos)/tileSize)) && 
 						  tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1)){
 							player[index1][index2].Ypos = Math.ceil(player[index1][index2].Ypos / tileSize) * tileSize - 15;
+							player[index1][index2].Yspeed = 0;
+						}
+						
+						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize), round(player[index1][index2].Ypos,tileSize));
+						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
+							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
+							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
+							player[index1][index2].Xspeed = 0;
+							player[index1][index2].Yspeed = 0;
+						}
+						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize));
+						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
+							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
+							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
+							player[index1][index2].Xspeed = 0;
+							player[index1][index2].Yspeed = 0;
+						}
+						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize) + tileSize);
+						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
+							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
+							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
+							player[index1][index2].Xspeed = 0;
+							player[index1][index2].Yspeed = 0;
+						}
+						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize), round(player[index1][index2].Ypos,tileSize) + tileSize);
+						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
+							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
+							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
+							player[index1][index2].Xspeed = 0;
 							player[index1][index2].Yspeed = 0;
 						}
 					}
@@ -193,7 +227,7 @@
 					}
 				}
 			}
-			function AI(){}
+			function AI(type){}
 			
 			
 			
@@ -241,7 +275,7 @@
 			
 			
 			
-			function draw(evt) {     //==============================================================================================
+			function draw(evt) {     //=========================================================================================================================================================================================================
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
