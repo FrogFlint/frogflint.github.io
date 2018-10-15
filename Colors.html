@@ -62,9 +62,9 @@
 				tile[index1] = [];
 				for(index2 = 0;index2 < boardSize.y;index2++){
 					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
-					/*if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
+					if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
 						tile[index1][index2] = 3 - tile[index1][index2];
-					}*/
+					}
 				}
 			}
 			for(index1 = 1;index1 <= 2;index1++){
@@ -118,12 +118,36 @@
 						player[index1][index2].Ypos += player[index1][index2].Yspeed;
 						
 						
-						if(player[index1][index2].Xpos - 15 < 0 || (index1 < 0 && )){}
+						if(player[index1][index2].Xpos - 15 < 0 || (player[index1][index2].Xpos > tileSize && 
+						  (Math.floor((player[index1][index2].Xpos - 15)/tileSize) != Math.floor((player[index1][index2].Xpos)/tileSize)) && 
+						  tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1)){
+							player[index1][index2].Xpos = Math.floor(player[index1][index2].Xpos / tileSize) * tileSize + 15;
+							player[index1][index2].Xspeed = 0;
+						}
+						if(player[index1][index2].Xpos + 15 > boardSize.x * tileSize || (player[index1][index2].Xpos < (boardSize.x - 1) * tileSize && 
+						  (Math.floor((player[index1][index2].Xpos + 15)/tileSize) != Math.floor((player[index1][index2].Xpos)/tileSize)) && 
+						  tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1)){
+							player[index1][index2].Xpos = Math.ceil(player[index1][index2].Xpos / tileSize) * tileSize - 15;
+							player[index1][index2].Xspeed = 0;
+						}
+						if(player[index1][index2].Ypos - 15 < 0 || (player[index1][index2].Ypos > tileSize && 
+						  (Math.floor((player[index1][index2].Ypos - 15)/tileSize) != Math.floor((player[index1][index2].Ypos)/tileSize)) && 
+						  tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1)){
+							player[index1][index2].Ypos = Math.floor(player[index1][index2].Ypos / tileSize) * tileSize + 15;
+							player[index1][index2].Yspeed = 0;
+						}
+						if(player[index1][index2].Ypos + 15 > boardSize.y * tileSize || (player[index1][index2].Ypos < (boardSize.y - 1) * tileSize && 
+						  (Math.floor((player[index1][index2].Ypos + 15)/tileSize) != Math.floor((player[index1][index2].Ypos)/tileSize)) && 
+						  tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1)){
+							player[index1][index2].Ypos = Math.ceil(player[index1][index2].Ypos / tileSize) * tileSize - 15;
+							player[index1][index2].Yspeed = 0;
+						}
 					}
 				}
 			}
 			function moveBullets(){}
 			function shoot(team, player, x, y){}
+			function killPlayers(){}
 			
 			function drawBoard(){
 				for(index1 = 0;index1 < boardSize.x;index1++){
