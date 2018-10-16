@@ -33,6 +33,7 @@
 			
 			
 			var tile = [[]];
+			var tile = [[]];
 			var player = [null,[],[]];
 			var bullet = [null,[],[]];
 			
@@ -48,14 +49,17 @@
 			var maxMoveSpeed = 6;
 			var playerAcceleration = 2;
 			var reloadTime = 30;
+			var bulletSpeed = 10;
+			var tileSwitchTime = 50;
 			
 			var humanPlayer = {team:2,index:0};
 			var teamColor = ["Red","White","Black"];
 			var playerSize = 15;
 			var bulletSize = 7;
 			
-			
 			var mouse = {x:0,y:0};
+			var inTile = {x:0,y:0};
+			var temp;
 			
 			
 			
@@ -92,9 +96,6 @@
 					}
 				}
 			}
-			bullet[2][0].Xpos = 520;
-			bullet[2][0].Ypos = 500;
-			bullet[2][0].dead = 0;
 			
 			for(index1 = 1;index1 <= 2;index1++){
 				for(index2 = 0;index2 < teamSize;index2++){
@@ -120,7 +121,17 @@
 			player[humanPlayer.team][humanPlayer.index].Xpos = 500;
 			player[humanPlayer.team][humanPlayer.index].Ypos = 500;
 			
-			//for(
+			for(index2 = 0;index2 < teamSize;){
+				temp = Math.floor(Math.random()*boardSize.y);
+				if(tile[temp][0] == 1){
+					player[1][index2].Xpos = (temp + 0.5) * tileSize;
+					player[1][index2].Ypos = tileSize/2;
+					player[2][index2].Xpos = (boardSize.x - temp - 0.5) * tileSize;
+					player[2][index2].Ypos = (boardSize.y - 0.5) * tileSize;
+					
+					index2++;
+				}
+			}
 			
 			
 			
@@ -214,12 +225,66 @@
 					}
 				}
 			}
-			function moveBullets(){}
+			function moveBullets(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < 100;index2++){
+						if(!bullet[index1][index2].dead){
+							bullet[index1][index2].Xpos += bullet[index1][index2].Xspeed;
+							bullet[index1][index2].Ypos += bullet[index1][index2].Yspeed;
+
+							if(bullet[index1][index2].Xpos - bulletSize < 0){
+								bullet[index1][index2].Xpos = bulletSize;
+								bullet[index1][index2].Xspeed *= -1;
+							}
+							if(bullet[index1][index2].Xpos + bulletSize > boardSize.x * tileSize){
+								bullet[index1][index2].Xpos = boardSize.x * tileSize - bulletSize;
+								bullet[index1][index2].Xspeed *= -1;
+							}
+							if(bullet[index1][index2].Ypos - bulletSize < 0){
+								bullet[index1][index2].Ypos = bulletSize;
+								bullet[index1][index2].Yspeed *= -1;
+							}
+							if(bullet[index1][index2].Ypos + bulletSize > boardSize.y * tileSize){
+								bullet[index1][index2].Ypos = boardSize.y * tileSize - bulletSize;
+								bullet[index1][index2].Yspeed *= -1;
+							}
+
+							inTile.x = Math.floor((bullet[index1][index2].Xpos - bulletSize)/tileSize);
+							inTile.y = Math.floor((bullet[index1][index2].Ypos)/tileSize);
+							if(inTile.x >= 0 && tile[inTile.x][inTile.y] != index1){
+								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
+								bullet[index1][index2].dead = true;
+							}
+							inTile.x = Math.floor((bullet[index1][index2].Xpos + bulletSize)/tileSize);
+							if(inTile.x < boardSize.x && tile[inTile.x][inTile.y] != index1){
+								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
+								bullet[index1][index2].dead = true;
+							}
+							inTile.x = Math.floor((bullet[index1][index2].Xpos)/tileSize);
+							inTile.y = Math.floor((bullet[index1][index2].Ypos - bulletSize)/tileSize);
+							if(inTile.y >= 0 && tile[inTile.x][inTile.y] != index1){
+								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
+								bullet[index1][index2].dead = true;
+							}
+							inTile.y = Math.floor((bullet[index1][index2].Ypos + bulletSize)/tileSize);
+							if(inTile.y < boardSize.y && tile[inTile.x][inTile.y] != index1){
+								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
+								bullet[index1][index2].dead = true;
+							}
+						}
+					}
+				}
+			}
 			function shoot(team, shooter, x, y){
 				for(index2 = 0;index2 < 100;index2++){
 					if(bullet[team][index2].dead){
 						bullet[team][index2].Xpos = player[team][shooter].Xpos;
 						bullet[team][index2].Ypos = player[team][shooter].Ypos;
+						bullet[team][index2].Xspeed = x - bullet[team][index2].Xpos;
+						bullet[team][index2].Yspeed = y - bullet[team][index2].Ypos;
+						cornerDistance = distance(0, 0, bullet[team][index2].Xspeed, bullet[team][index2].Yspeed);
+						bullet[team][index2].Xspeed *= bulletSpeed/cornerDistance;
+						bullet[team][index2].Yspeed *= bulletSpeed/cornerDistance;
 						bullet[team][index2].dead = 0;
 						break;
 					}
@@ -240,13 +305,13 @@
 			function drawPlayers(){
 				for(index1 = 1;index1 <= 2;index1++){
 					for(index2 = 0;index2 < teamSize;index2++){
-						ctx.beginPath();
-						ctx.fillStyle = teamColor[3 - index1];
-						ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 15, 0, Math.PI*2);
 						if(!player[index1][index2].dead){
+							ctx.beginPath();
+							ctx.fillStyle = teamColor[3 - index1];
+							ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 15, 0, Math.PI*2);
 							ctx.fill();
+							ctx.closePath();
 						}
-						ctx.closePath();
 					}
 				}
 			}
@@ -256,7 +321,7 @@
 						if(!bullet[index1][index2].dead){
 							ctx.beginPath();
 							ctx.fillStyle = teamColor[3 - index1];
-							ctx.arc(bullet[index1][index2].Xpos, bulllet[index1][index2].Ypos, 7, 0, Math.PI*2);
+							ctx.arc(bullet[index1][index2].Xpos, bullet[index1][index2].Ypos, 7, 0, Math.PI*2);
 							ctx.fill();
 							ctx.closePath();
 						}
@@ -342,11 +407,10 @@
 				
 				
 				
-				
-				
 				translateInputs();
 				
 				movePlayers();
+				moveBullets();
 				
 				
 				drawBoard();
