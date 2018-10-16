@@ -47,9 +47,12 @@
 			
 			var maxMoveSpeed = 6;
 			var playerAcceleration = 2;
+			var reloadTime = 30;
 			
 			var humanPlayer = {team:2,index:0};
 			var teamColor = ["Red","White","Black"];
+			var playerSize = 15;
+			var bulletSize = 7;
 			
 			
 			var mouse = {x:0,y:0};
@@ -63,14 +66,37 @@
 			for(index1 = 0;index1 < boardSize.x;index1++){
 				tile[index1] = [];
 				for(index2 = 0;index2 < boardSize.y;index2++){
-					tile[index1][index2] = Math.floor(2 * index2 / boardSize.y) + 1;
-					if(Math.random() < (1 / (Math.abs(index2 + 0.5 - boardSize.y/2) * 4))){
-						tile[index1][index2] = 3 - tile[index1][index2];
+					tile[index1][index2] = 0;
+				}
+			}
+			for(index2 = 0;index2 < boardSize.y;index2++){
+				for(index1 = 0;index1 < boardSize.x;index1++){
+					if(index2 < boardSize.y/2){
+						tile[index1][index2] = Math.random() > Math.random()*(boardSize.y/2 - index2) ? 2 : 1;
+					}
+					
+					else{
+						tile[index1][index2] = 3 - tile[boardSize.x - index1 - 1][boardSize.y - index2 - 1];
 					}
 				}
 			}
+			
 			for(index1 = 1;index1 <= 2;index1++){
-				player[index1] = [];
+				for(index2 = 0;index2 < 100;index2++){
+					bullet[index1][index2] = {
+						Xpos:0,
+						Ypos:0,
+						Xspeed:0,
+						Yspeed:0,
+						dead:true
+					}
+				}
+			}
+			bullet[2][0].Xpos = 520;
+			bullet[2][0].Ypos = 500;
+			bullet[2][0].dead = 0;
+			
+			for(index1 = 1;index1 <= 2;index1++){
 				for(index2 = 0;index2 < teamSize;index2++){
 					player[index1][index2] = {
 						Xpos:0,
@@ -94,6 +120,8 @@
 			player[humanPlayer.team][humanPlayer.index].Xpos = 500;
 			player[humanPlayer.team][humanPlayer.index].Ypos = 500;
 			
+			//for(
+			
 			
 			
 			function getMousePos(canvas, evt) {
@@ -103,7 +131,6 @@
 					y: (evt.clientY - rect.top)
 				};
 			}
-			
 			
 			function distance(x1,y1,x2,y2){
 				return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
@@ -152,35 +179,52 @@
 						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
 							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
 							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
-							player[index1][index2].Xspeed = 0;
-							player[index1][index2].Yspeed = 0;
+							if(cornerDistance < 11){
+								player[index1][index2].Xspeed = 0;
+								player[index1][index2].Yspeed = 0;
+							}
 						}
 						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize));
 						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
 							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
 							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
-							player[index1][index2].Xspeed = 0;
-							player[index1][index2].Yspeed = 0;
+							if(cornerDistance < 11){
+								player[index1][index2].Xspeed = 0;
+								player[index1][index2].Yspeed = 0;
+							}
 						}
 						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize) + tileSize);
 						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
 							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
 							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
-							player[index1][index2].Xspeed = 0;
-							player[index1][index2].Yspeed = 0;
+							if(cornerDistance < 11){
+								player[index1][index2].Xspeed = 0;
+								player[index1][index2].Yspeed = 0;
+							}
 						}
 						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize), round(player[index1][index2].Ypos,tileSize) + tileSize);
 						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
 							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
 							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
-							player[index1][index2].Xspeed = 0;
-							player[index1][index2].Yspeed = 0;
+							if(cornerDistance < 11){
+								player[index1][index2].Xspeed = 0;
+								player[index1][index2].Yspeed = 0;
+							}
 						}
 					}
 				}
 			}
 			function moveBullets(){}
-			function shoot(team, player, x, y){}
+			function shoot(team, shooter, x, y){
+				for(index2 = 0;index2 < 100;index2++){
+					if(bullet[team][index2].dead){
+						bullet[team][index2].Xpos = player[team][shooter].Xpos;
+						bullet[team][index2].Ypos = player[team][shooter].Ypos;
+						bullet[team][index2].dead = 0;
+						break;
+					}
+				}
+			}
 			function killPlayers(){}
 			
 			function drawBoard(){
@@ -206,7 +250,19 @@
 					}
 				}
 			}
-			function drawBullets(){}
+			function drawBullets(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < 100;index2++){
+						if(!bullet[index1][index2].dead){
+							ctx.beginPath();
+							ctx.fillStyle = teamColor[3 - index1];
+							ctx.arc(bullet[index1][index2].Xpos, bulllet[index1][index2].Ypos, 7, 0, Math.PI*2);
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}
+			}
 			
 			function translateInputs(){
 				for(index1 = 1;index1 <= 2;index1++){
@@ -233,7 +289,11 @@
 			
 			
 			
-			//document.addEventListener("click", functionName);
+			document.addEventListener("click", onClick);
+			function onClick(evt){
+				mouse = getMousePos(canvas, evt);
+				shoot(humanPlayer.team, humanPlayer.index, mouse.x, mouse.y);
+			}
 			
 			
 
@@ -290,6 +350,7 @@
 				
 				
 				drawBoard();
+				drawBullets();
 				drawPlayers();
 				
 				
