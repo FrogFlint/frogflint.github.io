@@ -48,7 +48,7 @@
 			
 			var maxMoveSpeed = 6;
 			var playerAcceleration = 2;
-			var reloadTime = 30;
+			var reloadTime = 5;
 			var bulletSpeed = 10;
 			var tileSwitchTime = 50;
 			
@@ -61,6 +61,7 @@
 			var inTile = {x:0,y:0};
 			var temp;
 			var aim = {x:0,y:0};
+			
 			
 			
 			
@@ -292,7 +293,15 @@
 					}
 				}
 			}
-			function killPlayers(){}
+			function killPlayers(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < teamSize;index2++){
+						if(tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1){
+							player[index1][index2].dead = true;
+						}
+					}
+				}
+			}
 			
 			function drawBoard(){
 				for(index1 = 0;index1 < boardSize.x;index1++){
@@ -315,7 +324,7 @@
 							ctx.closePath();
 							if(player[index1][index2].human){
 								ctx.beginPath();
-								ctx.fillStyle = "#CCCCCC";
+								ctx.fillStyle = "#DDDDDD";
 								ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 3, 0, Math.PI*2);
 								ctx.fill();
 								ctx.closePath();
@@ -360,12 +369,54 @@
 			function AI(){
 				for(index1 = 1;index1 <= 2;index1++){
 					for(index2 = 0;index2 < teamSize;index2++){
+						function left(){player[index1][index2].left++;}
+						function right(){player[index1][index2].right++;}
+						function up(){player[index1][index2].up++;}
+						function down(){player[index1][index2].down++;}
+						
+						
 						if(player[index1][index2].human){
 							temp = Math.floor(Math.random()*teamSize);
-							aim.x = player[3 - index1][temp].Xpos;
-							aim.y = player[3 - index1][temp].Ypos;
+							aim.x = mouse.x;
+							aim.y = mouse.y;
 						}
 						else if(player[index1][index2].AI == "easy"){
+							inTile.x = Math.floor(player[index1][index2].Xpos / tileSize);
+							inTile.y = Math.floor(player[index1][index2].Ypos / tileSize);
+							
+							player[index1][index2].left = 0;
+							player[index1][index2].right = 0;
+							player[index1][index2].up = 0;
+							player[index1][index2].down = 0;
+							
+							if(index1 < 2){right();}
+							else if(index1 < 2 || (tile[inTile.x - 2][inTile.y] != index1)){right();}
+							if(index1 < 1 || (tile[inTile.x - 1][inTile.y] != index1)){right();}
+							else if(index1 < 1 || (tile[inTile.x - 1][inTile.y] != index1)){right();}
+							if(index1 > boardSize.x - 3 || (tile[inTile.x + 1][inTile.y] != index1)){left();}
+							else if(index1 > boardSize.x - 3 || (tile[inTile.x + 1][inTile.y] != index1)){left();}
+							if(index1 > boardSize.x - 2 || (tile[inTile.x + 2][inTile.y] != index1)){left();}
+							else if(index1 > boardSize.x - 2 || (tile[inTile.x + 2][inTile.y] != index1)){left();}
+							
+							if(index2 < 2 || (tile[inTile.x][inTile.y - 2] != index1)){up();}
+							if(index2 < 1 || (tile[inTile.x][inTile.y - 1] != index1)){up();}
+							if(index2 > boardSize.y - 3 || (tile[inTile.x][inTile.y + 1] != index1)){down();}
+							if(index2 > boardSize.y - 2 || (tile[inTile.x][inTile.y + 2] != index1)){down();}
+							
+							if(index1 < 1 || index2 < 1 || (tile[inTile.x - 1][inTile.y - 1] != index1)){right();up();}
+							if(index1 > boardSize.x - 3 || index2 < 1 || (tile[inTile.x + 1][inTile.y - 1] != index1)){left();up();}
+							if(index1 > boardSize.x - 3 || index2 > boardSize.y - 3 || (tile[inTile.x + 1][inTile.y + 1] != index1)){left();down();}
+							if(index1 < 1 || index2 > boardSize.y - 3 || (tile[inTile.x - 1][inTile.y + 1] != index1)){right();down();}
+							
+							temp = Math.max(player[index1][index2].right, player[index1][index2].left);
+							player[index1][index2].right = Math.floor(player[index1][index2].right / temp);
+							player[index1][index2].left = Math.floor(player[index1][index2].left / temp);
+							
+							temp = Math.max(player[index1][index2].up, player[index1][index2].down);
+							player[index1][index2].up = Math.floor(player[index1][index2].up / temp);
+							player[index1][index2].down = Math.floor(player[index1][index2].down / temp);
+							
+							
 							temp = Math.floor(Math.random()*teamSize);
 							aim.x = player[3 - index1][temp].Xpos;
 							aim.y = player[3 - index1][temp].Ypos;
@@ -373,7 +424,7 @@
 						
 						
 						player[index1][index2].reload = Math.max((player[index1][index2].reload - 1), 0);
-						if(player[index1][index2].shooting && player[index1][index2].reload == 0){
+						if(player[index1][index2].shooting && !player[index1][index2].dead && player[index1][index2].reload == 0){
 							player[index1][index2].reload = 30;
 							shoot(index1, index2, aim.x, aim.y);
 						}
@@ -384,13 +435,17 @@
 			
 			
 			
-			
-			document.addEventListener("click", onClick);
-			function onClick(evt){
+			addEventListener('mousemove', onMove, false);
+			function onMove(evt){
 				mouse = getMousePos(canvas, evt);
+			}
+			document.addEventListener("click", onClick);
+			function onClick(){
+				//mouse = getMousePos(canvas, evt);
 				//player[humanPlayer.team][humanPlayer.index].shooting = player[humanPlayer.team][humanPlayer.index].shooting ? false:true;
 				shoot(humanPlayer.team, humanPlayer.index, mouse.x, mouse.y);
 			}
+			
 			
 			
 
@@ -432,10 +487,9 @@
 			
 			
 			
-			function draw(evt) {     //=========================================================================================================================================================================================================
+			function draw(event) {     //=========================================================================================================================================================================================================
 				
-				ctx.clearRect(0,0,canvas.width,canvas.height);
-				//mouse = getMousePos(canvas, evt);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
 				
@@ -444,6 +498,8 @@
 				
 				movePlayers();
 				moveBullets();
+				
+				killPlayers();
 				
 				
 				drawBoard();
