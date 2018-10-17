@@ -60,6 +60,7 @@
 			var mouse = {x:0,y:0};
 			var inTile = {x:0,y:0};
 			var temp;
+			var aim = {x:0,y:0};
 			
 			
 			
@@ -105,6 +106,7 @@
 						Xspeed:0,
 						Yspeed:0,
 						dead:false,
+						shooting:true,
 						reload:0,
 						human:false,
 						AI:"easy",
@@ -232,42 +234,42 @@
 							bullet[index1][index2].Xpos += bullet[index1][index2].Xspeed;
 							bullet[index1][index2].Ypos += bullet[index1][index2].Yspeed;
 
-							if(bullet[index1][index2].Xpos - bulletSize < 0){
+							if(!bullet[index1][index2].dead && bullet[index1][index2].Xpos - bulletSize < 0){
 								bullet[index1][index2].Xpos = bulletSize;
 								bullet[index1][index2].Xspeed *= -1;
 							}
-							if(bullet[index1][index2].Xpos + bulletSize > boardSize.x * tileSize){
+							if(!bullet[index1][index2].dead && bullet[index1][index2].Xpos + bulletSize > boardSize.x * tileSize){
 								bullet[index1][index2].Xpos = boardSize.x * tileSize - bulletSize;
 								bullet[index1][index2].Xspeed *= -1;
 							}
-							if(bullet[index1][index2].Ypos - bulletSize < 0){
+							if(!bullet[index1][index2].dead && bullet[index1][index2].Ypos - bulletSize < 0){
 								bullet[index1][index2].Ypos = bulletSize;
 								bullet[index1][index2].Yspeed *= -1;
 							}
-							if(bullet[index1][index2].Ypos + bulletSize > boardSize.y * tileSize){
+							if(!bullet[index1][index2].dead && bullet[index1][index2].Ypos + bulletSize > boardSize.y * tileSize){
 								bullet[index1][index2].Ypos = boardSize.y * tileSize - bulletSize;
 								bullet[index1][index2].Yspeed *= -1;
 							}
 
 							inTile.x = Math.floor((bullet[index1][index2].Xpos - bulletSize)/tileSize);
 							inTile.y = Math.floor((bullet[index1][index2].Ypos)/tileSize);
-							if(inTile.x >= 0 && tile[inTile.x][inTile.y] != index1){
+							if(!bullet[index1][index2].dead && inTile.x >= 0 && tile[inTile.x][inTile.y] != index1){
 								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
 								bullet[index1][index2].dead = true;
 							}
 							inTile.x = Math.floor((bullet[index1][index2].Xpos + bulletSize)/tileSize);
-							if(inTile.x < boardSize.x && tile[inTile.x][inTile.y] != index1){
+							if(!bullet[index1][index2].dead && inTile.x < boardSize.x && tile[inTile.x][inTile.y] != index1){
 								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
 								bullet[index1][index2].dead = true;
 							}
 							inTile.x = Math.floor((bullet[index1][index2].Xpos)/tileSize);
 							inTile.y = Math.floor((bullet[index1][index2].Ypos - bulletSize)/tileSize);
-							if(inTile.y >= 0 && tile[inTile.x][inTile.y] != index1){
+							if(!bullet[index1][index2].dead && inTile.y >= 0 && tile[inTile.x][inTile.y] != index1){
 								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
 								bullet[index1][index2].dead = true;
 							}
 							inTile.y = Math.floor((bullet[index1][index2].Ypos + bulletSize)/tileSize);
-							if(inTile.y < boardSize.y && tile[inTile.x][inTile.y] != index1){
+							if(!bullet[index1][index2].dead && inTile.y < boardSize.y && tile[inTile.x][inTile.y] != index1){
 								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
 								bullet[index1][index2].dead = true;
 							}
@@ -311,6 +313,13 @@
 							ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 15, 0, Math.PI*2);
 							ctx.fill();
 							ctx.closePath();
+							if(player[index1][index2].human){
+								ctx.beginPath();
+								ctx.fillStyle = "#CCCCCC";
+								ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 3, 0, Math.PI*2);
+								ctx.fill();
+								ctx.closePath();
+							}
 						}
 					}
 				}
@@ -348,7 +357,29 @@
 					}
 				}
 			}
-			function AI(type){}
+			function AI(){
+				for(index1 = 1;index1 <= 2;index1++){
+					for(index2 = 0;index2 < teamSize;index2++){
+						if(player[index1][index2].human){
+							temp = Math.floor(Math.random()*teamSize);
+							aim.x = player[3 - index1][temp].Xpos;
+							aim.y = player[3 - index1][temp].Ypos;
+						}
+						else if(player[index1][index2].AI == "easy"){
+							temp = Math.floor(Math.random()*teamSize);
+							aim.x = player[3 - index1][temp].Xpos;
+							aim.y = player[3 - index1][temp].Ypos;
+						}
+						
+						
+						player[index1][index2].reload = Math.max((player[index1][index2].reload - 1), 0);
+						if(player[index1][index2].shooting && player[index1][index2].reload == 0){
+							player[index1][index2].reload = 30;
+							shoot(index1, index2, aim.x, aim.y);
+						}
+					}
+				}	
+			}
 			
 			
 			
@@ -357,6 +388,7 @@
 			document.addEventListener("click", onClick);
 			function onClick(evt){
 				mouse = getMousePos(canvas, evt);
+				//player[humanPlayer.team][humanPlayer.index].shooting = player[humanPlayer.team][humanPlayer.index].shooting ? false:true;
 				shoot(humanPlayer.team, humanPlayer.index, mouse.x, mouse.y);
 			}
 			
@@ -403,11 +435,12 @@
 			function draw(evt) {     //=========================================================================================================================================================================================================
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
-				
+				//mouse = getMousePos(canvas, evt);
 				
 				
 				
 				translateInputs();
+				AI();
 				
 				movePlayers();
 				moveBullets();
