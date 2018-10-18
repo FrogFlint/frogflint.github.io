@@ -10,20 +10,20 @@
 		}
 		
 		canvas {
-			background: black;
+			background: goldenrod;
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
 
-<title>Color Game</title>
+<title>The game of Go</title>
 </head>
 
 <body>
 
-	<canvas id="myCanvas" width="800" height="600"></canvas>
+	<canvas id="myCanvas" width="700" height="620"></canvas>
 
-	<body style="background-color:#535353;">
+	<body style="background-color:saddleBrown;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -32,516 +32,579 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var tile = [[]];
-			var tile = [[]];
-			var player = [null,[],[]];
-			var bullet = [null,[],[]];
+			var sizeSelect = 1;
+			
+			var boardSize = 5; //9,13,19
+			var scale = 600/boardSize;
+			
 			
 			var index1 = 0;
 			var index2 = 0;
+			var index3 = 0;
+			var index4 = 0;
+			var adjacent = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
 			
-			var cornerDistance = 0;
+			var tile = [[]];
+			var tilesMarked = 0;
+			var blobCheck = 0;
 			
-			var tileSize = 50;
-			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
-			var teamSize = 3;
-			
-			var maxMoveSpeed = 6;
-			var playerAcceleration = 2;
-			var reloadTime = 5;
-			var bulletSpeed = 10;
-			var tileSwitchTime = 50;
-			
-			var humanPlayer = {team:2,index:0};
-			var teamColor = ["Red","White","Black"];
-			var playerSize = 15;
-			var bulletSize = 7;
-			
-			var mouse = {x:0,y:0};
-			var inTile = {x:0,y:0};
-			var temp;
-			var aim = {x:0,y:0};
+			var selected = {x:0,y:0};
 			
 			
+			var lastTile = [[]];
+			var undid = 0;
+			var nestIfs = 0;
+			
+			var stop = 0; //1 means exit loop
+			var a = {start:[], end:[], loop:[], condition:[], statement:[]};
+			a.start = ["","tilesMarked = 0;","blobCheck = 0;","tile[selected.x][selected.y].blob = 1;","blobCheck = 1;","tilesMarked = 1;","if(tilesMarked > 0){blobCheck = 1;}",
+				   "tile[selected.x][selected.y].stone = turn;",     "if(tile[index1][index2].stone == !0){stop = 1;}","if(tile[index1][index2].safe == 0){stop = 1;}","if(tile[index1][index2].safe == 1){stop = 1;}"];//8,9,10
+			a.end = ["","if(tilesMarked > 0){blobCheck = 1;}","undid = 0;"];
+			a.loop = [";tilesMarked > 0;","index1 = 0;index1 < boardSize;index1++","index2 = 0;index2 < boardSize;index2++","index3 = 0;index3 < 4;index3++"];
+			a.condition = ["onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y)","onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y)",
+				       "tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3",
+				       "tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0",
+				       "tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone","tile[index1][index2].blob == 1",
+				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0","tile[index1][index2].stone == 0",   //7, 9, 11
+				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1","tile[index1][index2].safe == 1",
+				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0","tile[index1][index2].safe == 0"];
+			a.statement = ["tilesMarked++;","tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;",
+				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;","tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;",
+				       "tile[index1][index2].stone = 0;","lastTile[index1][index2].stone = tile[index1][index2].stone;"];
+			
+			
+			var turn = 1;
+			var teamColor = ["","Black","White"];
+			
+			var winner = 0;
+			var score = ["",0,0];
+			
+			var box = [0,0];
+			
+			
+			/*
+			var mod = function (n, m) {
+				var remain = n % m;
+				return Math.floor(remain >= 0 ? remain : remain + m);
+			};*/
 			
 			
 			
-			
-			
-			
-			for(index1 = 0;index1 < boardSize.x;index1++){
-				tile[index1] = [];
-				for(index2 = 0;index2 < boardSize.y;index2++){
-					tile[index1][index2] = 0;
-				}
-			}
-			for(index2 = 0;index2 < boardSize.y;index2++){
-				for(index1 = 0;index1 < boardSize.x;index1++){
-					if(index2 < boardSize.y/2){
-						tile[index1][index2] = Math.random() > Math.random()*(boardSize.y/2 - index2) ? 2 : 1;
-					}
-					
-					else{
-						tile[index1][index2] = 3 - tile[boardSize.x - index1 - 1][boardSize.y - index2 - 1];
-					}
-				}
-			}
-			
-			for(index1 = 1;index1 <= 2;index1++){
-				for(index2 = 0;index2 < 100;index2++){
-					bullet[index1][index2] = {
-						Xpos:0,
-						Ypos:0,
-						Xspeed:0,
-						Yspeed:0,
-						dead:true
-					}
-				}
-			}
-			
-			for(index1 = 1;index1 <= 2;index1++){
-				for(index2 = 0;index2 < teamSize;index2++){
-					player[index1][index2] = {
-						Xpos:0,
-						Ypos:0,
-						Xspeed:0,
-						Yspeed:0,
-						dead:false,
-						shooting:true,
-						reload:0,
-						human:false,
-						AI:"easy",
+			function createBoard(){
+				for(index1 = 0; index1 < boardSize; index1++){
+					tile[index1] = [];
+					for(index2 = 0; index2 < boardSize; index2++){
 						
-						up:0,
-						down:0,
-						left:0,
-						right:0
+						tile[index1][index2] = {
+							stone: 0,
+							blob: 0,
+							safe:0,
+							
+							scoreBlob1:0,
+							scoreBlob2:0
+						}
 					}
 				}
-			}
-			player[humanPlayer.team][humanPlayer.index].human = true;
-			player[humanPlayer.team][humanPlayer.index].AI = "none";
-			player[humanPlayer.team][humanPlayer.index].Xpos = 500;
-			player[humanPlayer.team][humanPlayer.index].Ypos = 500;
-			
-			for(index2 = 0;index2 < teamSize;){
-				temp = Math.floor(Math.random()*boardSize.y);
-				if(tile[temp][0] == 1){
-					player[1][index2].Xpos = (temp + 0.5) * tileSize;
-					player[1][index2].Ypos = tileSize/2;
-					player[2][index2].Xpos = (boardSize.x - temp - 0.5) * tileSize;
-					player[2][index2].Ypos = (boardSize.y - 0.5) * tileSize;
-					
-					index2++;
+				for(index1 = 0; index1 < boardSize; index1++){
+					lastTile[index1] = [];
+					for(index2 = 0; index2 < boardSize; index2++){
+						lastTile[index1][index2] = {stone: 0}
+					}
 				}
+				sizeSelect = 0;
 			}
+			
 			
 			
 			
 			function getMousePos(canvas, evt) {
-				var rect = canvas.getBoundingClientRect();
-				return {
-					x: (evt.clientX - rect.left),
-					y: (evt.clientY - rect.top)
-				};
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: Math.floor(((evt.clientX - rect.left) - 50)/scale),
+			      y: Math.floor(((evt.clientY - rect.top) - 10)/scale)
+			    };
 			}
 			
-			function distance(x1,y1,x2,y2){
-				return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-			}
-			function round(base, factor){
-				return base - (base % factor);
+			function onBoard(x,y){
+				return (x >= 0 && x < boardSize && y >= 0 && y < boardSize) ? true : false;
+				//if(x >= 0 && x < boardSize && y >= 0 && y < boardSize){return true;}
+				//else{return false;}
 			}
 			
 			
-			function movePlayers(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < teamSize;index2++){
-						player[index1][index2].Xspeed = Math.max(Math.min(player[index1][index2].Xspeed, maxMoveSpeed), -maxMoveSpeed);
-						player[index1][index2].Yspeed = Math.max(Math.min(player[index1][index2].Yspeed, maxMoveSpeed), -maxMoveSpeed);
-						
-						player[index1][index2].Xpos += player[index1][index2].Xspeed;
-						player[index1][index2].Ypos += player[index1][index2].Yspeed;
-						
-						
-						if(player[index1][index2].Xpos - 15 < 0 || (player[index1][index2].Xpos > tileSize && 
-						  (Math.floor((player[index1][index2].Xpos - 15)/tileSize) != Math.floor((player[index1][index2].Xpos)/tileSize)) && 
-						  tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1)){
-							player[index1][index2].Xpos = Math.floor(player[index1][index2].Xpos / tileSize) * tileSize + 15;
-							player[index1][index2].Xspeed = 0;
-						}
-						if(player[index1][index2].Xpos + 15 > boardSize.x * tileSize || (player[index1][index2].Xpos < (boardSize.x - 1) * tileSize && 
-						  (Math.floor((player[index1][index2].Xpos + 15)/tileSize) != Math.floor((player[index1][index2].Xpos)/tileSize)) && 
-						  tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1)){
-							player[index1][index2].Xpos = Math.ceil(player[index1][index2].Xpos / tileSize) * tileSize - 15;
-							player[index1][index2].Xspeed = 0;
-						}
-						if(player[index1][index2].Ypos - 15 < 0 || (player[index1][index2].Ypos > tileSize && 
-						  (Math.floor((player[index1][index2].Ypos - 15)/tileSize) != Math.floor((player[index1][index2].Ypos)/tileSize)) && 
-						  tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1)){
-							player[index1][index2].Ypos = Math.floor(player[index1][index2].Ypos / tileSize) * tileSize + 15;
-							player[index1][index2].Yspeed = 0;
-						}
-						if(player[index1][index2].Ypos + 15 > boardSize.y * tileSize || (player[index1][index2].Ypos < (boardSize.y - 1) * tileSize && 
-						  (Math.floor((player[index1][index2].Ypos + 15)/tileSize) != Math.floor((player[index1][index2].Ypos)/tileSize)) && 
-						  tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1)){
-							player[index1][index2].Ypos = Math.ceil(player[index1][index2].Ypos / tileSize) * tileSize - 15;
-							player[index1][index2].Yspeed = 0;
-						}
-						
-						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize), round(player[index1][index2].Ypos,tileSize));
-						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
-							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
-							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
-							if(cornerDistance < 11){
-								player[index1][index2].Xspeed = 0;
-								player[index1][index2].Yspeed = 0;
-							}
-						}
-						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize));
-						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos - 15)/tileSize)] != index1){
-							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
-							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize)) * 15/cornerDistance;
-							if(cornerDistance < 11){
-								player[index1][index2].Xspeed = 0;
-								player[index1][index2].Yspeed = 0;
-							}
-						}
-						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize) + tileSize, round(player[index1][index2].Ypos,tileSize) + tileSize);
-						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos + 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
-							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + tileSize + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize) - tileSize) * 15/cornerDistance;
-							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
-							if(cornerDistance < 11){
-								player[index1][index2].Xspeed = 0;
-								player[index1][index2].Yspeed = 0;
-							}
-						}
-						cornerDistance = distance(player[index1][index2].Xpos, player[index1][index2].Ypos, round(player[index1][index2].Xpos,tileSize), round(player[index1][index2].Ypos,tileSize) + tileSize);
-						if(cornerDistance < 15 && cornerDistance != 0 && tile[Math.floor((player[index1][index2].Xpos - 15)/tileSize)][Math.floor((player[index1][index2].Ypos + 15)/tileSize)] != index1){
-							player[index1][index2].Xpos = round(player[index1][index2].Xpos,tileSize) + (player[index1][index2].Xpos - round(player[index1][index2].Xpos,tileSize)) * 15/cornerDistance;
-							player[index1][index2].Ypos = round(player[index1][index2].Ypos,tileSize) + tileSize + (player[index1][index2].Ypos - round(player[index1][index2].Ypos,tileSize) - tileSize) * 15/cornerDistance;
-							if(cornerDistance < 11){
-								player[index1][index2].Xspeed = 0;
-								player[index1][index2].Yspeed = 0;
-							}
+			
+			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
+				if(layer < start.length){
+					for(index4 = 0;index4 < start[layer].length;index4++){
+						eval(a.start[start[layer][index4]]);
+					}
+				}
+				if(layer < loop.length){
+					if(stop == 1){
+						stop = 0;
+					}
+					else{
+						eval("for(" + a.loop[loop[layer]] + "){spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);}");
+					}
+				}
+				else{
+					nestIfs = 1;
+					for(index4 = 0;index4 < condition.length;index4++){
+						eval("if(!(" + a.condition[condition[index4]] + ")){ nestIfs = 0;}");
+						if(nestIfs == 0){break;}
+					}
+					if(nestIfs == 1){
+						for(index4 = 0;index4 < statement.length;index4++){
+							eval(a.statement[statement[index4]]);
 						}
 					}
 				}
+				if(layer < end.length){
+					for(index4 = 0;index4 < end[layer].length;index4++){
+						eval(a.end[end[layer][index4]]);
+					}
+				}
 			}
-			function moveBullets(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < 100;index2++){
-						if(!bullet[index1][index2].dead){
-							bullet[index1][index2].Xpos += bullet[index1][index2].Xspeed;
-							bullet[index1][index2].Ypos += bullet[index1][index2].Yspeed;
+			
+			
+			function addStone(evt) {
+				
+				
+				
+				if(sizeSelect == 1){
+					
+					var rect = canvas.getBoundingClientRect();
+					selected = {x: Math.floor(evt.clientX - rect.left), y: Math.floor(evt.clientY - rect.top)};
+					
+					if(selected.y >= canvas.height/2 - 50 && selected.y <= canvas.height/2 + 50){
+						boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
+						switch(boardSize){
+						    case 0:
+							boardSize = 9;
+							scale = 600/boardSize;
+							createBoard();
+							break;
+						    case 2:
+							boardSize = 13;
+							scale = 600/boardSize;
+							createBoard();
+							break;
+						    case 4:
+							boardSize = 19;
+							scale = 600/boardSize;
+							createBoard();
+							break;
+						    default:
+							break;
+						}
+					}
+				}
+				else{
 
-							if(!bullet[index1][index2].dead && bullet[index1][index2].Xpos - bulletSize < 0){
-								bullet[index1][index2].Xpos = bulletSize;
-								bullet[index1][index2].Xspeed *= -1;
-							}
-							if(!bullet[index1][index2].dead && bullet[index1][index2].Xpos + bulletSize > boardSize.x * tileSize){
-								bullet[index1][index2].Xpos = boardSize.x * tileSize - bulletSize;
-								bullet[index1][index2].Xspeed *= -1;
-							}
-							if(!bullet[index1][index2].dead && bullet[index1][index2].Ypos - bulletSize < 0){
-								bullet[index1][index2].Ypos = bulletSize;
-								bullet[index1][index2].Yspeed *= -1;
-							}
-							if(!bullet[index1][index2].dead && bullet[index1][index2].Ypos + bulletSize > boardSize.y * tileSize){
-								bullet[index1][index2].Ypos = boardSize.y * tileSize - bulletSize;
-								bullet[index1][index2].Yspeed *= -1;
-							}
+					selected = getMousePos(canvas, evt);
 
-							inTile.x = Math.floor((bullet[index1][index2].Xpos - bulletSize)/tileSize);
-							inTile.y = Math.floor((bullet[index1][index2].Ypos)/tileSize);
-							if(!bullet[index1][index2].dead && inTile.x >= 0 && tile[inTile.x][inTile.y] != index1){
-								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
-								bullet[index1][index2].dead = true;
-							}
-							inTile.x = Math.floor((bullet[index1][index2].Xpos + bulletSize)/tileSize);
-							if(!bullet[index1][index2].dead && inTile.x < boardSize.x && tile[inTile.x][inTile.y] != index1){
-								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
-								bullet[index1][index2].dead = true;
-							}
-							inTile.x = Math.floor((bullet[index1][index2].Xpos)/tileSize);
-							inTile.y = Math.floor((bullet[index1][index2].Ypos - bulletSize)/tileSize);
-							if(!bullet[index1][index2].dead && inTile.y >= 0 && tile[inTile.x][inTile.y] != index1){
-								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
-								bullet[index1][index2].dead = true;
-							}
-							inTile.y = Math.floor((bullet[index1][index2].Ypos + bulletSize)/tileSize);
-							if(!bullet[index1][index2].dead && inTile.y < boardSize.y && tile[inTile.x][inTile.y] != index1){
-								tile[inTile.x][inTile.y] = 3 - tile[inTile.x][inTile.y]
-								bullet[index1][index2].dead = true;
+					if(onBoard(selected.x,selected.y) && tile[selected.x][selected.y].stone == 0  &&  winner == 0){
+
+						//save board
+
+
+
+						spreadTile(0,[[]],[[2]],[1,2],[],[5]);
+						/*for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+								lastTile[index1][index2].stone = tile[index1][index2].stone;
 							}
 						}
-					}
-				}
-			}
-			function shoot(team, shooter, x, y){
-				for(index2 = 0;index2 < 100;index2++){
-					if(bullet[team][index2].dead){
-						bullet[team][index2].Xpos = player[team][shooter].Xpos;
-						bullet[team][index2].Ypos = player[team][shooter].Ypos;
-						bullet[team][index2].Xspeed = x - bullet[team][index2].Xpos;
-						bullet[team][index2].Yspeed = y - bullet[team][index2].Ypos;
-						cornerDistance = distance(0, 0, bullet[team][index2].Xspeed, bullet[team][index2].Yspeed);
-						bullet[team][index2].Xspeed *= bulletSpeed/cornerDistance;
-						bullet[team][index2].Yspeed *= bulletSpeed/cornerDistance;
-						bullet[team][index2].dead = 0;
-						break;
-					}
-				}
-			}
-			function killPlayers(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < teamSize;index2++){
-						if(tile[Math.floor(player[index1][index2].Xpos/tileSize)][Math.floor(player[index1][index2].Ypos/tileSize)] != index1){
-							player[index1][index2].dead = true;
+						undid = 0;*/
+
+						
+						spreadTile(0,[[7,1]],[[]],[3],[1,2,3],[1,0]);
+
+						/*tile[selected.x][selected.y].stone = turn;
+						tilesMarked = 0;
+
+						for(index3 = 0;index3 < 4;index3++){
+							if(onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y) &&
+							   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
+							   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
+								tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
+								tilesMarked += 1;
+							}
+						}*/
+
+
+						spreadTile(0,[[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
+						
+						/*blobCheck = 0;
+						if(tilesMarked > 0){blobCheck = 1;}
+
+						while(tilesMarked > 0){
+							tilesMarked = 0;
+
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+										   tile[index1][index2].blob == 1 &&
+										   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
+							if(tilesMarked > 0){blobCheck = 1;}
+						}*/
+						
+						if(blobCheck == 1){
+							//spreadTile(0,[[],[],[8]],[[]],[1,2,3],[0,8],[3,0]);
+							
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
 						}
+						
+						
+						spreadTile(0,[[],[1],[],[9]],[[]],[0,1,2,3],[0,4,8],[3,0]);
+						
+						/*while(tilesMarked > 0){
+							tilesMarked = 0;
+
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+										   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
+						}*/
+						
+						
+						//spreadTile(0,[[]],[[]],[],[],[]);
+						
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+
+								if(tile[index1][index2].blob == 1 && tile[index1][index2].safe == 0){
+									tile[index1][index2].stone = 0;
+								}
+								tile[index1][index2].blob = 0;
+								tile[index1][index2].safe = 0;
+							}
+						}
+
+
+						//=============================================================================================================================================================================
+
+
+
+						tile[selected.x][selected.y].blob = 1;
+						blobCheck = 1;
+						tilesMarked = 1;
+
+						while(tilesMarked > 0){
+							tilesMarked = 0;
+
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+										   tile[index1][index2].blob == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
+							if(tilesMarked > 0){blobCheck = 1;}
+						}
+
+						if(blobCheck == 1){
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
+						}
+
+						while(tilesMarked > 0){
+							tilesMarked = 0;
+
+							for(index1 = 0; index1 < boardSize; index1++){
+								for(index2 = 0; index2 < boardSize; index2++){
+
+									for(index3 = 0;index3 < 4;index3++){
+										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
+										   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
+											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
+											tilesMarked += 1;
+										}
+									}
+								}
+							}
+						}
+
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+
+								if(tile[index1][index2].blob == 1 && tile[index1][index2].safe == 0){
+									tile[index1][index2].stone = 0;
+								}
+								tile[index1][index2].blob = 0;
+								tile[index1][index2].safe = 0;
+							}
+						}
+
+
+
+
+
+
+
+
+						turn = turn % 2 + 1;
 					}
 				}
 			}
 			
-			function drawBoard(){
-				for(index1 = 0;index1 < boardSize.x;index1++){
-					for(index2 = 0;index2 < boardSize.y;index2++){
+			function countScore() {
+				
+				for(index1 = 0; index1 < boardSize; index1++){
+					for(index2 = 0; index2 < boardSize; index2++){
+						tile[index1][index2].scoreBlob1 = 0;
+						tile[index1][index2].scoreBlob2 = 0;
+						if(tile[index1][index2].stone == 1){tile[index1][index2].scoreBlob1 = 1;}
+						if(tile[index1][index2].stone == 2){tile[index1][index2].scoreBlob2 = 1;}
+					}
+				}
+				
+				
+				
+				tilesMarked = 1; 
+				
+				while(tilesMarked > 0){
+					tilesMarked = 0;
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+								
+							for(index3 = 0;index3 < 4;index3++){
+								
+								if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
+								   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone == 0){
+									if(tile[index1][index2].scoreBlob1 > tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob1){	
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob1 = 1;
+										tilesMarked += 1;
+									}
+									if(tile[index1][index2].scoreBlob2 > tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob2){	
+										tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].scoreBlob2 = 1;
+										tilesMarked += 1;
+									}
+								}
+							}
+						}
+					}
+				}
+				score[1] = 0;
+				score[2] = 0;
+				for(index1 = 0; index1 < boardSize; index1++){
+					for(index2 = 0; index2 < boardSize; index2++){
+						
+						if(tile[index1][index2].scoreBlob1 + tile[index1][index2].scoreBlob2 == 1){
+							score[1] += tile[index1][index2].scoreBlob1;
+							score[2] += tile[index1][index2].scoreBlob2;
+						}
+					}
+				}
+				if(score[1] + score[2] > 0.9 * (boardSize*boardSize)){
+					if (score[1] > score[2]){winner = 1;}
+					if (score[1] < score[2]){winner = 2;}
+					if (score[1] ==score[2]){winner = 3;}
+				}
+				
+			}
+			
+			
+			
+			function draw(evt) {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				
+				
+				
+				
+				document.addEventListener("keydown", keyDownHandler, false);
+				//document.addEventListener("keyup", keyUpHandler, false);
+				function keyDownHandler(e) {
+					
+					if(e.keyCode == 87){countScore();}
+					
+					if(e.keyCode == 85 && undid == 0){
+						for(index1 = 0; index1 < boardSize; index1++){
+							for(index2 = 0; index2 < boardSize; index2++){
+								tile[index1][index2].stone = lastTile[index1][index2].stone;
+							}
+						}
+						turn = 3 - turn;
+						undid = 1;
+					}
+					if(e.keyCode == 80 && sizeSelect == 0){
+						turn = 3 - turn;
+					}
+					
+					
+				}
+				
+				
+				
+				document.addEventListener("click", addStone);
+				
+				//window.oncontextmenu = function(){return false;}  //temporary for debugging
+				
+				
+				
+				
+				
+				
+				
+				
+				
+				if(sizeSelect == 0){
+					
+					ctx.beginPath();
+					ctx.fillStyle = teamColor[turn];
+					ctx.fillRect(20, 200, 10, 220);
+					ctx.fillRect(670, 200, 10, 220);
+					ctx.fill();
+					ctx.closePath();
+					
+					
+					// draw the squares
+					for(index1 = 0; index1 < boardSize; index1++){
+						
 						ctx.beginPath();
-						ctx.fillStyle = teamColor[tile[index1][index2]];
-						ctx.fillRect(index1 * tileSize, index2 * tileSize, tileSize, tileSize);
-						ctx.closePath();
+						ctx.moveTo(index1*scale + scale/2 +50, 10  + scale/2);
+						ctx.lineTo(index1*scale + scale/2 +50, 610 - scale/2);
+						ctx.stroke();
+						
+						ctx.beginPath();
+						ctx.moveTo(50  + scale/2, index1*scale + scale/2 + 10);
+						ctx.lineTo(650 - scale/2, index1*scale + scale/2 + 10);
+						ctx.stroke();
 					}
-				}
-			}
-			function drawPlayers(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < teamSize;index2++){
-						if(!player[index1][index2].dead){
-							ctx.beginPath();
-							ctx.fillStyle = teamColor[3 - index1];
-							ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 15, 0, Math.PI*2);
-							ctx.fill();
-							ctx.closePath();
-							if(player[index1][index2].human){
+					
+					// draw the stones and dot markers
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+							
+							//dots
+							if(index1 == (boardSize - 1)/2 && index2 == index1 ||
+							   boardSize >= 13 && (index1 == 3 || index1 == boardSize - 4) && (index2 == 3 || index2 == boardSize - 4) ||
+							   boardSize >= 19 && (((index1 == 3 || index1 == boardSize - 4) && index2 == (boardSize - 1)/2) ||
+							                       ((index2 == 3 || index2 == boardSize - 4) && index1 == (boardSize - 1)/2)
+							                      )){
 								ctx.beginPath();
-								ctx.fillStyle = "#DDDDDD";
-								ctx.arc(player[index1][index2].Xpos, player[index1][index2].Ypos, 3, 0, Math.PI*2);
+								ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*0.07, 0, Math.PI * 2);
+								ctx.fillStyle = "black";
+								ctx.fill();
+								ctx.closePath();
+							}
+							
+							//stones
+							if(tile[index1][index2].stone > 0){
+								ctx.beginPath();
+								ctx.arc(index1*scale + scale/2 +50, index2*scale + scale/2 +10, scale*2/5, 0, Math.PI * 2);
+								ctx.fillStyle = teamColor[tile[index1][index2].stone];
 								ctx.fill();
 								ctx.closePath();
 							}
 						}
 					}
 				}
-			}
-			function drawBullets(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < 100;index2++){
-						if(!bullet[index1][index2].dead){
-							ctx.beginPath();
-							ctx.fillStyle = teamColor[3 - index1];
-							ctx.arc(bullet[index1][index2].Xpos, bullet[index1][index2].Ypos, 7, 0, Math.PI*2);
-							ctx.fill();
-							ctx.closePath();
-						}
-					}
+				else{
+					ctx.beginPath();
+					ctx.fillStyle = "#ffc107";
+					ctx.fillRect(canvas.width/2 - 250, canvas.height/2 - 50, 100, 100);
+					ctx.fillRect(canvas.width/2 - 50, canvas.height/2 - 50, 100, 100);
+					ctx.fillRect(canvas.width/2 + 150, canvas.height/2 - 50, 100, 100);
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.font = "70px Arial";
+					ctx.fillStyle = "#BA4A00";
+					ctx.textAlign = "center";
+					ctx.fillText("Select board size",  canvas.width/2, canvas.height/2 - 150);
+					ctx.fillText("9",  canvas.width/2 - 200, canvas.height/2 + 20);
+					ctx.fillText("13", canvas.width/2      , canvas.height/2 + 20);
+					ctx.fillText("19", canvas.width/2 + 200, canvas.height/2 + 20);
+					ctx.closePath();
 				}
-			}
-			
-			function translateInputs(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < teamSize;index2++){
-						
-						if(player[index1][index2].up + player[index1][index2].down == 1){
-							player[index1][index2].Yspeed += playerAcceleration * (player[index1][index2].down - player[index1][index2].up);
-						}
-						else if(player[index1][index2].Yspeed != 0){
-							player[index1][index2].Yspeed -= playerAcceleration * player[index1][index2].Yspeed / Math.abs(player[index1][index2].Yspeed);
-						}
-						if(player[index1][index2].left + player[index1][index2].right == 1){
-							player[index1][index2].Xspeed += playerAcceleration * (player[index1][index2].right - player[index1][index2].left);
-						}
-						else if(player[index1][index2].Xspeed != 0){
-							player[index1][index2].Xspeed -= playerAcceleration * player[index1][index2].Xspeed / Math.abs(player[index1][index2].Xspeed);
-						}
-					}
-				}
-			}
-			function traceRay(x, y, dx, dy, n){
-				if(!(x + n * dx < 0 || x + n * dx >= boardSize.x || y + n * dy < 0 || y + n * dy >= boardSize.y)){
-					traceRay(x, y, dx, dy, n + 1);
-				}
-				return n;
-			}
-			function AI(){
-				for(index1 = 1;index1 <= 2;index1++){
-					for(index2 = 0;index2 < teamSize;index2++){
-						function left(){player[index1][index2].left++;}
-						function right(){player[index1][index2].right++;}
-						function up(){player[index1][index2].up++;}
-						function down(){player[index1][index2].down++;}
-						
-						
-						if(player[index1][index2].human){
-							temp = Math.floor(Math.random()*teamSize);
-							aim.x = mouse.x;
-							aim.y = mouse.y;
-						}
-						else if(player[index1][index2].AI == "easy"){
-							inTile.x = Math.floor(player[index1][index2].Xpos / tileSize);
-							inTile.y = Math.floor(player[index1][index2].Ypos / tileSize);
-							
-							player[index1][index2].left = 0;
-							player[index1][index2].right = 0;
-							player[index1][index2].up = 0;
-							player[index1][index2].down = 0;
-							
-							/*if(inTile.x < 2){right();}
-							else if(tile[inTile.x - 2][inTile.y] != index1){right();}
-							if(inTile.x < 1){right();}
-							else if(tile[inTile.x - 1][inTile.y] != index1){right();}
-							if(inTile.x > boardSize.x - 3){left();}
-							else if(tile[inTile.x + 1][inTile.y] != index1){left();}
-							if(inTile.x > boardSize.x - 4){left();}
-							else if(tile[inTile.x + 2][inTile.y] != index1){left();}
-							
-							if(inTile.y < 2){up();}
-							else if(tile[inTile.x][inTile.y - 2] != index1){up();}
-							if(inTile.y < 1){up();}
-							else if(tile[inTile.x][inTile.y - 1] != index1){up();}
-							if(inTile.y > boardSize.y - 3){down();}
-							else if(tile[inTile.x][inTile.y + 1] != index1){down();}
-							if(inTile.y > boardSize.y - 4){down();}
-							else if(tile[inTile.x][inTile.y + 2] != index1){down();}
-							
-							if(inTile.x < 1 || inTile.y < 1){right();up();}
-							else if(tile[inTile.x - 1][inTile.y - 1] != index1){right();up();}
-							if(inTile.x > boardSize.x - 3 || inTile.y < 1){left();up();}
-							else if(tile[inTile.x + 1][inTile.y - 1] != index1){left();up();}
-							if(inTile.x > boardSize.x - 3 || inTile.y > boardSize.y - 3){left();down();}
-							else if(tile[inTile.x + 1][inTile.y + 1] != index1){left();down();}
-							if(inTile.x < 1 || inTile.y > boardSize.y - 3){right();down();}
-							else if(tile[inTile.x - 1][inTile.y + 1] != index1){right();down();}*/
-							
-							player[index1][index2].right += traceRay(inTile.x, inTile.y, -1, 0, 0);
-							player[index1][index2].left += traceRay(inTile.x, inTile.y, 1, 0, 0);
-							player[index1][index2].down += traceRay(inTile.x, inTile.y, 0, -1, 0);
-							player[index1][index2].up += traceRay(inTile.x, inTile.y, 0, 1, 0);
-							
-							
-							
-							temp = Math.max(player[index1][index2].right, player[index1][index2].left);
-							player[index1][index2].right -= temp;
-							player[index1][index2].left -= temp;
-							
-							temp = Math.max(player[index1][index2].up, player[index1][index2].down);
-							player[index1][index2].up -= temp;
-							player[index1][index2].down -= temp;
-							
-							player[index1][index2].right /= Math.max(player[index1][index2].right, player[index1][index2].left);
-							player[index1][index2].left /= Math.max(player[index1][index2].right, player[index1][index2].left);
-							
-							player[index1][index2].up /= Math.max(player[index1][index2].up, player[index1][index2].down);
-							player[index1][index2].down /= Math.max(player[index1][index2].up, player[index1][index2].down);
-							
-							
-							while(true){
-								temp = Math.floor(Math.random()*teamSize);
-								if(!player[3 - index1][temp].dead){
-									aim.x = player[3 - index1][temp].Xpos;
-									aim.y = player[3 - index1][temp].Ypos;
-									break;
-								}
-							}
-						}
-						
-						
-						player[index1][index2].reload = Math.max((player[index1][index2].reload - 1), 0);
-						if(player[index1][index2].shooting && !player[index1][index2].dead && player[index1][index2].reload == 0){
-							player[index1][index2].reload = 30;
-							shoot(index1, index2, aim.x, aim.y);
-						}
-					}
-				}	
-			}
-			
-			
-			
-			
-			addEventListener('mousemove', onMove, false);
-			function onMove(evt){
-				mouse = getMousePos(canvas, evt);
-			}
-			document.addEventListener("click", onClick);
-			function onClick(){
-				//mouse = getMousePos(canvas, evt);
-				//player[humanPlayer.team][humanPlayer.index].shooting = player[humanPlayer.team][humanPlayer.index].shooting ? false:true;
-				shoot(humanPlayer.team, humanPlayer.index, mouse.x, mouse.y);
-			}
-			
-			
-			
+				
+				
+				// when game is over
+				if(winner > 0 && winner < 3){
+					
+					box[1] = (200 + (20 * teamColor[winner].length));
+					box[2] = (50 + 20 * (score[winner].toString().length + score[3 - winner].toString().length));
+					
+					ctx.fillStyle = teamColor[winner];
+					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
+					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
 
-			document.addEventListener("keydown", keyDownHandler, false);
-			document.addEventListener("keyup", keyUpHandler, false);
-			function keyDownHandler(e) {
-
-				if(e.keyCode == 87){
-					player[humanPlayer.team][humanPlayer.index].up = 1;
+					ctx.font = "70px Arial";
+					ctx.fillStyle = teamColor[3 - winner];
+					ctx.textAlign = "center";
+					ctx.fillText(teamColor[winner] + " Team wins!", canvas.width/2, 200);
+					ctx.fillText(score[winner] + " - " + score[3 - winner], canvas.width/2, 300);
 				}
-				if(e.keyCode == 65){
-					player[humanPlayer.team][humanPlayer.index].left = 1;
+				if(winner == 3){
+                    
+					box[1] = 150;
+					box[2] = (50 + 20 * (score[1].toString().length + score[2].toString().length));
+					
+					ctx.fillStyle = teamColor[2];
+					ctx.fillRect(canvas.width/2 - box[1], 140, box[1]*2, 70);
+					ctx.fillRect(canvas.width/2 - box[2], 240, box[2]*2, 70);
+					
+					ctx.font = "70px Arial";
+					ctx.fillStyle = teamColor[1];
+					ctx.textAlign = "center";
+					ctx.fillText("It's a Tie!", canvas.width/2, 200);
+					ctx.fillText(score[1] + " - " + score[2], canvas.width/2, 300);
 				}
-				if(e.keyCode == 83){
-					player[humanPlayer.team][humanPlayer.index].down = 1;
-				}
-				if(e.keyCode == 68){
-					player[humanPlayer.team][humanPlayer.index].right = 1;
-				}
-			}
-			function keyUpHandler(e) {
-
-				if(e.keyCode == 87){
-					player[humanPlayer.team][humanPlayer.index].up = 0;
-				}
-				if(e.keyCode == 65){
-					player[humanPlayer.team][humanPlayer.index].left = 0;
-				}
-				if(e.keyCode == 83){
-					player[humanPlayer.team][humanPlayer.index].down = 0;
-				}
-				if(e.keyCode == 68){
-					player[humanPlayer.team][humanPlayer.index].right = 0;
-				}
-			}
-			
-			
-			
-			
-			
-			
-			function draw(event) {     //=========================================================================================================================================================================================================
-				
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				
-				
-				
-				AI();
-				translateInputs();
-				
-				movePlayers();
-				moveBullets();
-				
-				killPlayers();
-				
-				
-				drawBoard();
-				drawBullets();
-				drawPlayers();
 				
 				
 				
 				
-				setTimeout(draw, 20);
+				setTimeout(draw, 50);
 			}
 			draw();
 			
