@@ -366,6 +366,12 @@
 					}
 				}
 			}
+			function traceRay(x, y, dx, dy, n){
+				if(!(x + n * dx < 0 || x + n * dx >= boardSize.x || y + n * dy < 0 || y + n * dy >= boardSize.y)){
+					traceRay(x, y, dx, dy, n + 1);
+				}
+				return n;
+			}
 			function AI(){
 				for(index1 = 1;index1 <= 2;index1++){
 					for(index2 = 0;index2 < teamSize;index2++){
@@ -389,37 +395,63 @@
 							player[index1][index2].up = 0;
 							player[index1][index2].down = 0;
 							
-							if(index1 < 2){right();}
-							else if(index1 < 2 || (tile[inTile.x - 2][inTile.y] != index1)){right();}
-							if(index1 < 1 || (tile[inTile.x - 1][inTile.y] != index1)){right();}
-							else if(index1 < 1 || (tile[inTile.x - 1][inTile.y] != index1)){right();}
-							if(index1 > boardSize.x - 3 || (tile[inTile.x + 1][inTile.y] != index1)){left();}
-							else if(index1 > boardSize.x - 3 || (tile[inTile.x + 1][inTile.y] != index1)){left();}
-							if(index1 > boardSize.x - 2 || (tile[inTile.x + 2][inTile.y] != index1)){left();}
-							else if(index1 > boardSize.x - 2 || (tile[inTile.x + 2][inTile.y] != index1)){left();}
+							/*if(inTile.x < 2){right();}
+							else if(tile[inTile.x - 2][inTile.y] != index1){right();}
+							if(inTile.x < 1){right();}
+							else if(tile[inTile.x - 1][inTile.y] != index1){right();}
+							if(inTile.x > boardSize.x - 3){left();}
+							else if(tile[inTile.x + 1][inTile.y] != index1){left();}
+							if(inTile.x > boardSize.x - 4){left();}
+							else if(tile[inTile.x + 2][inTile.y] != index1){left();}
 							
-							if(index2 < 2 || (tile[inTile.x][inTile.y - 2] != index1)){up();}
-							if(index2 < 1 || (tile[inTile.x][inTile.y - 1] != index1)){up();}
-							if(index2 > boardSize.y - 3 || (tile[inTile.x][inTile.y + 1] != index1)){down();}
-							if(index2 > boardSize.y - 2 || (tile[inTile.x][inTile.y + 2] != index1)){down();}
+							if(inTile.y < 2){up();}
+							else if(tile[inTile.x][inTile.y - 2] != index1){up();}
+							if(inTile.y < 1){up();}
+							else if(tile[inTile.x][inTile.y - 1] != index1){up();}
+							if(inTile.y > boardSize.y - 3){down();}
+							else if(tile[inTile.x][inTile.y + 1] != index1){down();}
+							if(inTile.y > boardSize.y - 4){down();}
+							else if(tile[inTile.x][inTile.y + 2] != index1){down();}
 							
-							if(index1 < 1 || index2 < 1 || (tile[inTile.x - 1][inTile.y - 1] != index1)){right();up();}
-							if(index1 > boardSize.x - 3 || index2 < 1 || (tile[inTile.x + 1][inTile.y - 1] != index1)){left();up();}
-							if(index1 > boardSize.x - 3 || index2 > boardSize.y - 3 || (tile[inTile.x + 1][inTile.y + 1] != index1)){left();down();}
-							if(index1 < 1 || index2 > boardSize.y - 3 || (tile[inTile.x - 1][inTile.y + 1] != index1)){right();down();}
+							if(inTile.x < 1 || inTile.y < 1){right();up();}
+							else if(tile[inTile.x - 1][inTile.y - 1] != index1){right();up();}
+							if(inTile.x > boardSize.x - 3 || inTile.y < 1){left();up();}
+							else if(tile[inTile.x + 1][inTile.y - 1] != index1){left();up();}
+							if(inTile.x > boardSize.x - 3 || inTile.y > boardSize.y - 3){left();down();}
+							else if(tile[inTile.x + 1][inTile.y + 1] != index1){left();down();}
+							if(inTile.x < 1 || inTile.y > boardSize.y - 3){right();down();}
+							else if(tile[inTile.x - 1][inTile.y + 1] != index1){right();down();}*/
+							
+							player[index1][index2].right += traceRay(inTile.x, inTile.y, -1, 0, 0);
+							player[index1][index2].left += traceRay(inTile.x, inTile.y, 1, 0, 0);
+							player[index1][index2].down += traceRay(inTile.x, inTile.y, 0, -1, 0);
+							player[index1][index2].up += traceRay(inTile.x, inTile.y, 0, 1, 0);
+							
+							
 							
 							temp = Math.max(player[index1][index2].right, player[index1][index2].left);
-							player[index1][index2].right = Math.floor(player[index1][index2].right / temp);
-							player[index1][index2].left = Math.floor(player[index1][index2].left / temp);
+							player[index1][index2].right -= temp;
+							player[index1][index2].left -= temp;
 							
 							temp = Math.max(player[index1][index2].up, player[index1][index2].down);
-							player[index1][index2].up = Math.floor(player[index1][index2].up / temp);
-							player[index1][index2].down = Math.floor(player[index1][index2].down / temp);
+							player[index1][index2].up -= temp;
+							player[index1][index2].down -= temp;
+							
+							player[index1][index2].right /= Math.max(player[index1][index2].right, player[index1][index2].left);
+							player[index1][index2].left /= Math.max(player[index1][index2].right, player[index1][index2].left);
+							
+							player[index1][index2].up /= Math.max(player[index1][index2].up, player[index1][index2].down);
+							player[index1][index2].down /= Math.max(player[index1][index2].up, player[index1][index2].down);
 							
 							
-							temp = Math.floor(Math.random()*teamSize);
-							aim.x = player[3 - index1][temp].Xpos;
-							aim.y = player[3 - index1][temp].Ypos;
+							while(true){
+								temp = Math.floor(Math.random()*teamSize);
+								if(!player[3 - index1][temp].dead){
+									aim.x = player[3 - index1][temp].Xpos;
+									aim.y = player[3 - index1][temp].Ypos;
+									break;
+								}
+							}
 						}
 						
 						
@@ -493,8 +525,8 @@
 				
 				
 				
-				translateInputs();
 				AI();
+				translateInputs();
 				
 				movePlayers();
 				moveBullets();
