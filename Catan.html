@@ -32,8 +32,19 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var board = [[]];     //x:8 , y:
+			var board = [[]];     //width  x:15 ,y: (2*size - 1) - abs(x - (size-1)) , offset  max(x - (size-1), 0)
+			var boardSize = 8;
+			var boardDiameter = boardSize*2 + 1;
 			
+			var index1 = 0;  //row
+			var index2 = 0;  //column
+			
+			var start = [];
+			var end = [];
+			for(index1 = 0;index1 < boardDiameter;index1++){
+				start[index1] = Math.max(index1 - boardSize + 1, 0);
+				end[index1] = boardDiameter - Math.abs(index1 - boardSize + 1);
+			}
 			
 			
 			var mouse = {x:0,y:0};
@@ -83,7 +94,9 @@
 				
 				
 				
-				hexagon(500, 300, 50, "White");
+				hexagon(500, 300, 51, "White");
+				hexagon(500 + Math.sqrt(0.75)*2*50, 300, 51, "White");
+				
 				
 				
 				
