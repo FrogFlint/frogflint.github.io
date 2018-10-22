@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: #00ffff;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Catan Generator</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1000" height="600"></canvas>
+
+	<body style="background-color:#535353;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			
+			var board = [[]];     //x:8 , y:
+			
+			
+			
+			var mouse = {x:0,y:0};
+			
+			
+			
+			
+			
+			
+			
+			
+			function hexagon(x,y,radius,color){
+				ctx.beginPath();
+				ctx.moveTo(x,y);
+				for(var i = 0;i < 7;i++){
+					ctx.lineTo(x + Math.sin(i/3 * Math.PI)*radius, y + Math.cos(i/3 * Math.PI)*radius);
+				}
+				ctx.fillStyle = color;
+				ctx.fill();
+				ctx.closePath();
+			}
+			
+			
+			
+			
+			
+			
+			
+			addEventListener('mousemove', onMove, false);
+			function onMove(evt){
+				//mouse = getMousePos(canvas, evt);
+			}
+			document.addEventListener("click", onClick);
+			function onClick(){
+				
+			}
+			
+			
+			
+			
+			
+			
+			function draw(event) {     //=========================================================================================================================================================================================================
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				
+				
+				hexagon(500, 300, 50, "White");
+				
+				
+				
+				setTimeout(draw, 20);
+			}
+			draw();
+			
+		</SCRIPT>
+	</body>
+</html>
