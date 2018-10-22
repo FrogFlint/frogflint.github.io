@@ -44,11 +44,11 @@
 			
 			var tileSize = 50;
 			var boardSize = {x:Math.floor(canvas.width / tileSize),y:Math.floor(canvas.height / tileSize)};
-			var teamSize = 10;
+			var teamSize = 3;
 			
 			var maxMoveSpeed = 6;
 			var playerAcceleration = 2;
-			var reloadTime = 5;
+			var reloadTime = 30;
 			var bulletSpeed = 10;
 			var tileSwitchTime = 50;
 			
@@ -61,6 +61,7 @@
 			var inTile = {x:0,y:0};
 			var temp;
 			var aim = {x:0,y:0};
+			var winner = 0;
 			
 			
 			
@@ -108,7 +109,7 @@
 						Yspeed:0,
 						dead:false,
 						shooting:true,
-						reload:0,
+						reload:Math.floor(Math.random()*reloadTime),
 						human:false,
 						AI:"easy",
 						
@@ -366,9 +367,22 @@
 					}
 				}
 			}
+			function win(){
+				for(index1 = 1;index1 <= 2;index1++){
+					temp = 1;
+					for(index2 = 0;index2 < teamSize;index2++){
+						if(!player[index1][index2].dead){
+							temp = 0;
+						}
+					}
+					if(temp == 1){
+						winner += index1;
+					}
+				}
+			}
 			function traceRay(x, y, dx, dy, n){
-				if(!(x + n * dx < 0 || x + n * dx >= boardSize.x || y + n * dy < 0 || y + n * dy >= boardSize.y)){
-					traceRay(x, y, dx, dy, n + 1);
+				if(!(x + n * dx < 0 || x + n * dx >= boardSize.x || y + n * dy < 0 || y + n * dy >= boardSize.y) && tile[x + n * dx][y + n * dy] == index1){
+					n = traceRay(x, y, dx, dy, n + 1);
 				}
 				return n;
 			}
@@ -390,37 +404,11 @@
 							inTile.x = Math.floor(player[index1][index2].Xpos / tileSize);
 							inTile.y = Math.floor(player[index1][index2].Ypos / tileSize);
 							
-							player[index1][index2].left = 0;
-							player[index1][index2].right = 0;
-							player[index1][index2].up = 0;
-							player[index1][index2].down = 0;
+							player[index1][index2].left = Math.floor(Math.random()*4);
+							player[index1][index2].right = Math.floor(Math.random()*4);
+							player[index1][index2].up = Math.floor(Math.random()*4);
+							player[index1][index2].down = Math.floor(Math.random()*4);
 							
-							/*if(inTile.x < 2){right();}
-							else if(tile[inTile.x - 2][inTile.y] != index1){right();}
-							if(inTile.x < 1){right();}
-							else if(tile[inTile.x - 1][inTile.y] != index1){right();}
-							if(inTile.x > boardSize.x - 3){left();}
-							else if(tile[inTile.x + 1][inTile.y] != index1){left();}
-							if(inTile.x > boardSize.x - 4){left();}
-							else if(tile[inTile.x + 2][inTile.y] != index1){left();}
-							
-							if(inTile.y < 2){up();}
-							else if(tile[inTile.x][inTile.y - 2] != index1){up();}
-							if(inTile.y < 1){up();}
-							else if(tile[inTile.x][inTile.y - 1] != index1){up();}
-							if(inTile.y > boardSize.y - 3){down();}
-							else if(tile[inTile.x][inTile.y + 1] != index1){down();}
-							if(inTile.y > boardSize.y - 4){down();}
-							else if(tile[inTile.x][inTile.y + 2] != index1){down();}
-							
-							if(inTile.x < 1 || inTile.y < 1){right();up();}
-							else if(tile[inTile.x - 1][inTile.y - 1] != index1){right();up();}
-							if(inTile.x > boardSize.x - 3 || inTile.y < 1){left();up();}
-							else if(tile[inTile.x + 1][inTile.y - 1] != index1){left();up();}
-							if(inTile.x > boardSize.x - 3 || inTile.y > boardSize.y - 3){left();down();}
-							else if(tile[inTile.x + 1][inTile.y + 1] != index1){left();down();}
-							if(inTile.x < 1 || inTile.y > boardSize.y - 3){right();down();}
-							else if(tile[inTile.x - 1][inTile.y + 1] != index1){right();down();}*/
 							
 							player[index1][index2].right += traceRay(inTile.x, inTile.y, 1, 0, 0) + traceRay(inTile.x, inTile.y, 1, 1, 0) + traceRay(inTile.x, inTile.y, 1, -1, 0);
 							player[index1][index2].left += traceRay(inTile.x, inTile.y, -1, 0, 0) + traceRay(inTile.x, inTile.y, -1, 1, 0) + traceRay(inTile.x, inTile.y, -1, -1, 0);
@@ -442,8 +430,9 @@
 								player[index1][index2].left = 1;
 							}
 							else{
-								player[index1][index2].right /= Math.max(player[index1][index2].right, player[index1][index2].left);
-								player[index1][index2].left /= Math.max(player[index1][index2].right, player[index1][index2].left);
+								temp = Math.max(player[index1][index2].right, player[index1][index2].left);
+								player[index1][index2].right /= temp;
+								player[index1][index2].left /= temp;
 							}
 							
 							if(player[index1][index2].up == player[index1][index2].down){
@@ -451,16 +440,17 @@
 								player[index1][index2].down = 1;
 							}
 							else{
-								player[index1][index2].up /= Math.max(player[index1][index2].up, player[index1][index2].down);
-								player[index1][index2].down /= Math.max(player[index1][index2].up, player[index1][index2].down);
+								temp = Math.max(player[index1][index2].up, player[index1][index2].down)
+								player[index1][index2].up /= temp;
+								player[index1][index2].down /= temp;
 							}
 							
 							
 							while(true){
 								temp = Math.floor(Math.random()*teamSize);
 								if(!player[3 - index1][temp].dead){
-									aim.x = player[3 - index1][temp].Xpos;
-									aim.y = player[3 - index1][temp].Ypos;
+									aim.x = player[3 - index1][temp].Xpos + (Math.random()*4 - 2)*tileSize;
+									aim.y = player[3 - index1][temp].Ypos + (Math.random()*4 - 2)*tileSize;
 									break;
 								}
 							}
@@ -469,7 +459,7 @@
 						
 						player[index1][index2].reload = Math.max((player[index1][index2].reload - 1), 0);
 						if(player[index1][index2].shooting && !player[index1][index2].dead && player[index1][index2].reload == 0){
-							player[index1][index2].reload = 30;
+							player[index1][index2].reload = reloadTime;
 							shoot(index1, index2, aim.x, aim.y);
 						}
 					}
@@ -536,15 +526,16 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
-				
-				AI();
-				translateInputs();
-				
-				movePlayers();
-				moveBullets();
-				
-				killPlayers();
-				
+				if(winner == 0){
+					AI();
+					translateInputs();
+
+					movePlayers();
+					moveBullets();
+
+					killPlayers();
+				}
+				win();
 				
 				drawBoard();
 				drawBullets();
