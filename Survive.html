@@ -31,7 +31,7 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
-			var speed = 3;
+			var speed = 6;
 			
 			var player = {
 				Xpos:canvas.width/2,
@@ -204,10 +204,10 @@
 				
 				
 				ctx.beginPath();
-                ctx.arc(player.Xpos, player.Ypos, 6, 0, Math.PI * 2);
-                ctx.fillStyle = "lime";
-                ctx.fill();
-                ctx.closePath();
+				ctx.arc(player.Xpos, player.Ypos, 6, 0, Math.PI * 2);
+				ctx.fillStyle = "lime";
+				ctx.fill();
+				ctx.closePath();
 				
 				for(index = 0; index < indexMax; index++){
 					
@@ -222,10 +222,10 @@
 				
 				
 				ctx.font = "15px Arial";
-		    	ctx.fillStyle = "white";
-		    	ctx.textAlign = "left";
+				ctx.fillStyle = "white";
+				ctx.textAlign = "left";
 				ctx.fillText("Score: " + player.score, 10, canvas.height - 5);
-		    	ctx.textAlign = "right";
+				ctx.textAlign = "right";
 				ctx.fillText("Highscore: " + player.highscore, canvas.width - 30, canvas.height - 5);
 				
 				
@@ -240,7 +240,7 @@
 				
 				
 				
-				setTimeout(draw, 10);
+				setTimeout(draw, 20);
 			}    
 			draw();
         		
