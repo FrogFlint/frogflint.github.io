@@ -10,7 +10,7 @@
 		}
 		
 		canvas {
-			background: #00ffff;
+			background: #CCCCCC;
 			display: block;
 			margin: 0 auto;
 		}
@@ -21,9 +21,9 @@
 
 <body>
 
-	<canvas id="myCanvas" width="1000" height="600"></canvas>
+	<canvas id="myCanvas" width="1300" height="630"></canvas>
 
-	<body style="background-color:#535353;">
+	<body style="background-color:#CCCCCC;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -39,10 +39,14 @@
 			var index1 = 0;
 			var index2 = 0;
 			
-			var score = [];
-			
 			
 			var players = 2;
+			
+			var wallWidth = 3;
+			
+			var maze = {width:20,height:12};
+			var scale = 0.9;
+			var border = {x:30,y:30};
 			
 			
 			
@@ -55,7 +59,98 @@
 					maze[index1][index2] = {
 						tile:0,
 						leftWall:0,
-						topWall:0
+						topWall:0,
+						
+						group:0
+					}
+				}
+			}
+			for(index1 = 0;index1 < players;index1++){
+				player[index1] = {
+					Xpos:0,
+					Ypos:0,
+					angle:0,
+					reload:0,
+					powerUp:0,
+					modifier:0,
+					dead:0,
+					score:0,
+					linkedProjectiles:0
+				}
+			}
+			for(index1 = 0;index1 < players;index1++){
+				projectile[index1] = [];
+				for(index2 = 0;index2 < 100;index2++){
+					projectile[index1][index2] = {
+						Xpos:0,
+						Ypos:0,
+						Xspeed:0,
+						Yspeed:0,
+						type:0,
+						dead:0
+					}
+				}
+			}
+			
+			
+			
+			
+			function movePlayers(){}
+			function moveProjectiles(){}
+			
+			function drawMaze(){
+				for(index1 = 0;index1 < maze.width;index1++){
+					for(index2 = 0;index2 < maze.height;index2++){
+						ctx.beginPath();
+						ctx.rect(border.x + index1*50*scale, border.y + index2*50*scale, 50*scale, 50*scale);
+						ctx.fillStyle = maze[index1][index2].tile == 1 ? "#CCCCCC" : "White";
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+				for(index1 = 0;index1 <= maze.width;index1++){
+					for(index2 = 0;index2 <= maze.height;index2++){
+						if(maze[index1][index2].leftWall == 1){
+							ctx.beginPath();
+							ctx.rect(border.x + (index1*50 - wallWidth)*scale, border.y + (index2*50 - wallWidth)*scale, (wallWidth*2)*scale, (50 + wallWidth*2)*scale);
+							ctx.fillStyle = "Gray";
+							ctx.fill();
+							ctx.closePath();
+						}
+						if(maze[index1][index2].topWall == 1){
+							ctx.beginPath();
+							ctx.rect(border.x + (index1*50 - wallWidth)*scale, border.y + (index2*50 - wallWidth)*scale, (50 + wallWidth*2)*scale, (wallWidth*2)*scale);
+							ctx.fillStyle = "Gray";
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}/*
+				ctx.beginPath();
+				ctx.rect((maze.width - 1));
+				ctx.rect();
+				ctx.fillStyle = "";
+				ctx.fill();
+				ctx.closePath();*/
+			}
+			function drawProjectiles(){}
+			function drawTanks(){}
+			function drawScores(){}
+			
+			
+			function killPlayers(){}
+			function winCheck(){}
+			
+			function pickUp(){}
+			
+			
+			function shoot(player){}
+			function generateMaze(){
+				for(index1 = 0;index1 <= maze.width;index1++){
+					for(index2 = 0;index2 <= maze.height;index2++){
+						maze[index1][index2].tile = Math.floor(Math.random()*1.2);
+						maze[index1][index2].leftWall = Math.floor(Math.random()*2);
+						maze[index1][index2].topWall = Math.floor(Math.random()*2);
 					}
 				}
 			}
@@ -76,7 +171,7 @@
 			
 			
 			
-			
+			generateMaze();
 			
 			function draw(event) {     //=========================================================================================================================================================================================================
 				
@@ -87,6 +182,9 @@
 				
 				
 				
+				
+				
+				drawMaze();
 				
 				
 				setTimeout(draw, 20);
