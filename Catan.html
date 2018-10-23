@@ -34,26 +34,56 @@
 			
 			var board = [[]];     //width  x:15 ,y: (2*size - 1) - abs(x - (size-1)) , offset  max(x - (size-1), 0)
 			var boardSize = 8;
-			var boardDiameter = boardSize*2 + 1;
+			var boardDiameter = boardSize*2 - 1;
+			var hexSize = 20;
+			var hexHeight = hexSize * 1.5;
+			var hexWidth = Math.sqrt(0.75) * 2 * hexSize;
 			
 			var index1 = 0;  //row
 			var index2 = 0;  //column
+			var index3 = 0;  //for checking adjacent hexes
+			
+			var selected = {x:0,y:0};
+			var adjacentTiles = [0,0,0,0,0,0];
+			var temp;
+			var done = false;
+			
+			var waterChance = Math.pow(10, Math.random()*4 - 2);
+			var groupBias = Math.random()*4;
+			var offset = {x:350,y:100};
+			var adjacent = [{x:-1,y:-1},{x:0,y:-1},{x:-1,y:0},{x:1,y:0},{x:0,y:1},{x:1,y:1}];
+			var adjacentClimate = [[1,2],[0,5],[0],[4,5],[3],[1,3]];
 			
 			var start = [];
 			var end = [];
 			for(index1 = 0;index1 < boardDiameter;index1++){
 				start[index1] = Math.max(index1 - boardSize + 1, 0);
-				end[index1] = boardDiameter - Math.abs(index1 - boardSize + 1);
+				end[index1] = start[index1] + boardDiameter - Math.abs(index1 - boardSize + 1);
 			}
 			
 			
+			var tileColor = ["Lime","Yellow","Green","Red","Gray","Orange"];
 			var mouse = {x:0,y:0};
 			
+			for(index1 = 0;index1 < boardDiameter;index1++){
+				board[index1] = [];
+				for(index2 = start[index1];index2 < end[index1];index2++){
+					board[index1][index2] = {
+						chosen:false,
+						water:0,//Math.floor(Math.random()*2),
+						tile:0,//Math.floor(Math.random()*6),  //0 to 5
+						number:0
+					}
+				}
+			}
 			
 			
 			
 			
 			
+			function exists(x,y){
+				return (x >= 0 && x < board.length && y >= start[x] && y < end[x]);
+			}
 			
 			
 			function hexagon(x,y,radius,color){
@@ -68,7 +98,26 @@
 			}
 			
 			
-			
+			function countTilesWith(condition){
+				var count = 0;
+				for(index1 = 0;index1 < boardDiameter;index1++){
+					for(index2 = start[index1];index2 < end[index1];index2++){
+						eval("if(board[index1][index2]." + condition + "){count++;}");
+					}
+				}
+				return count;
+			}
+			function countToTile(n, condition){
+				for(index1 = 0;index1 < boardDiameter;index1++){
+					for(index2 = start[index1];index2 < end[index1];index2++){
+						eval("if(board[index1][index2]." + condition + "){n--;}");
+						if(n == 0){
+							return {x:index1,y:index2};
+						}
+					}
+				}
+				return "error";
+			}
 			
 			
 			
@@ -92,11 +141,58 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
+				if(!done){
+					selected = countToTile(Math.ceil(Math.random()*countTilesWith("chosen == false")),"chosen == false");
+					
+					adjacentTiles = [1,1];
+					for(index3 = 0;index3 < 6;index3++){
+						if(exists(adjacent[index3].x,adjacent[index3].y) && board[adjacent[index3].x][adjacent[index3].y].chosen){
+							adjacentTiles[1 - board[adjacent[index3].x][adjacent[index3].y].water]++;
+						}
+					}
+					adjacentTiles[1] /= waterChance;
+					if(Math.random()*(adjacentTiles[0] + adjacentTiles[1]) < adjacentTiles[0]){
+						board[selected.x][selected.y].water = 1;
+					}
+					else{
+						adjacentTiles = [1,1,1,1,1,1];
+						for(index3 = 0;index3 < 6;index3++){
+							if(exists(adjacent[index3].x,adjacent[index3].y) && board[adjacent[index3].x][adjacent[index3].y].chosen && board[adjacent[index3].x][adjacent[index3].y].water == 0){
+								adjacentTiles[board[adjacent[index3].x][adjacent[index3].y].tile] += groupBias;
+								for(index1 = 0;index1 < adjacentClimate[board[adjacent[index3].x][adjacent[index3].y].tile].length;index1++){
+									adjacentTiles[adjacentClimate[board[adjacent[index3].x][adjacent[index3].y].tile][index1]] += groupBias/2;
+								}
+							}
+						}
+						temp = Math.random()*(adjacentTiles[0] + adjacentTiles[1] + adjacentTiles[2] + adjacentTiles[3] + adjacentTiles[4] + adjacentTiles[5]);
+						for(index3 = 0;index3 < 6;index3++){
+							temp -= adjacentTiles[index3];
+							if(temp < 0){
+								board[selected.x][selected.y].tile = index3;
+								break;
+							}
+						}
+					}
+					/*if(Math.random() < 0.5){
+						board[selected.x][selected.y].water = 1;
+					}
+					else{
+						board[selected.x][selected.y].tile = Math.floor(Math.random()*6);
+					}*/
+					board[selected.x][selected.y].chosen = true;
+					
+					if(countTilesWith("chosen == false") == 0){
+						done = true;
+					}
+				}
 				
 				
-				hexagon(500, 300, 51, "White");
-				hexagon(500 + Math.sqrt(0.75)*2*50, 300, 51, "White");
 				
+				for(index1 = 0;index1 < boardDiameter;index1++){
+					for(index2 = start[index1];index2 < end[index1];index2++){
+						hexagon(offset.x + hexWidth*(index2 - index1/2), offset.y + hexHeight*index1, hexSize + 1, board[index1][index2].chosen ? (board[index1][index2].water == 1 ? "#00FFFF" : tileColor[board[index1][index2].tile]) : "#AAAAAA");
+					}
+				}
 				
 				
 				
