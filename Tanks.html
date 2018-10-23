@@ -10,18 +10,18 @@
 		}
 		
 		canvas {
-			background: black;
+			background: #00ffff;
 			display: block;
 			margin: 0 auto;
 		}
 	</style>
 
-<title>Color Game</title>
+<title>Catan Generator</title>
 </head>
 
 <body>
 
-	<canvas id="myCanvas" width="800" height="600"></canvas>
+	<canvas id="myCanvas" width="1000" height="600"></canvas>
 
 	<body style="background-color:#535353;">
 
@@ -31,32 +31,45 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
+			var maze = [[]];
+			var player = [];
+			var projectile = [];
+			
+			
+			var index1 = 0;
+			var index2 = 0;
+			
+			var score = [];
+			
+			
+			var players = 2;
 			
 			
 			
 			
 			
 			
+			for(index1 = 0;index1 < 50;index1++){
+				maze[index1] = [];
+				for(index2 = 0;index2 < 50;index2++){
+					maze[index1][index2] = {
+						tile:0,
+						leftWall:0,
+						topWall:0
+					}
+				}
+			}
 			
 			
 			
 			
 			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			document.addEventListener("keydown", keyDownHandler, false);
-			document.addEventListener("keyup", keyUpHandler, false);
-			function keyDownHandler(e) {
+			addEventListener('mousemove', onMove, false);
+			function onMove(evt){
+				//mouse = getMousePos(canvas, evt);
+			}
+			document.addEventListener("click", onClick);
+			function onClick(){
 				
 			}
 			
@@ -65,13 +78,10 @@
 			
 			
 			
-			
-			
-			
-			
-			function draw(evt) { 
-			
+			function draw(event) {     //=========================================================================================================================================================================================================
+				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
 				
 				
 				
