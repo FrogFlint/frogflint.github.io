@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Catan Generator</title>
+<title>Tanks</title>
 </head>
 
 <body>
@@ -45,7 +45,7 @@
 			var wallWidth = 3;
 			
 			var maze = {width:20,height:12};
-			var scale = 0.9;
+			var scale = 0.8;
 			var border = {x:30,y:30};
 			
 			
@@ -87,7 +87,9 @@
 						Xspeed:0,
 						Yspeed:0,
 						type:0,
-						dead:0
+						dead:0,
+						
+						timeLeft:0
 					}
 				}
 			}
@@ -99,8 +101,8 @@
 			function moveProjectiles(){}
 			
 			function drawMaze(){
-				for(index1 = 0;index1 < maze.width;index1++){
-					for(index2 = 0;index2 < maze.height;index2++){
+				for(index1 = 0;index1 < maze.width + 2;index1++){
+					for(index2 = 0;index2 < maze.height + 2;index2++){
 						ctx.beginPath();
 						ctx.rect(border.x + index1*50*scale, border.y + index2*50*scale, 50*scale, 50*scale);
 						ctx.fillStyle = maze[index1][index2].tile == 1 ? "#CCCCCC" : "White";
@@ -108,8 +110,8 @@
 						ctx.closePath();
 					}
 				}
-				for(index1 = 0;index1 <= maze.width;index1++){
-					for(index2 = 0;index2 <= maze.height;index2++){
+				for(index1 = 0;index1 < maze.width + 2;index1++){
+					for(index2 = 0;index2 < maze.height + 2;index2++){
 						if(maze[index1][index2].leftWall == 1){
 							ctx.beginPath();
 							ctx.rect(border.x + (index1*50 - wallWidth)*scale, border.y + (index2*50 - wallWidth)*scale, (wallWidth*2)*scale, (50 + wallWidth*2)*scale);
@@ -127,9 +129,9 @@
 					}
 				}/*
 				ctx.beginPath();
-				ctx.rect((maze.width - 1));
+				ctx.rect((maze.width - 1)*50*scale + wallWidth, (maze.height - 1)*50*scale + wallWidth, 50*scale, 50*scale);
 				ctx.rect();
-				ctx.fillStyle = "";
+				ctx.fillStyle = "#CCCCCC";
 				ctx.fill();
 				ctx.closePath();*/
 			}
@@ -146,11 +148,34 @@
 			
 			function shoot(player){}
 			function generateMaze(){
-				for(index1 = 0;index1 <= maze.width;index1++){
-					for(index2 = 0;index2 <= maze.height;index2++){
-						maze[index1][index2].tile = Math.floor(Math.random()*1.2);
-						maze[index1][index2].leftWall = Math.floor(Math.random()*2);
-						maze[index1][index2].topWall = Math.floor(Math.random()*2);
+				for(index1 = 0;index1 < maze.width + 2;index1++){
+					for(index2 = 0;index2 < maze.height + 2;index2++){
+						if(index1 % (maze.width + 2) == 0 || index2 % (maze.height + 2) == 0){
+							maze[index1][index2].tile = 1;
+							maze[index1][index2].leftWall = 0;
+							maze[index1][index2].topWall = 0;
+						}
+						else{
+							maze[index1][index2].tile = Math.floor(Math.random()*1.2);
+							maze[index1][index2].leftWall = Math.floor(Math.random()*2);
+							maze[index1][index2].topWall = Math.floor(Math.random()*2);
+						}
+					}
+				}
+				for(index1 = 0;index1 < maze.width + 1;index1++){
+					for(index2 = 0;index2 < maze.height + 1;index2++){
+						if(maze[index1][index2].tile != maze[index1 + 1][index2].tile){
+							maze[index1 + 1][index2].leftWall = 1;
+						}
+						if(maze[index1][index2].tile != maze[index1][index2 + 1].tile){
+							maze[index1][index2 + 1].topWall = 1;
+						}
+						if(maze[index1][index2].tile + maze[index1 + 1][index2].tile == 2){
+							maze[index1 + 1][index2].leftWall = 0;
+						}
+						if(maze[index1][index2].tile + maze[index1][index2 + 1].tile == 2){
+							maze[index1][index2 + 1].topWall = 0;
+						}
 					}
 				}
 			}
