@@ -34,10 +34,20 @@
 			var maze = [[]];
 			var player = [];
 			var projectile = [];
+			var powerUp = [];
 			
 			
 			var index1 = 0;
 			var index2 = 0;
+			
+			var index3 = 0;  //group index
+			var stop = false;
+			var noIslands = true;
+			
+			
+			var groupEdge = [[]];  //[[x, y, leftWall]]
+			
+			var tileGroup = [1,0,0]; //first one is the smaller of the other two
 			
 			
 			var players = 2;
@@ -86,11 +96,21 @@
 						Ypos:0,
 						Xspeed:0,
 						Yspeed:0,
+						size:5,
 						type:0,
 						dead:0,
 						
 						timeLeft:0
 					}
+				}
+			}
+			for(index1 = 0;index1 < 50;index1++){
+				powerUp[index1] = {
+					Xpos:0,
+					Ypos:0,
+					type:0,
+					modifier:0,
+					dead:0
 				}
 			}
 			
@@ -106,6 +126,7 @@
 						ctx.beginPath();
 						ctx.rect(border.x + index1*50*scale, border.y + index2*50*scale, 50*scale, 50*scale);
 						ctx.fillStyle = maze[index1][index2].tile == 1 ? "#CCCCCC" : "White";
+						//if(maze[index1][index2].group == 1){ctx.fillStyle = "Red";}
 						ctx.fill();
 						ctx.closePath();
 					}
@@ -127,17 +148,11 @@
 							ctx.closePath();
 						}
 					}
-				}/*
-				ctx.beginPath();
-				ctx.rect((maze.width - 1)*50*scale + wallWidth, (maze.height - 1)*50*scale + wallWidth, 50*scale, 50*scale);
-				ctx.rect();
-				ctx.fillStyle = "#CCCCCC";
-				ctx.fill();
-				ctx.closePath();*/
+				}
 			}
 			function drawProjectiles(){}
 			function drawTanks(){}
-			function drawScores(){}
+			function drawScores(){}  //and active powerups and modifiers
 			
 			
 			function killPlayers(){}
@@ -148,22 +163,68 @@
 			
 			function shoot(player){}
 			function generateMaze(){
-				for(index1 = 0;index1 < maze.width + 2;index1++){
-					for(index2 = 0;index2 < maze.height + 2;index2++){
-						if(index1 % (maze.width + 2) == 0 || index2 % (maze.height + 2) == 0){
-							maze[index1][index2].tile = 1;
-							maze[index1][index2].leftWall = 0;
-							maze[index1][index2].topWall = 0;
+				noIslands = false;
+				while(!noIslands){
+					for(index1 = 0;index1 < maze.width + 2;index1++){
+						for(index2 = 0;index2 < maze.height + 2;index2++){
+							if(index1 % (maze.width + 1) == 0 || index2 % (maze.height + 1) == 0){
+								maze[index1][index2].tile = 1;
+								maze[index1][index2].leftWall = 0;
+								maze[index1][index2].topWall = 0;
+							}
+							else{
+								maze[index1][index2].tile = Math.floor(Math.random()*1.2);
+								maze[index1][index2].leftWall = Math.floor(Math.random()*2);
+								maze[index1][index2].topWall = Math.floor(Math.random()*2);
+							}
+							maze[index1][index2].group = 0;
 						}
-						else{
-							maze[index1][index2].tile = Math.floor(Math.random()*1.2);
-							maze[index1][index2].leftWall = Math.floor(Math.random()*2);
-							maze[index1][index2].topWall = Math.floor(Math.random()*2);
+					}
+					stop = false;
+					for(index1 = 1;index1 < maze.width + 1 && !stop;index1++){
+						for(index2 = 1;index2 < maze.height + 1 && !stop;index2++){
+							if(maze[index1][index2].tile == 0){
+								maze[index1][index2].group = 1;
+								stop = true;
+							}
+						}
+					}
+					stop = false;
+					while(!stop){
+						stop = true;
+						for(index1 = 1;index1 < maze.width + 1 && stop;index1++){
+							for(index2 = 1;index2 < maze.height + 1 && stop;index2++){
+								if(maze[index1][index2].group != maze[index1 + 1][index2].group){
+									maze[index1][index2].group = 1;
+									maze[index1 + 1][index2].group = 1;
+									stop = false;
+								}
+								if(maze[index1][index2].group != maze[index1][index2 + 1].group){
+									maze[index1][index2].group = 1;
+									maze[index1][index2 + 1].group = 1;
+									stop = false;
+								}
+							}
+						}
+					}
+					noIslands = true;
+					for(index1 = 1;index1 < maze.width + 1 && !stop;index1++){
+						for(index2 = 1;index2 < maze.height + 1 && !stop;index2++){
+							if(maze[index1][index2].group == 0 && maze[index1][index2].tile == 0){
+								noIslands = false;
+								stop = true;
+							}
 						}
 					}
 				}
-				for(index1 = 0;index1 < maze.width + 1;index1++){
-					for(index2 = 0;index2 < maze.height + 1;index2++){
+				for(index1 = 0;index1 < maze.width + 2;index1++){
+					for(index2 = 0;index2 < maze.height + 2;index2++){
+						maze[index1][index2].group = 0;
+					}
+				}
+				
+				for(index1 = 0;index1 < maze.width + 2;index1++){
+					for(index2 = 0;index2 < maze.height + 2;index2++){
 						if(maze[index1][index2].tile != maze[index1 + 1][index2].tile){
 							maze[index1 + 1][index2].leftWall = 1;
 						}
@@ -178,6 +239,64 @@
 						}
 					}
 				}
+				stop = false;
+				for(index1 = 1;index1 < maze.width + 1 && !stop;index1++){
+					for(index2 = 1;index2 < maze.height + 1 && !stop;index2++){
+						if(maze[index1][index2].tile == 0){
+							maze[index1][index2].group = 1;
+							stop = true;
+						}
+					}
+				}
+				stop = false;
+				while(!stop){
+					stop = false;
+					while(!stop){
+						stop = true;
+						for(index1 = 1;index1 < maze.width + 1 && stop;index1++){
+							for(index2 = 1;index2 < maze.height + 1 && stop;index2++){
+								if(maze[index1][index2].group != maze[index1 + 1][index2].group && maze[index1 + 1][index2].leftWall == 0){
+									maze[index1][index2].group = 1;
+									maze[index1 + 1][index2].group = 1;
+									stop = false;
+								}
+								if(maze[index1][index2].group != maze[index1][index2 + 1].group && maze[index1][index2 + 1].topWall == 0){
+									maze[index1][index2].group = 1;
+									maze[index1][index2 + 1].group = 1;
+									stop = false;
+								}
+							}
+						}
+					}
+					index3 = 0;
+					groupEdge = [];
+					for(index1 = 1;index1 < maze.width + 1;index1++){
+						for(index2 = 1;index2 < maze.height + 1;index2++){
+							if(maze[index1][index2].group != maze[index1 + 1][index2].group && maze[index1][index2].tile + maze[index1 + 1][index2].tile == 0){
+								groupEdge[index3] = [index1 + 1, index2, "leftWall"];
+								index3++;
+							}
+							if(maze[index1][index2].group != maze[index1][index2 + 1].group && maze[index1][index2].tile + maze[index1][index2 + 1].tile == 0){
+								groupEdge[index3] = [index1, index2 + 1, "topWall"];
+								index3++;
+							}
+						}
+					}
+					for(index3 = 0;index3 < groupEdge.length;index3++){
+						if(Math.random() < 0.1){
+							maze[groupEdge[index3][0]][groupEdge[index3][1]][groupEdge[index3][2]] = 0
+						}
+					}
+					stop = true;
+					for(index1 = 1;index1 < maze.width + 1;index1++){
+						for(index2 = 1;index2 < maze.height + 1;index2++){
+							if(maze[index1][index2].group + maze[index1][index2].tile == 0){
+								stop = false;
+							}
+						}
+					}
+				}
+				
 			}
 			
 			
