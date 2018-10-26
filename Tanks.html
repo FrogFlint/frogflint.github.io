@@ -33,7 +33,7 @@
 			
 			var maze = [[]];
 			var player = [];
-			var projectile = [];
+			var projectile = [[]];
 			var powerUp = [];
 			
 			
@@ -50,13 +50,23 @@
 			var tileGroup = [1,0,0]; //first one is the smaller of the other two
 			
 			
+			var tileChance = 1.1; //inverse
+			var wallChance = 2;
+			
+			var squareCenterLine = [[1,0,"leftWall"],[0,1,"topWall"],[1,1,"leftWall"],[1,1,"topWall"]];
+			
 			var players = 2;
+			var playerColor = ["Red","Lime","Blue","Orange","Purple","Green","DarkRed"];
 			
-			var wallWidth = 3;
+			var tileSize = 50;
+			var wallWidth = 2.5;
 			
-			var maze = {width:20,height:12};
-			var scale = 0.8;
+			var maze = {width:14,height:8};
+			var scale = 1.2;
 			var border = {x:30,y:30};
+			
+			var tankScale = 3.6
+			var tankSpeed = 2.3;
 			
 			
 			
@@ -79,13 +89,18 @@
 				player[index1] = {
 					Xpos:0,
 					Ypos:0,
-					angle:0,
+					rotation:Math.random()*Math.PI*2*0,
 					reload:0,
 					powerUp:0,
 					modifier:0,
-					dead:0,
+					dead:false,
 					score:0,
-					linkedProjectiles:0
+					linkedProjectiles:false,
+					
+					forwards:false,
+					backwards:false,
+					left:false,
+					right:false
 				}
 			}
 			for(index1 = 0;index1 < players;index1++){
@@ -98,7 +113,7 @@
 						Yspeed:0,
 						size:5,
 						type:0,
-						dead:0,
+						dead:true,
 						
 						timeLeft:0
 					}
@@ -110,21 +125,40 @@
 					Ypos:0,
 					type:0,
 					modifier:0,
-					dead:0
+					dead:true
 				}
 			}
 			
 			
 			
 			
-			function movePlayers(){}
+			function movePlayers(){
+				for(index1 = 0;index1 < players;index1++){
+					if(!player[index1].dead){
+						if(player[index1].left){
+							player[index1].rotation -= 0.04 * tankSpeed;
+						}
+						if(player[index1].right){
+							player[index1].rotation += 0.04 * tankSpeed;
+						}
+						if(player[index1].forwards){
+							player[index1].Xpos += Math.sin(player[index1].rotation) * tankSpeed;
+							player[index1].Ypos += Math.cos(player[index1].rotation) * tankSpeed;
+						}
+						if(player[index1].backwards){
+							player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed;
+							player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed;
+						}
+					}
+				}
+			}
 			function moveProjectiles(){}
 			
 			function drawMaze(){
 				for(index1 = 0;index1 < maze.width + 2;index1++){
 					for(index2 = 0;index2 < maze.height + 2;index2++){
 						ctx.beginPath();
-						ctx.rect(border.x + index1*50*scale, border.y + index2*50*scale, 50*scale, 50*scale);
+						ctx.rect(border.x + index1*tileSize*scale, border.y + index2*tileSize*scale, tileSize*scale, tileSize*scale);
 						ctx.fillStyle = maze[index1][index2].tile == 1 ? "#CCCCCC" : "White";
 						//if(maze[index1][index2].group == 1){ctx.fillStyle = "Red";}
 						ctx.fill();
@@ -135,14 +169,14 @@
 					for(index2 = 0;index2 < maze.height + 2;index2++){
 						if(maze[index1][index2].leftWall == 1){
 							ctx.beginPath();
-							ctx.rect(border.x + (index1*50 - wallWidth)*scale, border.y + (index2*50 - wallWidth)*scale, (wallWidth*2)*scale, (50 + wallWidth*2)*scale);
+							ctx.rect(border.x + (index1*tileSize - wallWidth)*scale, border.y + (index2*tileSize - wallWidth)*scale, (wallWidth*2)*scale, (tileSize + wallWidth*2)*scale);
 							ctx.fillStyle = "Gray";
 							ctx.fill();
 							ctx.closePath();
 						}
 						if(maze[index1][index2].topWall == 1){
 							ctx.beginPath();
-							ctx.rect(border.x + (index1*50 - wallWidth)*scale, border.y + (index2*50 - wallWidth)*scale, (50 + wallWidth*2)*scale, (wallWidth*2)*scale);
+							ctx.rect(border.x + (index1*tileSize - wallWidth)*scale, border.y + (index2*tileSize - wallWidth)*scale, (tileSize + wallWidth*2)*scale, (wallWidth*2)*scale);
 							ctx.fillStyle = "Gray";
 							ctx.fill();
 							ctx.closePath();
@@ -151,7 +185,34 @@
 				}
 			}
 			function drawProjectiles(){}
-			function drawTanks(){}
+			function drawTanks(){
+				for(index1 = 0;index1 < players;index1++){ //0.43643834422
+					if(!player[index1].dead){
+						ctx.beginPath();
+						ctx.moveTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.fillStyle = playerColor[index1];
+						ctx.fill();
+						ctx.lineWidth = 0.2*scale*tankScale;
+						ctx.stroke();
+						ctx.closePath();
+						
+						ctx.beginPath();
+						ctx.moveTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.arc(border.x + player[index1].Xpos*scale, border.y + player[index1].Ypos*scale, 1.5*scale*tankScale, Math.PI/2 + Math.atan(0.50859824365) - player[index1].rotation, Math.PI/2 - Math.atan(0.50859824365) - player[index1].rotation);
+						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.fillStyle = playerColor[index1];
+						ctx.fill();
+						ctx.lineWidth = 0.2*scale*tankScale;
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+			}
 			function drawScores(){}  //and active powerups and modifiers
 			
 			
@@ -173,9 +234,9 @@
 								maze[index1][index2].topWall = 0;
 							}
 							else{
-								maze[index1][index2].tile = Math.floor(Math.random()*1.2);
-								maze[index1][index2].leftWall = Math.floor(Math.random()*2);
-								maze[index1][index2].topWall = Math.floor(Math.random()*2);
+								maze[index1][index2].tile = Math.floor(Math.random()*tileChance);
+								maze[index1][index2].leftWall = Math.floor(Math.random()*wallChance);
+								maze[index1][index2].topWall = Math.floor(Math.random()*wallChance);
 							}
 							maze[index1][index2].group = 0;
 						}
@@ -194,12 +255,12 @@
 						stop = true;
 						for(index1 = 1;index1 < maze.width + 1 && stop;index1++){
 							for(index2 = 1;index2 < maze.height + 1 && stop;index2++){
-								if(maze[index1][index2].group != maze[index1 + 1][index2].group){
+								if(maze[index1][index2].group != maze[index1 + 1][index2].group && maze[index1][index2].tile + maze[index1 + 1][index2].tile == 0){
 									maze[index1][index2].group = 1;
 									maze[index1 + 1][index2].group = 1;
 									stop = false;
 								}
-								if(maze[index1][index2].group != maze[index1][index2 + 1].group){
+								if(maze[index1][index2].group != maze[index1][index2 + 1].group && maze[index1][index2].tile + maze[index1][index2 + 1].tile == 0){
 									maze[index1][index2].group = 1;
 									maze[index1][index2 + 1].group = 1;
 									stop = false;
@@ -207,6 +268,7 @@
 							}
 						}
 					}
+					stop = false;
 					noIslands = true;
 					for(index1 = 1;index1 < maze.width + 1 && !stop;index1++){
 						for(index2 = 1;index2 < maze.height + 1 && !stop;index2++){
@@ -284,7 +346,7 @@
 					}
 					for(index3 = 0;index3 < groupEdge.length;index3++){
 						if(Math.random() < 0.1){
-							maze[groupEdge[index3][0]][groupEdge[index3][1]][groupEdge[index3][2]] = 0
+							maze[groupEdge[index3][0]][groupEdge[index3][1]][groupEdge[index3][2]] = 0;
 						}
 					}
 					stop = true;
@@ -293,6 +355,31 @@
 							if(maze[index1][index2].group + maze[index1][index2].tile == 0){
 								stop = false;
 							}
+						}
+					}
+				}
+				for(index1 = 1;index1 < maze.width;index1++){
+					for(index2 = 1;index2 < maze.height;index2++){
+						if(maze[index1][index2].tile + maze[index1 + 1][index2].tile + maze[index1][index2 + 1].tile + maze[index1 + 1][index2 + 1].tile == 0
+						&& maze[index1 + 1][index2].leftWall + maze[index1][index2 + 1].topWall + maze[index1 + 1][index2 + 1].leftWall + maze[index1 + 1][index2 + 1].topWall == 0){
+							index3 = Math.floor(Math.random()*4);
+							maze[index1 + squareCenterLine[index3][0]][index2 + squareCenterLine[index3][1]][squareCenterLine[index3][2]] = 1;
+						}
+					}
+				}
+				
+				//other setup
+				for(index3 = 0;index3 < players;index3++){
+					stop = false;
+					while(!stop){
+						index1 = Math.floor(Math.random()*maze.width);
+						index2 = Math.floor(Math.random()*maze.height);
+						
+						if(maze[index1][index2].tile == 0){
+							player[index3].Xpos = (index1 + 0.5)*tileSize;
+							player[index3].Ypos = (index2 + 0.5)*tileSize;
+							player[index3].dead = false;
+							stop = true;
 						}
 					}
 				}
@@ -311,6 +398,70 @@
 			function onClick(){
 				
 			}
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+				if(players >= 1){
+					if(e.keyCode == 38){
+						player[0].forwards = true;
+					}
+					if(e.keyCode == 40){
+						player[0].backwards = true;
+					}
+					if(e.keyCode == 37){
+						player[0].right = true;
+					}
+					if(e.keyCode == 39){
+						player[0].left = true;
+					}
+				}
+				if(players >= 2){
+					if(e.keyCode == 87){
+						player[1].forwards = true;
+					}
+					if(e.keyCode == 83){
+						player[1].backwards = true;
+					}
+					if(e.keyCode == 65){
+						player[1].right = true;
+					}
+					if(e.keyCode == 68){
+						player[1].left = true;
+					}
+				}
+			}
+			function keyUpHandler(e) {
+				if(players >= 1){
+					if(e.keyCode == 38){
+						player[0].forwards = false;
+					}
+					if(e.keyCode == 40){
+						player[0].backwards = false;
+					}
+					if(e.keyCode == 37){
+						player[0].right = false;
+					}
+					if(e.keyCode == 39){
+						player[0].left = false;
+					}
+				}
+				if(players >= 2){
+					if(e.keyCode == 87){
+						player[1].forwards = false;
+					}
+					if(e.keyCode == 83){
+						player[1].backwards = false;
+					}
+					if(e.keyCode == 65){
+						player[1].right = false;
+					}
+					if(e.keyCode == 68){
+						player[1].left = false;
+					}
+				}
+			}
+			
+			
 			
 			
 			
@@ -325,10 +476,11 @@
 				
 				
 				
-				
+				movePlayers();
 				
 				
 				drawMaze();
+				drawTanks();
 				
 				
 				setTimeout(draw, 20);
