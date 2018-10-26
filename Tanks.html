@@ -59,17 +59,20 @@
 			var squareCenterLine = [[1,0,"leftWall"],[0,1,"topWall"],[1,1,"leftWall"],[1,1,"topWall"]];
 			
 			var players = 2;
-			var playerColor = ["Red","Lime","Blue","Orange","Purple","Green","DarkRed"];
+			var playerColor = ["Red","Lime","Blue","DarkOrange","Purple","Gold","Cyan","DeepPink","Green"];
+			var controls = [[38,40,37,39,191],[87,83,65,68,81],[89,72,71,74,84],[80,186,76,222,79],[],[],[]];
+			var directionCode = ["forwards","backwards","right","left"];
 			
 			var tileSize = 50;
 			var wallWidth = 2.5;
 			
 			var maze = {width:14,height:8};
-			var scale = 1.2;
 			var border = {x:30,y:30};
+			var scale = Math.min((canvas.width - 2*border.x)/((maze.width + 2) * tileSize),(canvas.height - 2*border.y)/((maze.height + 2) * tileSize));
 			
-			var tankScale = 3.6
+			var tankScale = 3.6;
 			var tankSpeed = 2.3;
+			var backupSpeed = 0.5;
 			
 			
 			
@@ -150,8 +153,8 @@
 							player[index1].Ypos += Math.cos(player[index1].rotation) * tankSpeed;
 						}
 						if(player[index1].backwards){
-							player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed;
-							player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed;
+							player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed * backupSpeed;
+							player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed * backupSpeed;
 						}
 						
 						tankCorner[index1] = [];
@@ -161,7 +164,8 @@
 						tankCorner[index1][3] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
 						
 						for(index2 = 0;index2 < 4;index2++){
-							if(inTile(player[index1].Xpos, player[index1].Ypos) != inTile(tankCorner[index1][index2].x - wallWidth, tankCorner[index1][index2].y)){
+							if(inTile(player[index1].Xpos, player[index1].Ypos).x     inTile(player[index1].Xpos, player[index1].Ypos) != inTile(tankCorner[index1][index2].x - wallWidth, tankCorner[index1][index2].y){
+								player[index1].Xpos += inTile(player[index1].Xpos, player[index1].Ypos).x * tileSize - tankCorner[index1][index2].x;
 								
 							}
 						}
@@ -217,7 +221,7 @@
 						ctx.lineTo(border.x + tankCorner[index1][2].x*scale, border.y + tankCorner[index1][2].y*scale);
 						ctx.lineTo(border.x + tankCorner[index1][3].x*scale, border.y + tankCorner[index1][3].y*scale);
 						ctx.lineTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
-						ctx.fillStyle = playerColor[index1];
+						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
 						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
@@ -228,7 +232,7 @@
 						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
 						ctx.arc(border.x + player[index1].Xpos*scale, border.y + player[index1].Ypos*scale, 1.5*scale*tankScale, Math.PI/2 + Math.atan(0.50859824365) - player[index1].rotation, Math.PI/2 - Math.atan(0.50859824365) - player[index1].rotation);
 						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
-						ctx.fillStyle = playerColor[index1];
+						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
 						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
@@ -395,8 +399,8 @@
 				for(index3 = 0;index3 < players;index3++){
 					stop = false;
 					while(!stop){
-						index1 = Math.floor(Math.random()*maze.width);
-						index2 = Math.floor(Math.random()*maze.height);
+						index1 = Math.floor(Math.random()*(maze.width + 1));
+						index2 = Math.floor(Math.random()*(maze.height + 1));
 						
 						if(maze[index1][index2].tile == 0){
 							player[index3].Xpos = (index1 + 0.5)*tileSize;
@@ -426,62 +430,24 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
-				if(players >= 1){
-					if(e.keyCode == 38){
-						player[0].forwards = true;
-					}
-					if(e.keyCode == 40){
-						player[0].backwards = true;
-					}
-					if(e.keyCode == 37){
-						player[0].right = true;
-					}
-					if(e.keyCode == 39){
-						player[0].left = true;
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < 4;index2++){
+						if(e.keyCode == controls[index1][index2]){
+							player[index1][directionCode[index2]] = true;
+						}
 					}
 				}
-				if(players >= 2){
-					if(e.keyCode == 87){
-						player[1].forwards = true;
-					}
-					if(e.keyCode == 83){
-						player[1].backwards = true;
-					}
-					if(e.keyCode == 65){
-						player[1].right = true;
-					}
-					if(e.keyCode == 68){
-						player[1].left = true;
-					}
-				}
+				
 			}
 			function keyUpHandler(e) {
-				if(players >= 1){
-					if(e.keyCode == 38){
-						player[0].forwards = false;
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < 4;index2++){
+						if(e.keyCode == controls[index1][index2]){
+							player[index1][directionCode[index2]] = false;
+						}
 					}
-					if(e.keyCode == 40){
-						player[0].backwards = false;
-					}
-					if(e.keyCode == 37){
-						player[0].right = false;
-					}
-					if(e.keyCode == 39){
-						player[0].left = false;
-					}
-				}
-				if(players >= 2){
-					if(e.keyCode == 87){
-						player[1].forwards = false;
-					}
-					if(e.keyCode == 83){
-						player[1].backwards = false;
-					}
-					if(e.keyCode == 65){
-						player[1].right = false;
-					}
-					if(e.keyCode == 68){
-						player[1].left = false;
+					if(e.keyCode == controls[index1][4]){
+						shoot(index1);
 					}
 				}
 			}
