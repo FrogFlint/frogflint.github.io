@@ -44,6 +44,9 @@
 			var stop = false;
 			var noIslands = true;
 			
+			var tankCorner = [[{}]];
+			var intoWall = 0;
+			
 			
 			var groupEdge = [[]];  //[[x, y, leftWall]]
 			
@@ -135,11 +138,12 @@
 			function movePlayers(){
 				for(index1 = 0;index1 < players;index1++){
 					if(!player[index1].dead){
+						
 						if(player[index1].left){
-							player[index1].rotation -= 0.04 * tankSpeed;
+							player[index1].rotation -= 0.043 * tankSpeed;
 						}
 						if(player[index1].right){
-							player[index1].rotation += 0.04 * tankSpeed;
+							player[index1].rotation += 0.043 * tankSpeed;
 						}
 						if(player[index1].forwards){
 							player[index1].Xpos += Math.sin(player[index1].rotation) * tankSpeed;
@@ -148,6 +152,18 @@
 						if(player[index1].backwards){
 							player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed;
 							player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed;
+						}
+						
+						tankCorner[index1] = [];
+						tankCorner[index1][0] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][1] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][2] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][3] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						
+						for(index2 = 0;index2 < 4;index2++){
+							if(inTile(player[index1].Xpos, player[index1].Ypos) != inTile(tankCorner[index1][index2].x - wallWidth, tankCorner[index1][index2].y)){
+								
+							}
 						}
 					}
 				}
@@ -187,16 +203,23 @@
 			function drawProjectiles(){}
 			function drawTanks(){
 				for(index1 = 0;index1 < players;index1++){ //0.43643834422
-					if(!player[index1].dead){
+					if(!player[index1].dead){/*
+						tankCorner[index1] = [];
+						tankCorner[index1][0] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][1] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][2] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						tankCorner[index1][3] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
+						*/
+						
 						ctx.beginPath();
-						ctx.moveTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13), border.y + player[index1].Ypos*scale + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*scale*tankScale*Math.sqrt(13));
+						ctx.moveTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
+						ctx.lineTo(border.x + tankCorner[index1][1].x*scale, border.y + tankCorner[index1][1].y*scale);
+						ctx.lineTo(border.x + tankCorner[index1][2].x*scale, border.y + tankCorner[index1][2].y*scale);
+						ctx.lineTo(border.x + tankCorner[index1][3].x*scale, border.y + tankCorner[index1][3].y*scale);
+						ctx.lineTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
 						ctx.fillStyle = playerColor[index1];
 						ctx.fill();
-						ctx.lineWidth = 0.2*scale*tankScale;
+						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
 						ctx.closePath();
 						
@@ -207,7 +230,7 @@
 						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
 						ctx.fillStyle = playerColor[index1];
 						ctx.fill();
-						ctx.lineWidth = 0.2*scale*tankScale;
+						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
 						ctx.closePath();
 					}
@@ -387,7 +410,9 @@
 			}
 			
 			
-			
+			function inTile(x,y){
+				return {x:Math.floor(x/tileSize)*tileSize,y:Math.floor(y/tileSize)*tileSize};
+			}
 			
 			
 			addEventListener('mousemove', onMove, false);
