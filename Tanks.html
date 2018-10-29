@@ -38,6 +38,7 @@
 			var powerUp = [];
 			
 			var powerUpCountdown = 0;
+			var winCountDown = 0;
 			
 			
 			var index1 = 0;
@@ -73,8 +74,10 @@
 			var wallWidth = 2.5;
 			
 			var maze = {width:14,height:8};
-			var border = {x:30,y:30};
-			var scale = Math.min((canvas.width - 2*border.x)/((maze.width + 2) * tileSize),(canvas.height - 2*border.y)/((maze.height + 2) * tileSize));
+			var border = {x:5,y:5};
+			var mazeBorder = {x:0,y:0};
+			var scoreArea = 80;
+			var scale = 1;
 			
 			var tankScale = 3.6;
 			var tankSpeed = 2.3;
@@ -105,7 +108,7 @@
 						Ypos:0,
 						rotation:Math.random()*Math.PI*2*0,
 						reload:0,
-						powerUp:index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing
+						powerUp:index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, shrapnel, magnet sphere thing
 						modifier:0,  //swift, phase, triplet, 
 						dead:false,
 						score:0,
@@ -147,19 +150,19 @@
 				baseProjectile = [
 					{
 						type:0,
-						size:3,
+						size:2.3,
 						speedVector:3,
 						timeLeft:50*5
 					},
 					{},
 					{
 						type:2,
-						size:1,
+						size:0.8,
 						speedVector:3,
 						timeLeft:50*2,
 						length:0, //up to 30
 						
-						front:{x:0,y:0,xS:0,yS:0,length:0,move:laserUpdates},
+						front:{x:0,y:0,xS:0,yS:0,move:laserUpdates},
 						back:{x:0,y:0}
 					}
 				];
@@ -300,13 +303,13 @@
 									
 									if(laserBounce){
 										ctx.beginPath();
-										ctx.arc(border.x + projectile[index1][index2].front.x * scale, border.y + projectile[index1][index2].front.y * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
+										ctx.arc(border.x + mazeBorder.x + projectile[index1][index2].front.x * scale, border.y + mazeBorder.y + projectile[index1][index2].front.y * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
 										ctx.fillStyle = playerColor[index1];
 										ctx.fill();
 										ctx.closePath();
 										ctx.beginPath();
-										ctx.moveTo(border.x + projectile[index1][index2].front.x * scale, border.y + projectile[index1][index2].front.y * scale);
-										ctx.lineTo(border.x + projectile[index1][index2].back.x * scale, border.y + projectile[index1][index2].back.y * scale);
+										ctx.moveTo(border.x + mazeBorder.x + projectile[index1][index2].front.x * scale, border.y + mazeBorder.y + projectile[index1][index2].front.y * scale);
+										ctx.lineTo(border.x + mazeBorder.x + projectile[index1][index2].back.x * scale, border.y + mazeBorder.y + projectile[index1][index2].back.y * scale);
 										ctx.strokeStyle = playerColor[index1];
 										ctx.lineWidth = projectile[index1][index2].size * scale * 2;
 										ctx.stroke();
@@ -333,7 +336,7 @@
 				for(index1 = 0;index1 < maze.width + 2;index1++){
 					for(index2 = 0;index2 < maze.height + 2;index2++){
 						ctx.beginPath();
-						ctx.rect(border.x + index1*tileSize*scale, border.y + index2*tileSize*scale, tileSize*scale, tileSize*scale);
+						ctx.rect(border.x + mazeBorder.x + index1*tileSize*scale, border.y + mazeBorder.y + index2*tileSize*scale, tileSize*scale + 1, tileSize*scale + 1);
 						ctx.fillStyle = maze[index1][index2].tile == 1 ? "#CCCCCC" : "White";
 						ctx.fill();
 						ctx.closePath();
@@ -343,14 +346,14 @@
 					for(index2 = 0;index2 < maze.height + 2;index2++){
 						if(maze[index1][index2].leftWall == 1){
 							ctx.beginPath();
-							ctx.rect(border.x + (index1*tileSize - wallWidth)*scale, border.y + (index2*tileSize - wallWidth)*scale, (wallWidth*2)*scale, (tileSize + wallWidth*2)*scale);
+							ctx.rect(border.x + mazeBorder.x + (index1*tileSize - wallWidth)*scale, border.y + mazeBorder.y + (index2*tileSize - wallWidth)*scale, (wallWidth*2)*scale, (tileSize + wallWidth*2)*scale);
 							ctx.fillStyle = "Gray";
 							ctx.fill();
 							ctx.closePath();
 						}
 						if(maze[index1][index2].topWall == 1){
 							ctx.beginPath();
-							ctx.rect(border.x + (index1*tileSize - wallWidth)*scale, border.y + (index2*tileSize - wallWidth)*scale, (tileSize + wallWidth*2)*scale, (wallWidth*2)*scale);
+							ctx.rect(border.x + mazeBorder.x + (index1*tileSize - wallWidth)*scale, border.y + mazeBorder.y + (index2*tileSize - wallWidth)*scale, (tileSize + wallWidth*2)*scale, (wallWidth*2)*scale);
 							ctx.fillStyle = "Gray";
 							ctx.fill();
 							ctx.closePath();
@@ -364,7 +367,7 @@
 						if(!projectile[index1][index2].dead){
 							if(projectile[index1][index2].type <= 1){
 								ctx.beginPath();
-								ctx.arc(border.x + projectile[index1][index2].Xpos * scale, border.y + projectile[index1][index2].Ypos * scale, projectile[index1][index2].size, 0, Math.PI*2);
+								ctx.arc(border.x + mazeBorder.x + projectile[index1][index2].Xpos * scale, border.y + mazeBorder.y + projectile[index1][index2].Ypos * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
 								ctx.fillStyle = "Black";
 								ctx.fill();
 								ctx.closePath();
@@ -380,11 +383,11 @@
 						getTankCorners(index1);
 						
 						ctx.beginPath();
-						ctx.moveTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
-						ctx.lineTo(border.x + tankCorner[index1][1].x*scale, border.y + tankCorner[index1][1].y*scale);
-						ctx.lineTo(border.x + tankCorner[index1][2].x*scale, border.y + tankCorner[index1][2].y*scale);
-						ctx.lineTo(border.x + tankCorner[index1][3].x*scale, border.y + tankCorner[index1][3].y*scale);
-						ctx.lineTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
+						ctx.moveTo(border.x + mazeBorder.x + tankCorner[index1][0].x*scale, border.y + mazeBorder.y + tankCorner[index1][0].y*scale);
+						ctx.lineTo(border.x + mazeBorder.x + tankCorner[index1][1].x*scale, border.y + mazeBorder.y + tankCorner[index1][1].y*scale);
+						ctx.lineTo(border.x + mazeBorder.x + tankCorner[index1][2].x*scale, border.y + mazeBorder.y + tankCorner[index1][2].y*scale);
+						ctx.lineTo(border.x + mazeBorder.x + tankCorner[index1][3].x*scale, border.y + mazeBorder.y + tankCorner[index1][3].y*scale);
+						ctx.lineTo(border.x + mazeBorder.x + tankCorner[index1][0].x*scale, border.y + mazeBorder.y + tankCorner[index1][0].y*scale);
 						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
 						ctx.strokeStyle = "Black";
@@ -393,10 +396,10 @@
 						ctx.closePath();
 						
 						ctx.beginPath();
-						ctx.moveTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
-						ctx.arc(border.x + player[index1].Xpos*scale, border.y + player[index1].Ypos*scale, 1.5*scale*tankScale, Math.PI/2 + Math.atan(0.50859824365) - player[index1].rotation, Math.PI/2 - Math.atan(0.50859824365) - player[index1].rotation);
-						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.moveTo(border.x + mazeBorder.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + mazeBorder.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.lineTo(border.x + mazeBorder.x + player[index1].Xpos*scale + Math.sin(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + mazeBorder.y + player[index1].Ypos*scale + Math.cos(Math.atan(-0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
+						ctx.arc(border.x + mazeBorder.x + player[index1].Xpos*scale, border.y + mazeBorder.y + player[index1].Ypos*scale, 1.5*scale*tankScale, Math.PI/2 + Math.atan(0.50859824365) - player[index1].rotation, Math.PI/2 - Math.atan(0.50859824365) - player[index1].rotation);
+						ctx.lineTo(border.x + mazeBorder.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + mazeBorder.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
 						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
 						ctx.stroke();
@@ -407,30 +410,42 @@
 			function drawScores(){}  //and active powerups and modifiers
 			
 			
+			function playerColisions(x,y){
+				var collisions = [];
+				var index5,index6,index7 = 0;
+				for(var index4 = 0;index4 < players;index4++){
+					
+				}
+			}
+			
 			function killPlayers(){}
 			function winCheck(){}
 			
 			function pickUp(){}
 			
 			
-			function shoot(owner){
-				var count = 0;
-				var stopAfter = 1; //for muli-shot/shrapnel
-				for(index3 = 0;index3 < 100 && stopAfter > 0;index3++){
+			function shoot(owner, count = 1, spread = 0.1, random = false, type = player[owner].powerUp){
+				for(index3 = 0;index3 < 100 && count > 0;index3++){
 					if(projectile[owner][index3].dead){
 						projectile[owner][index3].dead = false;
-						setProperties(projectile[owner][index3], baseProjectile[player[owner].powerUp]);
+						setProperties(projectile[owner][index3], baseProjectile[type]);
 						projectile[owner][index3].Xpos = player[owner].Xpos + Math.sin(player[owner].rotation)*15;
 						projectile[owner][index3].Ypos = player[owner].Ypos + Math.cos(player[owner].rotation)*15;
 						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation)*projectile[owner][index3].speedVector;
-						stopAfter--;
+						count--;
 					}
 				}
 			}
 			function generateMaze(){
 				noIslands = false;
 				while(!noIslands){
+					maze.width = Math.floor(Math.random()*10)+6;
+					maze.height = Math.floor(Math.random()*(maze.width - 6))+6;
+					scale = Math.min((canvas.width - 2*border.x)/((maze.width+2) * tileSize),(canvas.height - 2*border.y - scoreArea)/((maze.height+2) * tileSize));
+					mazeBorder.x = (canvas.width - 2*border.x - (maze.width+2) * tileSize * scale)/2;
+					mazeBorder.y = (canvas.height - 2*border.y - (maze.height+2) * tileSize * scale)/2 - scoreArea;
+					
 					for(index1 = 0;index1 < maze.width + 2;index1++){
 						for(index2 = 0;index2 < maze.height + 2;index2++){
 							if(index1 % (maze.width + 1) == 0 || index2 % (maze.height + 1) == 0){
@@ -678,9 +693,11 @@
 				
 				drawMaze();
 				
+				
 				movePlayers();
 				moveProjectiles();
 				
+				killPlayers();
 				
 				drawProjectiles();
 				drawTanks();
