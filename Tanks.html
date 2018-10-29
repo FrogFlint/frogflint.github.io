@@ -34,7 +34,10 @@
 			var maze = [[]];
 			var player = [];
 			var projectile = [[]];
+			var baseProjectile = [{}];
 			var powerUp = [];
+			
+			var powerUpCountdown = 0;
 			
 			
 			var index1 = 0;
@@ -46,6 +49,8 @@
 			
 			var tankCorner = [[{}]];
 			var intoWall = 0;
+			var cornerSlope = 0;
+			
 			
 			
 			var groupEdge = [[]];  //[[x, y, leftWall]]
@@ -55,12 +60,13 @@
 			
 			var tileChance = 1.1; //inverse
 			var wallChance = 2;
+			var loopChance = 0.5;
 			
 			var squareCenterLine = [[1,0,"leftWall"],[0,1,"topWall"],[1,1,"leftWall"],[1,1,"topWall"]];
 			
 			var players = 2;
 			var playerColor = ["Red","Lime","Blue","DarkOrange","Purple","Gold","Cyan","DeepPink","Green"];
-			var controls = [[38,40,37,39,191],[87,83,65,68,81],[89,72,71,74,84],[80,186,76,222,79],[],[],[]];
+			var controls = [["ArrowUp","ArrowDown","ArrowRight","ArrowLeft","/"],["w","s","d","a","q"],["y","h","j","g","t"],["p",";","'","l","o"],[],[],[]];
 			var directionCode = ["forwards","backwards","right","left"];
 			
 			var tileSize = 50;
@@ -72,67 +78,90 @@
 			
 			var tankScale = 3.6;
 			var tankSpeed = 2.3;
-			var backupSpeed = 0.5;
+			var backupSpeed = 0.6;
+			
+			var laserUpdates = 100;
+			var laserbounce = false;
 			
 			
 			
-			
-			
-			
-			for(index1 = 0;index1 < 50;index1++){
-				maze[index1] = [];
-				for(index2 = 0;index2 < 50;index2++){
-					maze[index1][index2] = {
-						tile:0,
-						leftWall:0,
-						topWall:0,
-						
-						group:0
+			function initializeArrays(){
+				for(index1 = 0;index1 < 50;index1++){
+					maze[index1] = [];
+					for(index2 = 0;index2 < 50;index2++){
+						maze[index1][index2] = {
+							tile:0,
+							leftWall:0,
+							topWall:0,
+							
+							group:0
+						}
 					}
 				}
-			}
-			for(index1 = 0;index1 < players;index1++){
-				player[index1] = {
-					Xpos:0,
-					Ypos:0,
-					rotation:Math.random()*Math.PI*2*0,
-					reload:0,
-					powerUp:0,
-					modifier:0,
-					dead:false,
-					score:0,
-					linkedProjectiles:false,
-					
-					forwards:false,
-					backwards:false,
-					left:false,
-					right:false
-				}
-			}
-			for(index1 = 0;index1 < players;index1++){
-				projectile[index1] = [];
-				for(index2 = 0;index2 < 100;index2++){
-					projectile[index1][index2] = {
+				for(index1 = 0;index1 < players;index1++){
+					player[index1] = {
 						Xpos:0,
 						Ypos:0,
-						Xspeed:0,
-						Yspeed:0,
-						size:5,
-						type:0,
-						dead:true,
+						rotation:Math.random()*Math.PI*2*0,
+						reload:0,
+						powerUp:index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing
+						modifier:0,  //swift, phase, triplet, 
+						dead:false,
+						score:0,
+						linkedProjectiles:false,
 						
-						timeLeft:0
+						forwards:false,
+						backwards:false,
+						left:false,
+						right:false
 					}
 				}
-			}
-			for(index1 = 0;index1 < 50;index1++){
-				powerUp[index1] = {
-					Xpos:0,
-					Ypos:0,
-					type:0,
-					modifier:0,
-					dead:true
+				for(index1 = 0;index1 < players;index1++){
+					projectile[index1] = [];
+					for(index2 = 0;index2 < 100;index2++){
+						projectile[index1][index2] = {
+							Xpos:0,
+							Ypos:0,
+							Xspeed:0,
+							Yspeed:0,
+							speedVector:3,
+							size:3,
+							type:0,
+							dead:true,
+							
+							timeLeft:0
+						}
+					}
 				}
+				for(index1 = 0;index1 < 50;index1++){
+					powerUp[index1] = {
+						Xpos:0,
+						Ypos:0,
+						type:0,      
+						modifier:false,
+						dead:true
+					}
+				}
+				
+				baseProjectile = [
+					{
+						type:0,
+						size:3,
+						speedVector:3,
+						timeLeft:50*5
+					},
+					{},
+					{
+						type:2,
+						size:1,
+						speedVector:3,
+						timeLeft:50*2,
+						length:0, //up to 30
+						
+						front:{x:0,y:0,xS:0,yS:0,length:0,move:laserUpdates},
+						back:{x:0,y:0}
+					}
+				];
 			}
 			
 			
@@ -143,10 +172,10 @@
 					if(!player[index1].dead){
 						
 						if(player[index1].left){
-							player[index1].rotation -= 0.043 * tankSpeed;
+							player[index1].rotation += Math.PI/72 * tankSpeed;
 						}
 						if(player[index1].right){
-							player[index1].rotation += 0.043 * tankSpeed;
+							player[index1].rotation -= Math.PI/72 * tankSpeed;
 						}
 						if(player[index1].forwards){
 							player[index1].Xpos += Math.sin(player[index1].rotation) * tankSpeed;
@@ -158,21 +187,146 @@
 						}
 						
 						tankCorner[index1] = [];
-						tankCorner[index1][0] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][1] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][2] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][3] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						
 						for(index2 = 0;index2 < 4;index2++){
-							if(inTile(player[index1].Xpos, player[index1].Ypos).x     inTile(player[index1].Xpos, player[index1].Ypos) != inTile(tankCorner[index1][index2].x - wallWidth, tankCorner[index1][index2].y){
-								player[index1].Xpos += inTile(player[index1].Xpos, player[index1].Ypos).x * tileSize - tankCorner[index1][index2].x;
-								
+							for(index3 = 0;index3 < 4;index3++){
+								getTankCorners(index1);
+								if(maze[inTile(tankCorner[index1][index3].x - wallWidth)][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x - wallWidth)+1][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x - wallWidth) == inTile(tankCorner[index1][index3].x - wallWidth) - 1){
+									player[index1].Xpos += inTile(tankCorner[index1][index3].x)*tileSize - tankCorner[index1][index2].x + wallWidth;
+								}
+								getTankCorners(index1);
+								if(maze[inTile(tankCorner[index1][index3].x + wallWidth)+1][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x + wallWidth)][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x + wallWidth) == inTile(tankCorner[index1][index3].x + wallWidth) + 1){
+									player[index1].Xpos += (inTile(tankCorner[index1][index3].x)+1)*tileSize - tankCorner[index1][index2].x - wallWidth;
+								}
+								getTankCorners(index1);
+								if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y - wallWidth)+1].topWall == 1 && inTile(tankCorner[index1][index2].y - wallWidth) == inTile(tankCorner[index1][index3].y - wallWidth) - 1){
+									player[index1].Ypos += inTile(tankCorner[index1][index3].y)*tileSize - tankCorner[index1][index2].y + wallWidth;
+								}
+								getTankCorners(index1);
+								if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y + wallWidth)+1].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y + wallWidth)].topWall == 1 && inTile(tankCorner[index1][index2].y + wallWidth) == inTile(tankCorner[index1][index3].y + wallWidth) + 1){
+									player[index1].Ypos += (inTile(tankCorner[index1][index3].y)+1)*tileSize - tankCorner[index1][index2].y - wallWidth;
+								}
+							}
+						}
+						for(index2 = 0;index2 < 4;index2++){
+							for(index3 = 0;index3 < 4;index3++){
+								getTankCorners(index1);
+								if(isEquivalent(inTile(tankCorner[index1][index2].x - wallWidth,tankCorner[index1][index2].y) , inTile(player[index1].Xpos - tileSize,player[index1].Ypos)) && isEquivalent(inTile(tankCorner[index1][index3].x,tankCorner[index1][index3].y - wallWidth) , inTile(player[index1].Xpos,player[index1].Ypos - tileSize)) && (maze[inTile(tankCorner[index1][index2].x - wallWidth)][inTile(tankCorner[index1][index2].y)].topWall == 1 || maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].leftWall == 1)){
+									if((inTile(player[index1].Ypos)*tileSize + wallWidth - tankCorner[index1][index2].y)/(inTile(player[index1].Xpos)*tileSize + wallWidth - tankCorner[index1][index2].x) < (inTile(player[index1].Ypos)*tileSize + wallWidth - tankCorner[index1][index3].y)/(inTile(player[index1].Xpos)*tileSize + wallWidth - tankCorner[index1][index3].x)){
+										cornerSlope = (tankCorner[index1][index2].y - tankCorner[index1][index3].y)/(tankCorner[index1][index2].x - tankCorner[index1][index3].x);
+										tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize + wallWidth) + (tankCorner[index1][index2].x*tankCorner[index1][index2].x/cornerSlope) - inTile(player[index1].Ypos)*tileSize + wallWidth + tankCorner[index1][index2].y)*cornerSlope/(cornerSlope*cornerSlope + 1);
+										tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - inTile(player[index1].Xpos)*tileSize + wallWidth) + inTile(player[index1].Ypos)*tileSize + wallWidth;
+										
+										//player[index1].Xpos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
+										//player[index1].Ypos += tankCorner[index1][index3].y - tankCorner[index1][index2].y;
+									}
+								}
 							}
 						}
 					}
 				}
 			}
-			function moveProjectiles(){}
+			function getTankCorners(tank){
+				tankCorner[tank][0] = {x:player[tank].Xpos + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[tank].rotation)*tankScale*Math.sqrt(13), y:player[tank].Ypos + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[tank].rotation)*tankScale*Math.sqrt(13)};
+				tankCorner[tank][1] = {x:player[tank].Xpos + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[tank].rotation)*tankScale*Math.sqrt(13), y:player[tank].Ypos + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[tank].rotation)*tankScale*Math.sqrt(13)};
+				tankCorner[tank][2] = {x:player[tank].Xpos + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13), y:player[tank].Ypos + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13)};
+				tankCorner[tank][3] = {x:player[tank].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13), y:player[tank].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13)};
+			}
+			function moveProjectiles(){
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < 100;index2++){
+						if(!projectile[index1][index2].dead){
+							if(projectile[index1][index2].type < 2){
+								projectile[index1][index2].Xpos += projectile[index1][index2].Xspeed;
+								projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
+								
+								if(inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
+									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
+									projectile[index1][index2].Xspeed *= -1;
+								}
+								if(inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
+									projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+									projectile[index1][index2].Xspeed *= -1;
+								}
+								if(inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall == 1){
+									projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
+									projectile[index1][index2].Yspeed *= -1;
+								}
+								if(inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall == 1){
+									projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+									projectile[index1][index2].Yspeed *= -1;
+								}
+							}
+							else if(projectile[index1][index2].type == 2){
+								projectile[index1][index2].front.x = projectile[index1][index2].Xpos;
+								projectile[index1][index2].front.y = projectile[index1][index2].Ypos;
+								projectile[index1][index2].front.xS = projectile[index1][index2].Xspeed;
+								projectile[index1][index2].front.yS = projectile[index1][index2].Yspeed;
+								projectile[index1][index2].back.x = projectile[index1][index2].Xpos;
+								projectile[index1][index2].back.y = projectile[index1][index2].Ypos;
+								for(index3 = 0;index3 < laserUpdates;index3++){
+									if(index3 == 6 && projectile[index1][index2].timeLeft < baseProjectile[2].timeLeft - laserUpdates/6){
+										projectile[index1][index2].Xpos = projectile[index1][index2].front.x;
+										projectile[index1][index2].Ypos = projectile[index1][index2].front.y;
+										projectile[index1][index2].Xspeed = projectile[index1][index2].front.xS;
+										projectile[index1][index2].Yspeed = projectile[index1][index2].front.yS;
+									}
+									
+									projectile[index1][index2].front.x += projectile[index1][index2].front.xS;
+									projectile[index1][index2].front.y += projectile[index1][index2].front.yS;
+									
+									laserBounce = false;
+									if(inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall == 1){
+										projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].front.xS *= -1;
+										laserBounce = true;
+									}
+									if(inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall == 1){
+										projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].front.xS *= -1;
+										laserBounce = true;
+									}
+									if(inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall == 1){
+										projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].front.yS *= -1;
+										laserBounce = true;
+									}
+									if(inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall == 1){
+										projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].front.yS *= -1;
+										laserBounce = true;
+									}
+									if(index3 == laserUpdates - 1 || projectile[index1][index2].timeLeft - index3/6 < 0 || projectile[index1][index2].timeLeft + index3/6 > baseProjectile[2].timeLeft){laserBounce = true;}
+									
+									if(laserBounce){
+										ctx.beginPath();
+										ctx.arc(border.x + projectile[index1][index2].front.x * scale, border.y + projectile[index1][index2].front.y * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
+										ctx.fillStyle = playerColor[index1];
+										ctx.fill();
+										ctx.closePath();
+										ctx.beginPath();
+										ctx.moveTo(border.x + projectile[index1][index2].front.x * scale, border.y + projectile[index1][index2].front.y * scale);
+										ctx.lineTo(border.x + projectile[index1][index2].back.x * scale, border.y + projectile[index1][index2].back.y * scale);
+										ctx.strokeStyle = playerColor[index1];
+										ctx.lineWidth = projectile[index1][index2].size * scale * 2;
+										ctx.stroke();
+										ctx.closePath();
+										
+										projectile[index1][index2].back.x = projectile[index1][index2].front.x;
+										projectile[index1][index2].back.y = projectile[index1][index2].front.y;
+										
+										if(projectile[index1][index2].timeLeft - index3/6 < 0 || projectile[index1][index2].timeLeft + index3/6 > baseProjectile[2].timeLeft){break;}
+									}
+									
+								}
+							}
+							projectile[index1][index2].timeLeft--;
+							if(projectile[index1][index2].timeLeft == 0){
+								projectile[index1][index2].dead = true;
+							}
+						}
+					}
+				}
+			}
 			
 			function drawMaze(){
 				for(index1 = 0;index1 < maze.width + 2;index1++){
@@ -204,16 +358,26 @@
 					}
 				}
 			}
-			function drawProjectiles(){}
+			function drawProjectiles(){
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < 100;index2++){
+						if(!projectile[index1][index2].dead){
+							if(projectile[index1][index2].type <= 1){
+								ctx.beginPath();
+								ctx.arc(border.x + projectile[index1][index2].Xpos * scale, border.y + projectile[index1][index2].Ypos * scale, projectile[index1][index2].size, 0, Math.PI*2);
+								ctx.fillStyle = "Black";
+								ctx.fill();
+								ctx.closePath();
+							}
+							
+						}
+					}
+				}
+			}
 			function drawTanks(){
 				for(index1 = 0;index1 < players;index1++){ //0.43643834422
-					if(!player[index1].dead){/*
-						tankCorner[index1] = [];
-						tankCorner[index1][0] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][1] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan( 7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][2] = {x:player[index1].Xpos + Math.sin( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos( Math.PI/2 - Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						tankCorner[index1][3] = {x:player[index1].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13), y:player[index1].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[index1].rotation)*tankScale*Math.sqrt(13)};
-						*/
+					if(!player[index1].dead){
+						getTankCorners(index1);
 						
 						ctx.beginPath();
 						ctx.moveTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
@@ -223,6 +387,7 @@
 						ctx.lineTo(border.x + tankCorner[index1][0].x*scale, border.y + tankCorner[index1][0].y*scale);
 						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
+						ctx.strokeStyle = "Black";
 						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
 						ctx.closePath();
@@ -234,7 +399,6 @@
 						ctx.lineTo(border.x + player[index1].Xpos*scale + Math.sin(Math.atan( 0.17) + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624), border.y + player[index1].Ypos*scale + Math.cos(Math.atan(0.17)  + player[index1].rotation)*scale*tankScale*Math.sqrt(16.4624));
 						ctx.fillStyle = playerColor[index1 % playerColor.length];
 						ctx.fill();
-						ctx.lineWidth = 0.25*scale*tankScale;
 						ctx.stroke();
 						ctx.closePath();
 					}
@@ -249,7 +413,21 @@
 			function pickUp(){}
 			
 			
-			function shoot(player){}
+			function shoot(owner){
+				var count = 0;
+				var stopAfter = 1; //for muli-shot/shrapnel
+				for(index3 = 0;index3 < 100 && stopAfter > 0;index3++){
+					if(projectile[owner][index3].dead){
+						projectile[owner][index3].dead = false;
+						setProperties(projectile[owner][index3], baseProjectile[player[owner].powerUp]);
+						projectile[owner][index3].Xpos = player[owner].Xpos + Math.sin(player[owner].rotation)*15;
+						projectile[owner][index3].Ypos = player[owner].Ypos + Math.cos(player[owner].rotation)*15;
+						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation)*projectile[owner][index3].speedVector;
+						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation)*projectile[owner][index3].speedVector;
+						stopAfter--;
+					}
+				}
+			}
 			function generateMaze(){
 				noIslands = false;
 				while(!noIslands){
@@ -372,7 +550,7 @@
 						}
 					}
 					for(index3 = 0;index3 < groupEdge.length;index3++){
-						if(Math.random() < 0.1){
+						if(Math.random() < loopChance){
 							maze[groupEdge[index3][0]][groupEdge[index3][1]][groupEdge[index3][2]] = 0;
 						}
 					}
@@ -415,8 +593,51 @@
 			
 			
 			function inTile(x,y){
-				return {x:Math.floor(x/tileSize)*tileSize,y:Math.floor(y/tileSize)*tileSize};
+				if(y == null){
+					if(typeof x === "object"){
+						return {x:Math.floor(x.x/tileSize),y:Math.floor(x.y/tileSize)};
+					}
+					else{
+						return Math.floor(x/tileSize);
+					}
+				}
+				else{
+					return {x:Math.floor(x/tileSize),y:Math.floor(y/tileSize)};
+				}
 			}
+			function isEquivalent(a, b) {
+				
+				// Create arrays of property names
+				var aProps = Object.getOwnPropertyNames(a);
+				var bProps = Object.getOwnPropertyNames(b);
+				
+				// If number of properties is different,
+				// objects are not equivalent
+				if (aProps.length != bProps.length) {
+					return false;
+				}
+				
+				for (var i = 0; i < aProps.length; i++) {
+					var propName = aProps[i];
+					
+					// If values of same property are not equal,
+					// objects are not equivalent
+					if (a[propName] !== b[propName]) {
+						return false;
+					}
+				}
+				
+				// If we made it this far, objects
+				// are considered equivalent
+				return true;
+			}
+			function setProperties(a, b){
+				var bProps = Object.getOwnPropertyNames(b);
+				for (var i = 0; i < bProps.length; i++){
+					a[bProps[i]] = b[bProps[i]];
+				}
+			}
+			
 			
 			
 			addEventListener('mousemove', onMove, false);
@@ -427,36 +648,37 @@
 			function onClick(){
 				
 			}
+			
+			
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
 				for(index1 = 0;index1 < players;index1++){
 					for(index2 = 0;index2 < 4;index2++){
-						if(e.keyCode == controls[index1][index2]){
+						if(e.key == controls[index1][index2]){
 							player[index1][directionCode[index2]] = true;
 						}
 					}
-				}
-				
-			}
-			function keyUpHandler(e) {
-				for(index1 = 0;index1 < players;index1++){
-					for(index2 = 0;index2 < 4;index2++){
-						if(e.keyCode == controls[index1][index2]){
-							player[index1][directionCode[index2]] = false;
-						}
-					}
-					if(e.keyCode == controls[index1][4]){
+					if(e.key == controls[index1][4]){
 						shoot(index1);
 					}
 				}
 			}
+			function keyUpHandler(e) {
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < 4;index2++){
+						if(e.key == controls[index1][index2]){
+							player[index1][directionCode[index2]] = false;
+						}
+					}
+				}
+			}
 			
 			
 			
 			
 			
-			
+			initializeArrays();
 			generateMaze();
 			
 			function draw(event) {     //=========================================================================================================================================================================================================
@@ -465,12 +687,13 @@
 				
 				
 				
-				
+				drawMaze();
 				
 				movePlayers();
+				moveProjectiles();
 				
 				
-				drawMaze();
+				drawProjectiles();
 				drawTanks();
 				
 				
