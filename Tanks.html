@@ -108,7 +108,7 @@
 						Ypos:0,
 						rotation:Math.random()*Math.PI*2*0,
 						reload:0,
-						powerUp:index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, shrapnel, magnet sphere thing
+						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, shrapnel, magnet sphere thing
 						modifier:0,  //swift, phase, triplet, 
 						dead:false,
 						score:0,
@@ -214,14 +214,14 @@
 						for(index2 = 0;index2 < 4;index2++){
 							for(index3 = 0;index3 < 4;index3++){
 								getTankCorners(index1);
-								if(isEquivalent(inTile(tankCorner[index1][index2].x - wallWidth,tankCorner[index1][index2].y) , inTile(player[index1].Xpos - tileSize - wallWidth,player[index1].Ypos)) && isEquivalent(inTile(tankCorner[index1][index3].x,tankCorner[index1][index3].y - wallWidth) , inTile(player[index1].Xpos,player[index1].Ypos - tileSize - wallWidth)) && (maze[inTile(tankCorner[index1][index2].x - wallWidth)][inTile(tankCorner[index1][index2].y)].topWall == 1 || maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].leftWall == 1)){
-									if((inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index2].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index2].x - wallWidth)) < (inTile(player[index1].Ypos)*tileSize - tankCorner[index1][index3].y - wallWidth)/(inTile(player[index1].Xpos)*tileSize - tankCorner[index1][index3].x - wallWidth)){
-										cornerSlope = -(tankCorner[index1][index2].y - (tankCorner[index1][index3].y))/((tankCorner[index1][index2].x) - tankCorner[index1][index3].x);
-										tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize) + (tankCorner[index1][index2].x/cornerSlope) - inTile(player[index1].Ypos)*tileSize - wallWidth + tankCorner[index1][index2].y)*cornerSlope/(cornerSlope*cornerSlope + 1);
-										tankCorner[index1][index3].y = +cornerSlope*(tankCorner[index1][index3].x - inTile(player[index1].Xpos)*tileSize - wallWidth) + inTile(player[index1].Ypos)*tileSize;
+								if(isEquivalent(inTile(tankCorner[index1][index2].x - wallWidth,tankCorner[index1][index2].y) , inTile(player[index1].Xpos - tileSize,player[index1].Ypos)) && isEquivalent(inTile(tankCorner[index1][index3].x,tankCorner[index1][index3].y - wallWidth) , inTile(player[index1].Xpos,player[index1].Ypos - tileSize)) && (maze[inTile(tankCorner[index1][index2].x - wallWidth)][inTile(tankCorner[index1][index2].y)].topWall == 1 || maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].leftWall == 1)){
+									if((inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index2].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index2].x - wallWidth)) < (inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index3].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index3].x - wallWidth))){
+										cornerSlope = -(tankCorner[index1][index2].y - tankCorner[index1][index3].y)/(tankCorner[index1][index2].x - tankCorner[index1][index3].x);
+										tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize - wallWidth) + ((tankCorner[index1][index2].x - wallWidth)/cornerSlope) - (inTile(player[index1].Ypos)*tileSize - wallWidth) + (tankCorner[index1][index2].y - wallWidth))*cornerSlope/(cornerSlope*cornerSlope + 1);
+										tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - (inTile(player[index1].Xpos)*tileSize - wallWidth)) + (inTile(player[index1].Ypos)*tileSize - wallWidth);
 										
-										//player[index1].Xpos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
-										//player[index1].Ypos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
+										player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x + wallWidth;
+										player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y + wallWidth;
 									}
 								}
 							}
