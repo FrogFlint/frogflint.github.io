@@ -107,6 +107,7 @@
 						Xpos:0,
 						Ypos:0,
 						rotation:Math.random()*Math.PI*2*0,
+						shooting:0,
 						reload:0,
 						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, shrapnel, magnet sphere thing
 						modifier:0,  //swift, phase, triplet, 
@@ -220,8 +221,8 @@
 										tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize - wallWidth) + ((tankCorner[index1][index2].x - wallWidth)/cornerSlope) - (inTile(player[index1].Ypos)*tileSize - wallWidth) + (tankCorner[index1][index2].y - wallWidth))*cornerSlope/(cornerSlope*cornerSlope + 1);
 										tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - (inTile(player[index1].Xpos)*tileSize - wallWidth)) + (inTile(player[index1].Ypos)*tileSize - wallWidth);
 										
-										player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x + wallWidth;
-										player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y + wallWidth;
+										player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
+										player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
 									}
 								}
 							}
@@ -418,10 +419,12 @@
 			
 			function playerColisions(x,y){
 				var collisions = [];
-				var index5 = 0;
 				for(var index4 = 0;index4 < players;index4++){
-					if()
+					if(false){  //collision
+						collisions[collisions.length] = index4;
+					}
 				}
+				return collisions;
 			}
 			
 			function killPlayers(){}
@@ -431,15 +434,16 @@
 			
 			
 			function shoot(owner, type, count = 1, spread = 0.1, random = false){
-				for(index3 = 0;index3 < 100 && count > 0;index3++){
+				var index4 = 0;
+				for(index3 = 0;index3 < 100 && index4 < count;index3++){
 					if(projectile[owner][index3].dead){
 						projectile[owner][index3].dead = false;
 						setProperties(projectile[owner][index3], baseProjectile[type]);
 						projectile[owner][index3].Xpos = player[owner].Xpos + Math.sin(player[owner].rotation)*10;
 						projectile[owner][index3].Ypos = player[owner].Ypos + Math.cos(player[owner].rotation)*10;
-						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation)*projectile[owner][index3].speedVector;
-						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation)*projectile[owner][index3].speedVector;
-						count--;
+						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation + (index4 - (count-1)/2)*spread)*projectile[owner][index3].speedVector;
+						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation + (index4 - (count-1)/2)*spread)*projectile[owner][index3].speedVector;
+						index4++;
 					}
 				}
 			}
@@ -671,7 +675,7 @@
 						}
 					}
 					if(e.key == controls[index1][4]){
-						shoot(index1, player[index1].powerUp);
+						shoot(index1, player[index1].powerUp, 3);
 					}
 				}
 			}
