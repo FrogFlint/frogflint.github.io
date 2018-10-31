@@ -156,7 +156,12 @@
 						speedVector:3,
 						timeLeft:50*5
 					},
-					{},
+					{
+						type:1,
+						size:4,
+						speedVector:2,
+						timeLeft:50*5
+					},
 					{
 						type:2,
 						size:0.8,
@@ -240,7 +245,7 @@
 						
 						if(player[index1].shooting == 2){
 							if(player[index1].shooting == 2){
-								shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, 0.1, false, );
+								shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, 0.1, player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
 								
 								if(player[index1].powerUp != 3){
 									player[index1].shooting = 1;
@@ -249,20 +254,6 @@
 										player[index1].modifier = 0;
 									}
 								}
-								/*
-								if(!player[index1].powerUp in [3,4,8]){
-									shoot(index1, player[index1].powerUp, 1, Math.PI/4, true);
-
-								}
-								else{
-									if(player[index1].modifier > 0){
-										shoot(index1, player[index1].powerUp, );
-
-									}
-									else{
-										shoot(index1, player[index1].powerUp);
-									}
-								}*/
 							}
 						}
 					}
@@ -370,6 +361,7 @@
 					}
 				}
 			}
+			function onKill(type){}
 			
 			function drawMaze(){
 				for(index1 = 0;index1 < maze.width + 2;index1++){
