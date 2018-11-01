@@ -109,11 +109,15 @@
 						rotation:Math.random()*Math.PI*2*0,
 						shooting:0,
 						reload:0,
-						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						powerUp:0,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
 						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
-						linkedProjectiles:false,
+						//linkedProjectiles:false,
+						cantMove:false,
+						cantShoot:false,
+						
+						gattling:0,
 						
 						forwards:false,
 						backwards:false,
@@ -134,8 +138,7 @@
 							type:0,
 							dead:true,
 							
-							timeLeft:0,
-							gattling:0
+							timeLeft:0
 						}
 					}
 				}
@@ -159,7 +162,7 @@
 					{
 						type:1,
 						size:4,
-						speedVector:2,
+						speedVector:3,
 						timeLeft:50*5
 					},
 					{
@@ -167,7 +170,6 @@
 						size:0.8,
 						speedVector:3,
 						timeLeft:50*2,
-						//length:0, //up to 30
 						
 						front:{x:0,y:0,xS:0,yS:0,move:laserUpdates},
 						back:{x:0,y:0}
@@ -190,6 +192,11 @@
 			function movePlayers(){
 				for(index1 = 0;index1 < players;index1++){
 					if(!player[index1].dead){
+						player[index1].cantMove = false;
+						player[index1].cantShoot = false;
+						if((player[index1].powerUp == 0 && countProjectiles(index1, 0) >= 5) || countProjectiles(index1, [1,6,7,8,9]) > 0){
+							player[index1].cantShoot = true;
+						}
 						
 						if(player[index1].left){
 							player[index1].rotation += Math.PI/72 * tankSpeed;
@@ -361,7 +368,11 @@
 					}
 				}
 			}
-			function onKill(type){}
+			function onKill(type, x, y){
+				if(type == 1){
+					
+				}
+			}
 			
 			function drawMaze(){
 				for(index1 = 0;index1 < maze.width + 2;index1++){
@@ -456,6 +467,16 @@
 				}
 				return collisions;
 			}
+			function countProjectiles(owner, types){
+				var count = 0;
+				if(typeof types === "number"){types = [types];}
+				for(var index4 = 0;index4 < projectile[owner].length;index4++){
+					if(!projectile[owner][index4].dead && types.includes(projectile[owner][index4].type)){
+						count++;
+					}
+				}
+				return count;
+			}
 			
 			function killPlayers(){}
 			function winCheck(){}
@@ -465,21 +486,15 @@
 			
 			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}){
 				var index4 = 0;
-				var addRotation = 0;  //TODO
+				var addRotation = random? (Math.random()-0.5)*spread : (index4 - (count-1)/2)*spread;
 				for(index3 = 0;index3 < 100 && index4 < count;index3++){
 					if(projectile[owner][index3].dead){
 						projectile[owner][index3].dead = false;
 						setProperties(projectile[owner][index3], baseProjectile[type]);
 						projectile[owner][index3].Xpos = player[owner].Xpos + Math.sin(player[owner].rotation)*10;
 						projectile[owner][index3].Ypos = player[owner].Ypos + Math.cos(player[owner].rotation)*10;
-						if(random){
-							projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation + (Math.random()-0.5)*spread)*projectile[owner][index3].speedVector;
-							projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation + (Math.random()-0.5)*spread)*projectile[owner][index3].speedVector;
-						}
-						else{
-							projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation + (index4 - (count-1)/2)*spread)*projectile[owner][index3].speedVector;
-							projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation + (index4 - (count-1)/2)*spread)*projectile[owner][index3].speedVector;
-						}
+						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation + addRotation)*projectile[owner][index3].speedVector;
+						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].Xpos *= special.speed;
 						projectile[owner][index3].Ypos *= special.speed;
 						projectile[owner][index3].phase = special.phase;
@@ -718,7 +733,6 @@
 						if(player[index1].shooting == 0){
 							player[index1].shooting = 2;
 						}
-						//shoot(index1, player[index1].powerUp, 1, Math.PI/4, true);
 					}
 				}
 			}
@@ -732,7 +746,6 @@
 					}
 					if(e.key == controls[index1][4]){
 						player[index1].shooting = 0;
-						//shoot(index1, player[index1].powerUp, 1, Math.PI/4, true);
 					}
 				}
 			}
