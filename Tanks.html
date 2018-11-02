@@ -109,8 +109,8 @@
 						rotation:Math.random()*Math.PI*2*0,
 						shooting:0,
 						reload:0,
-						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
-						modifier:3,  //nothing, swift, phase, triplet, 
+						powerUp:1,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
 						cantMove:false,
@@ -168,7 +168,7 @@
 						type:2,
 						size:0.8,
 						speedVector:3,
-						timeLeft:50*2,
+						timeLeft:50*1.5,
 						
 						front:{x:0,y:0,xS:0,yS:0,move:laserUpdates},
 						back:{x:0,y:0}
@@ -366,15 +366,16 @@
 							}
 							projectile[index1][index2].timeLeft--;
 							if(projectile[index1][index2].timeLeft == 0){
+								onKill(index1, index2);
 								projectile[index1][index2].dead = true;
 							}
 						}
 					}
 				}
 			}
-			function onKill(type, x, y){
-				if(type == 1 || type == 4){
-					
+			function onKill(owner, target){
+				if(projectile[owner][target].type == 1 || projectile[owner][target].type == 4){
+					shoot(owner, owner*2/*temporary*/, 15, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
 				}
 			}
 			
@@ -508,20 +509,20 @@
 			function pickUp(){}
 			
 			
-			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}){
+			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}, addBarrel = true, x = player[owner].Xpos, y = player[owner].Ypos, r = player[owner].rotation){
 				var index4 = 0;
-				var addRotation = (Math.random()-0.5)*spread;
+				var addRotation;
 				for(index3 = 0;index3 < 100 && index4 < count;index3++){
 					if(projectile[owner][index3].dead){
 						projectile[owner][index3].dead = false;
 						setProperties(projectile[owner][index3], baseProjectile[type]);
 						if(!random)addRotation = (index4 - (count-1)/2)*spread;
-						projectile[owner][index3].Xpos = player[owner].Xpos + Math.sin(player[owner].rotation)*10;
-						projectile[owner][index3].Ypos = player[owner].Ypos + Math.cos(player[owner].rotation)*10;
-						projectile[owner][index3].Xspeed = Math.sin(player[owner].rotation + addRotation)*projectile[owner][index3].speedVector;
-						projectile[owner][index3].Yspeed = Math.cos(player[owner].rotation + addRotation)*projectile[owner][index3].speedVector;
-						projectile[owner][index3].Xpos *= special.speed;
-						projectile[owner][index3].Ypos *= special.speed;
+						else addRotation = (Math.random()-0.5)*spread;
+						projectile[owner][index3].speedVector *= special.speed;
+						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 10:1);
+						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 10:1);
+						projectile[owner][index3].Xspeed = Math.sin(r + addRotation)*projectile[owner][index3].speedVector;
+						projectile[owner][index3].Yspeed = Math.cos(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].phase = special.phase;
 						index4++;
 					}
