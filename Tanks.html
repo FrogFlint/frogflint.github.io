@@ -65,7 +65,7 @@
 			
 			var squareCenterLine = [[1,0,"leftWall"],[0,1,"topWall"],[1,1,"leftWall"],[1,1,"topWall"]];
 			
-			var players = 2;
+			var players = 3;
 			var playerColor = ["Red","Lime","Blue","DarkOrange","Purple","Gold","Cyan","DeepPink","Green"];
 			var controls = [["ArrowUp","ArrowDown","ArrowRight","ArrowLeft","/"],["w","s","d","a","q"],["y","h","j","g","t"],["p",";","'","l","o"],[],[],[]];
 			var directionCode = ["forwards","backwards","right","left"];
@@ -299,7 +299,7 @@
 							}
 							else{
 								for(index2 = 0;index2 < projectile[index1].length;index2++){
-									if(!projectile[index1][index2].dead && projectile[index1][index2].type == 1){
+									if(!projectile[index1][index2].dead && projectile[index1][index2].type == 1 && projectile[index1][index2].timeLeft < baseProjectile[1].timeLeft){
 										onKill(index1, index2);
 										projectile[index1][index2].dead = true;
 										player[index1].shooting = 1;
@@ -415,7 +415,7 @@
 			}
 			function onKill(owner, target){
 				if(projectile[owner][target].type == 1 || projectile[owner][target].type == 4){
-					shoot(owner, owner*2/*temporary*/, 15, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
+					shoot(owner, owner/*temporary*/, 15, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
 				}
 			}
 			
@@ -508,27 +508,28 @@
 				var check = true;
 				var cornerAngle = 0;
 				var checkAngle = 0;
-				for(var index4 = 0;index4 < players;index4++){
+				var index4,index5 = 0;
+				for(index4 = 0;index4 < players;index4++){
 					check = true;
 					getTankCorners(index4);
-					for(var index5 = 0;index5 < 4;index5++){
-						checkAngle = Math.atan((y - tankCorner[index4][index5].y)/(x - tankCorner[index4][index5].x));
-						if(y < tankCorner[index4][index5].y)checkAngle += Math.PI;
+					for(index5 = 0;index5 < 4;index5++){
+						checkAngle = Math.atan((y - tankCorner[index4][index5].y)/(x - tankCorner[index4][index5].x)) + Math.PI/2;
+						if(y < tankCorner[index4][index5].y) checkAngle += Math.PI;
 						
-						cornerAngle = Math.atan((tankCorner[index4][(index5+1)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+1)%4].x - tankCorner[index4][index5].x));
-						if(tankCorner[index4][(index5+1)%4].y < tankCorner[index4][index5].y)cornerAngle += Math.PI;
+						cornerAngle = Math.atan((tankCorner[index4][(index5+1)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+1)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
+						if(tankCorner[index4][(index5+1)%4].y < tankCorner[index4][index5].y) cornerAngle += Math.PI;
 						
-						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2){
+						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) <= Math.PI*3/2){
 							check = false;
 						}
-						cornerAngle = Math.atan((tankCorner[index4][(index5+3)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+3)%4].x - tankCorner[index4][index5].x));
-						if(tankCorner[index4][(index5+3)%4].y < tankCorner[index4][index5].y)cornerAngle += Math.PI;
+						cornerAngle = Math.atan((tankCorner[index4][(index5+3)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+3)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
+						if(tankCorner[index4][(index5+3)%4].y < tankCorner[index4][index5].y) cornerAngle += Math.PI;
 						
-						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2){
+						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) <= Math.PI*3/2){
 							check = false;
 						}
 					}
-					if(check) {collisions[collisions.length] = index4;}
+					if(check){collisions[collisions.length] = index4;}
 				}
 				return collisions;
 			}
