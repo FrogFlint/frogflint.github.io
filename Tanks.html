@@ -87,6 +87,9 @@
 			var laserSpeed = 6;
 			var laserbounce = false;
 			
+			var gattlingAmmo = 20;
+			var gattlingReload = 3;
+			
 			
 			
 			function initializeArrays(){
@@ -106,7 +109,7 @@
 					player[index1] = {
 						Xpos:0,
 						Ypos:0,
-						rotation:Math.random()*Math.PI*2*0,
+						rotation:0,
 						shooting:0,
 						reload:0,
 						powerUp:1,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
@@ -116,7 +119,7 @@
 						cantMove:false,
 						cantShoot:false,
 						
-						gattling:0,
+						ammo:gattlingAmmo*gattlingReload,
 						
 						forwards:false,
 						backwards:false,
@@ -126,7 +129,7 @@
 				}
 				for(index1 = 0;index1 < players;index1++){
 					projectile[index1] = [];
-					for(index2 = 0;index2 < 100;index2++){
+					for(index2 = 0;index2 < 1000;index2++){
 						projectile[index1][index2] = {
 							Xpos:0,
 							Ypos:0,
@@ -169,13 +172,15 @@
 						size:0.8,
 						speedVector:3,
 						timeLeft:50*1.5,
+						updates:laserUpdates,
+						speed:laserSpeed,
 						
 						front:{x:0,y:0,xS:0,yS:0,move:laserUpdates},
 						back:{x:0,y:0}
 					},
 					{
 						type:3,
-						size:1,
+						size:1.2,
 						speedVector:3,
 						timeLeft:50*3
 					},
@@ -186,6 +191,13 @@
 						timeLeft:1000000,
 						
 						armed:false
+					},
+					{},
+					{
+						type:6,
+						size:2,
+						speedVector:4,
+						rotation:0
 					}
 				];
 			}
@@ -198,71 +210,99 @@
 					if(!player[index1].dead){
 						player[index1].cantMove = false;
 						player[index1].cantShoot = false;
+						if(countProjectiles(index1, [6,7]) > 0){
+							player[index1].cantMove = true;
+						}
 						if((player[index1].powerUp == 0 && countProjectiles(index1, 0) >= 5) || countProjectiles(index1, [1,6,7,8,9]) > 0){
 							player[index1].cantShoot = true;
 						}
 						
-						if(player[index1].left){
-							player[index1].rotation += Math.PI/72 * tankSpeed;
-						}
-						if(player[index1].right){
-							player[index1].rotation -= Math.PI/72 * tankSpeed;
-						}
-						if(player[index1].forwards){
-							player[index1].Xpos += Math.sin(player[index1].rotation) * tankSpeed;
-							player[index1].Ypos += Math.cos(player[index1].rotation) * tankSpeed;
-						}
-						if(player[index1].backwards){
-							player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed * backupSpeed;
-							player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed * backupSpeed;
-						}
-						
-						tankCorner[index1] = [];
-						for(index2 = 0;index2 < 4;index2++){
-							for(index3 = 0;index3 < 4;index3++){
-								getTankCorners(index1);
-								if(maze[inTile(tankCorner[index1][index3].x - wallWidth)][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x - wallWidth)+1][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x - wallWidth) == inTile(tankCorner[index1][index3].x - wallWidth) - 1){
-									player[index1].Xpos += inTile(tankCorner[index1][index3].x)*tileSize - tankCorner[index1][index2].x + wallWidth;
+						if(!player[index1].cantMove){
+							if(player[index1].left){
+								player[index1].rotation += Math.PI/72 * tankSpeed;
+							}
+							if(player[index1].right){
+								player[index1].rotation -= Math.PI/72 * tankSpeed;
+							}
+							if(player[index1].forwards){
+								player[index1].Xpos += Math.sin(player[index1].rotation) * tankSpeed;
+								player[index1].Ypos += Math.cos(player[index1].rotation) * tankSpeed;
+							}
+							if(player[index1].backwards){
+								player[index1].Xpos -= Math.sin(player[index1].rotation) * tankSpeed * backupSpeed;
+								player[index1].Ypos -= Math.cos(player[index1].rotation) * tankSpeed * backupSpeed;
+							}
+
+							tankCorner[index1] = [];
+							for(index2 = 0;index2 < 4;index2++){
+								for(index3 = 0;index3 < 4;index3++){
+									getTankCorners(index1);
+									if(maze[inTile(tankCorner[index1][index3].x - wallWidth)][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x - wallWidth)+1][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x - wallWidth) == inTile(tankCorner[index1][index3].x - wallWidth) - 1){
+										player[index1].Xpos += inTile(tankCorner[index1][index3].x)*tileSize - tankCorner[index1][index2].x + wallWidth;
+									}
+									getTankCorners(index1);
+									if(maze[inTile(tankCorner[index1][index3].x + wallWidth)+1][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x + wallWidth)][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x + wallWidth) == inTile(tankCorner[index1][index3].x + wallWidth) + 1){
+										player[index1].Xpos += (inTile(tankCorner[index1][index3].x)+1)*tileSize - tankCorner[index1][index2].x - wallWidth;
+									}
+									getTankCorners(index1);
+									if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y - wallWidth)+1].topWall == 1 && inTile(tankCorner[index1][index2].y - wallWidth) == inTile(tankCorner[index1][index3].y - wallWidth) - 1){
+										player[index1].Ypos += inTile(tankCorner[index1][index3].y)*tileSize - tankCorner[index1][index2].y + wallWidth;
+									}
+									getTankCorners(index1);
+									if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y + wallWidth)+1].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y + wallWidth)].topWall == 1 && inTile(tankCorner[index1][index2].y + wallWidth) == inTile(tankCorner[index1][index3].y + wallWidth) + 1){
+										player[index1].Ypos += (inTile(tankCorner[index1][index3].y)+1)*tileSize - tankCorner[index1][index2].y - wallWidth;
+									}
 								}
-								getTankCorners(index1);
-								if(maze[inTile(tankCorner[index1][index3].x + wallWidth)+1][inTile(tankCorner[index1][index3].y)].leftWall == 1 && maze[inTile(tankCorner[index1][index2].x + wallWidth)][inTile(tankCorner[index1][index2].y)].leftWall == 1 && inTile(tankCorner[index1][index2].x + wallWidth) == inTile(tankCorner[index1][index3].x + wallWidth) + 1){
-									player[index1].Xpos += (inTile(tankCorner[index1][index3].x)+1)*tileSize - tankCorner[index1][index2].x - wallWidth;
-								}
-								getTankCorners(index1);
-								if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y - wallWidth)+1].topWall == 1 && inTile(tankCorner[index1][index2].y - wallWidth) == inTile(tankCorner[index1][index3].y - wallWidth) - 1){
-									player[index1].Ypos += inTile(tankCorner[index1][index3].y)*tileSize - tankCorner[index1][index2].y + wallWidth;
-								}
-								getTankCorners(index1);
-								if(maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y + wallWidth)+1].topWall == 1 && maze[inTile(tankCorner[index1][index2].x)][inTile(tankCorner[index1][index2].y + wallWidth)].topWall == 1 && inTile(tankCorner[index1][index2].y + wallWidth) == inTile(tankCorner[index1][index3].y + wallWidth) + 1){
-									player[index1].Ypos += (inTile(tankCorner[index1][index3].y)+1)*tileSize - tankCorner[index1][index2].y - wallWidth;
+							}
+							for(index2 = 0;index2 < 4;index2++){
+								for(index3 = 0;index3 < 4;index3++){
+									getTankCorners(index1);
+									if(isEquivalent(inTile(tankCorner[index1][index2].x - wallWidth,tankCorner[index1][index2].y) , inTile(player[index1].Xpos - tileSize,player[index1].Ypos)) && isEquivalent(inTile(tankCorner[index1][index3].x,tankCorner[index1][index3].y - wallWidth) , inTile(player[index1].Xpos,player[index1].Ypos - tileSize)) && (maze[inTile(tankCorner[index1][index2].x - wallWidth)][inTile(tankCorner[index1][index2].y)].topWall == 1 || maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].leftWall == 1)){
+										if((inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index2].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index2].x - wallWidth)) < (inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index3].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index3].x - wallWidth))){
+											cornerSlope = -(tankCorner[index1][index2].y - tankCorner[index1][index3].y)/(tankCorner[index1][index2].x - tankCorner[index1][index3].x);
+											tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize - wallWidth) + ((tankCorner[index1][index2].x - wallWidth)/cornerSlope) - (inTile(player[index1].Ypos)*tileSize - wallWidth) + (tankCorner[index1][index2].y - wallWidth))*cornerSlope/(cornerSlope*cornerSlope + 1);
+											tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - (inTile(player[index1].Xpos)*tileSize - wallWidth)) + (inTile(player[index1].Ypos)*tileSize - wallWidth);
+
+											player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
+											player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
+										}
+									}
 								}
 							}
 						}
-						for(index2 = 0;index2 < 4;index2++){
-							for(index3 = 0;index3 < 4;index3++){
-								getTankCorners(index1);
-								if(isEquivalent(inTile(tankCorner[index1][index2].x - wallWidth,tankCorner[index1][index2].y) , inTile(player[index1].Xpos - tileSize,player[index1].Ypos)) && isEquivalent(inTile(tankCorner[index1][index3].x,tankCorner[index1][index3].y - wallWidth) , inTile(player[index1].Xpos,player[index1].Ypos - tileSize)) && (maze[inTile(tankCorner[index1][index2].x - wallWidth)][inTile(tankCorner[index1][index2].y)].topWall == 1 || maze[inTile(tankCorner[index1][index3].x)][inTile(tankCorner[index1][index3].y - wallWidth)].leftWall == 1)){
-									if((inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index2].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index2].x - wallWidth)) < (inTile(player[index1].Ypos)*tileSize - (tankCorner[index1][index3].y - wallWidth))/(inTile(player[index1].Xpos)*tileSize - (tankCorner[index1][index3].x - wallWidth))){
-										cornerSlope = -(tankCorner[index1][index2].y - tankCorner[index1][index3].y)/(tankCorner[index1][index2].x - tankCorner[index1][index3].x);
-										tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize - wallWidth) + ((tankCorner[index1][index2].x - wallWidth)/cornerSlope) - (inTile(player[index1].Ypos)*tileSize - wallWidth) + (tankCorner[index1][index2].y - wallWidth))*cornerSlope/(cornerSlope*cornerSlope + 1);
-										tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - (inTile(player[index1].Xpos)*tileSize - wallWidth)) + (inTile(player[index1].Ypos)*tileSize - wallWidth);
-										
-										player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
-										player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
+						else{
+							for(index2 = 0;index2 < projectile[index1].length;index2++){
+								if(!projectile[index1][index2].dead && projectile[index1][index2].type == 6){
+									if(player[index1].left){
+										projectile[index1][index2].rotation += Math.PI/72;
+									}
+									if(player[index1].right){
+										projectile[index1][index2].rotation -= Math.PI/72;
 									}
 								}
 							}
 						}
 						
 						if(player[index1].shooting == 2){
-							if(player[index1].shooting == 2){
-								shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, 0.1, player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
-								
-								if(player[index1].powerUp != 3){
-									player[index1].shooting = 1;
-									if(player[index1].PowerUp > 0){
-										player[index1].PowerUp = 0;
-										player[index1].modifier = 0;
+							if(!player[index1].cantShoot){
+								if(player[index1].shooting == 2){
+									shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, player[index1].powerUp == 3 ? 0.3:0.1, player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
+
+									if(player[index1].powerUp != 3){
+										player[index1].shooting = 1;
+										if(player[index1].PowerUp > 0){
+											player[index1].PowerUp = 0;
+											player[index1].modifier = 0;
+										}
+									}
+								}
+							}
+							else{
+								for(index2 = 0;index2 < projectile[index1].length;index2++){
+									if(!projectile[index1][index2].dead && projectile[index1][index2].type == 1){
+										onKill(index1, index2);
+										projectile[index1][index2].dead = true;
+										player[index1].shooting = 1;
 									}
 								}
 							}
@@ -278,9 +318,9 @@
 			}
 			function moveProjectiles(){
 				for(index1 = 0;index1 < players;index1++){
-					for(index2 = 0;index2 < 100;index2++){
+					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
-							if(projectile[index1][index2].type < 2){
+							if(projectile[index1][index2].type != 2){
 								projectile[index1][index2].Xpos += projectile[index1][index2].Xspeed;
 								projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
 								
@@ -308,8 +348,8 @@
 								projectile[index1][index2].front.yS = projectile[index1][index2].Yspeed;
 								projectile[index1][index2].back.x = projectile[index1][index2].Xpos;
 								projectile[index1][index2].back.y = projectile[index1][index2].Ypos;
-								for(index3 = 0;index3 < laserUpdates;index3++){
-									if(index3 == laserSpeed && projectile[index1][index2].timeLeft < baseProjectile[2].timeLeft - laserUpdates/laserSpeed){
+								for(index3 = 0;index3 < projectile[index1][index2].updates;index3++){
+									if(index3 == projectile[index1][index2].speed && projectile[index1][index2].timeLeft < baseProjectile[2].timeLeft - projectile[index1][index2].updates/projectile[index1][index2].speed){
 										projectile[index1][index2].Xpos = projectile[index1][index2].front.x;
 										projectile[index1][index2].Ypos = projectile[index1][index2].front.y;
 										projectile[index1][index2].Xspeed = projectile[index1][index2].front.xS;
@@ -340,7 +380,7 @@
 										projectile[index1][index2].front.yS *= -1;
 										laserBounce = true;
 									}
-									if(index3 == laserUpdates - 1 || projectile[index1][index2].timeLeft - index3/6 < 0 || projectile[index1][index2].timeLeft + index3/6 > baseProjectile[2].timeLeft){laserBounce = true;}
+									if(index3 == projectile[index1][index2].updates - 1 || projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft){laserBounce = true;}
 									
 									if(laserBounce){
 										ctx.beginPath();
@@ -359,7 +399,7 @@
 										projectile[index1][index2].back.x = projectile[index1][index2].front.x;
 										projectile[index1][index2].back.y = projectile[index1][index2].front.y;
 										
-										if(projectile[index1][index2].timeLeft - index3/laserSpeed < 0 || projectile[index1][index2].timeLeft + index3/laserSpeed > baseProjectile[2].timeLeft){break;}
+										if(projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft){break;}
 									}
 									
 								}
@@ -417,9 +457,9 @@
 			}
 			function drawProjectiles(){
 				for(index1 = 0;index1 < players;index1++){
-					for(index2 = 0;index2 < 100;index2++){
+					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
-							if(projectile[index1][index2].type <= 1){
+							if(projectile[index1][index2].type != 2){
 								ctx.beginPath();
 								ctx.arc(border.x + mazeBorder.x + projectile[index1][index2].Xpos * scale, border.y + mazeBorder.y + projectile[index1][index2].Ypos * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
 								ctx.fillStyle = "Black";
@@ -512,13 +552,14 @@
 			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}, addBarrel = true, x = player[owner].Xpos, y = player[owner].Ypos, r = player[owner].rotation){
 				var index4 = 0;
 				var addRotation;
-				for(index3 = 0;index3 < 100 && index4 < count;index3++){
+				for(index3 = 0;index3 < projectile[owner].length && index4 < count;index3++){
 					if(projectile[owner][index3].dead){
 						projectile[owner][index3].dead = false;
 						setProperties(projectile[owner][index3], baseProjectile[type]);
 						if(!random)addRotation = (index4 - (count-1)/2)*spread;
 						else addRotation = (Math.random()-0.5)*spread;
-						projectile[owner][index3].speedVector *= special.speed;
+						if(type == 2)projectile[owner][index3].speed *= special.speed;
+						else projectile[owner][index3].speedVector *= special.speed;
 						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 10:1);
 						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 10:1);
 						projectile[owner][index3].Xspeed = Math.sin(r + addRotation)*projectile[owner][index3].speedVector;
