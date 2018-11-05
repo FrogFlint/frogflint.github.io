@@ -336,7 +336,6 @@
 			}
 			function moveProjectiles(){
 				var cornerAngle = 0;
-				var movementAngle = 0;
 				for(index1 = 0;index1 < players;index1++){
 					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
@@ -401,42 +400,34 @@
 								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
 								&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow(inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
 									cornerAngle = Math.atan((inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos)/(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos));
-									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed);
-									movementAngle = cornerAngle - movementAngle;
 									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
-									projectile[index1][index2].Xspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
-									projectile[index1][index2].Yspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+									projectile[index1][index2].Xspeed = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
 								}
 								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
 								&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow(inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
-									cornerAngle = Math.atan((inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos)/((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos));
-									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed);
-									movementAngle = cornerAngle - movementAngle;
+									cornerAngle = Math.atan((inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos)/((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos)) + Math.PI;
 									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
-									projectile[index1][index2].Xspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
-									projectile[index1][index2].Yspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+									projectile[index1][index2].Xspeed = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
 								}
 								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
 								&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
-									cornerAngle = Math.atan(((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos)/(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos)) + Math.PI;
-									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed) + Math.PI;
-									movementAngle = cornerAngle - movementAngle;
+									cornerAngle = Math.atan(((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos)/(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos));
 									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
-									projectile[index1][index2].Xspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
-									projectile[index1][index2].Yspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+									projectile[index1][index2].Xspeed = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
 								}
 								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall > 0
 								&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
 									cornerAngle = Math.atan(((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos)/((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos)) + Math.PI;
-									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed) + Math.PI;
-									movementAngle = cornerAngle - movementAngle;
 									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
-									projectile[index1][index2].Xspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
-									projectile[index1][index2].Yspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+									projectile[index1][index2].Xspeed = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
 								}
 							}
 							else if(projectile[index1][index2].type == 2){
@@ -478,6 +469,75 @@
 										projectile[index1][index2].front.yS *= -1;
 										laserBounce = true;
 									}
+									
+									
+									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+									&& inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
+										projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].front.xS *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+									&& inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
+										projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].front.xS *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+									&& inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
+										projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].front.yS *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0
+									&& inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
+										projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].front.yS *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+										laserBounce = true;
+									}
+									
+									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+									&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth  -  projectile[index1][index2].front.x,2) + Math.pow(inTile(projectile[index1][index2].front.y)*tileSize + wallWidth  -  projectile[index1][index2].front.y,2)) < projectile[index1][index2].size){
+										cornerAngle = Math.atan((inTile(projectile[index1][index2].front.y)*tileSize + wallWidth  -  projectile[index1][index2].front.y)/(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth  -  projectile[index1][index2].front.x));
+										projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].front.xS,2) + Math.pow(projectile[index1][index2].front.yS,2));
+										projectile[index1][index2].front.xS = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+										projectile[index1][index2].front.yS = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+									&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.x,2) + Math.pow(inTile(projectile[index1][index2].front.y)*tileSize + wallWidth  -  projectile[index1][index2].front.y,2)) < projectile[index1][index2].size){
+										cornerAngle = Math.atan((inTile(projectile[index1][index2].front.y)*tileSize + wallWidth  -  projectile[index1][index2].front.y)/((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.x));
+										projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].front.xS,2) + Math.pow(projectile[index1][index2].front.yS,2));
+										projectile[index1][index2].front.xS = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+										projectile[index1][index2].front.yS = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0
+									&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth  -  projectile[index1][index2].front.x,2) + Math.pow((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.y,2)) < projectile[index1][index2].size){
+										cornerAngle = Math.atan(((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.y)/(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth  -  projectile[index1][index2].front.x)) + Math.PI;
+										projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].front.xS,2) + Math.pow(projectile[index1][index2].front.yS,2));
+										projectile[index1][index2].front.xS = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+										projectile[index1][index2].front.yS = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
+										laserBounce = true;
+									}
+									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall > 0
+									&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.x,2) + Math.pow((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.y,2)) < projectile[index1][index2].size){
+										cornerAngle = Math.atan(((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.y)/((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth  -  projectile[index1][index2].front.x)) + Math.PI;
+										projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].front.xS,2) + Math.pow(projectile[index1][index2].front.yS,2));
+										projectile[index1][index2].front.xS = Math.sin(cornerAngle)*projectile[index1][index2].speedVector;
+										projectile[index1][index2].front.yS = Math.cos(cornerAngle)*projectile[index1][index2].speedVector;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle;
+										laserBounce = true;
+									}
+									
+									
 									if(index3 == projectile[index1][index2].updates - 1 || projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft){laserBounce = true;}
 									
 									if(laserBounce){
@@ -755,8 +815,8 @@
 						if(type == 2)projectile[owner][index3].speed *= special.speed;
 						else projectile[owner][index3].speedVector *= special.speed;
 						if("rotation" in projectile[owner][index3])projectile[owner][index3].rotation = r + addRotation;
-						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 10 + baseProjectile[type].size:1)*(baseProjectile[type].speedVector < 0? -1:1);
-						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 10 + baseProjectile[type].size:1)*(baseProjectile[type].speedVector < 0? -1:1);
+						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0? -1:1);
+						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0? -1:1);
 						projectile[owner][index3].Xspeed = Math.sin(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].Yspeed = Math.cos(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].phase = special.phase;
