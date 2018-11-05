@@ -89,6 +89,8 @@
 			var tankSpeed = 2.3;
 			var backupSpeed = 0.6;
 			
+			var pickupBorder = 0.7;
+			
 			var laserUpdates = 80;
 			var laserSpeed = 6;
 			var laserbounce = false;
@@ -120,7 +122,7 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:0,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
 						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
@@ -160,6 +162,7 @@
 					powerUp[index1] = {
 						Xpos:0,
 						Ypos:0,
+						rotation:0,
 						type:0,      
 						modifier:false,
 						dead:true
@@ -692,11 +695,65 @@
 					
 					ctx.beginPath();
 					ctx.font = "20px Arial";
-		    		ctx.fillStyle = "Black";
+		    			ctx.fillStyle = "Black";
 					ctx.fillText("Kills: " + player[index1].kills, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 - 20);
 					ctx.fillText("Deaths: " + player[index1].deaths, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2);
 					ctx.fillText("Wins: " + player[index1].score, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 + 20);
 					ctx.closePath();
+				}
+			}
+			function drawPowerups(){
+				for(index1 = 0;index1 < powerUp.length;index1++){
+					if(!powerUp[index1].dead){
+						drawPickup(powerUp[index1].type, powerUp[index1].modifier, border.x + mazeBorder.x + powerUp[index1].Xpos*scale, border.y + mazeBorder.y + powerUp[index1].Ypos*scale, powerUp[index1].rotation);
+					}
+				}
+			}
+			function drawPickup(type, modifier, x, y, r, pickupScale = 15*scale){
+				ctx.beginPath();
+				ctx.moveTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale, y + Math.cos(Math.PI*1/4 + r)*pickupScale);
+				ctx.lineTo(x + Math.sin(Math.PI*3/4 + r)*pickupScale, y + Math.cos(Math.PI*3/4 + r)*pickupScale);
+				ctx.lineTo(x + Math.sin(Math.PI*5/4 + r)*pickupScale, y + Math.cos(Math.PI*5/4 + r)*pickupScale);
+				ctx.lineTo(x + Math.sin(Math.PI*7/4 + r)*pickupScale, y + Math.cos(Math.PI*7/4 + r)*pickupScale);
+				ctx.lineTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale, y + Math.cos(Math.PI*1/4 + r)*pickupScale);
+				ctx.fillStyle = modifier? "#AAAAAA":"#CCCCCC";
+				ctx.fill();
+				ctx.strokeStyle = "Black";
+				ctx.lineWidth = 0.25*scale*tankScale;
+				ctx.stroke();
+				ctx.closePath();
+				
+				ctx.beginPath();
+				ctx.moveTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*1/4 + r)*pickupScale*pickupBorder);
+				ctx.lineTo(x + Math.sin(Math.PI*3/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*3/4 + r)*pickupScale*pickupBorder);
+				ctx.lineTo(x + Math.sin(Math.PI*5/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*5/4 + r)*pickupScale*pickupBorder);
+				ctx.lineTo(x + Math.sin(Math.PI*7/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*7/4 + r)*pickupScale*pickupBorder);
+				ctx.lineTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*1/4 + r)*pickupScale*pickupBorder);
+				ctx.fillStyle = modifier? "#909090":"#AAAAAA";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function spawnPickup(){
+				for(index3 = 0;!powerUp[index3].dead;index3++){}
+				stop = false;
+				while(!stop){
+					index1 = Math.floor(Math.random()*(maze.width + 1));
+					index2 = Math.floor(Math.random()*(maze.height + 1));
+
+					if(maze[index1][index2].tile == 0){
+						powerUp[index3].Xpos = (index1 + 0.5)*tileSize;
+						powerUp[index3].Ypos = (index2 + 0.5)*tileSize;
+						powerUp[index3].rotation = Math.random()*0.2 - 0.1;
+						powerUp[index3].dead = false;
+						powerUp[index3].type = Math.floor(Math.random()*5)+1;
+						powerUp[index3].modifier = Math.random() < 0.5 ? true:false;
+						stop = true;
+					}
+					for(var index4 = 0;index4 < powerUp.length;index4++){
+						if(index4 != index3 && Math.sqrt(Math.pow(powerUp[index3].Xpos - powerUp[index4].Xpos,2) + Math.pow(powerUp[index3].Ypos - powerUp[index4].Ypos,2)) < tileSize*3){
+							stop = false;
+						}
+					}
 				}
 			}
 			
@@ -794,9 +851,11 @@
 						else winner = -2;
 					}
 				}
-				if(winner > -2){
-					if(winner > -1) player[winner].score++;
+				if(winCountdown < 0 && winner > -2){
 					winCountdown = 50*3;
+				}
+				if(winCountdown == 0 && winner > -1){
+					player[winner].score++;
 				}
 			}
 			
@@ -815,8 +874,8 @@
 						if(type == 2)projectile[owner][index3].speed *= special.speed;
 						else projectile[owner][index3].speedVector *= special.speed;
 						if("rotation" in projectile[owner][index3])projectile[owner][index3].rotation = r + addRotation;
-						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0? -1:1);
-						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0? -1:1);
+						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel ? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
+						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel ? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
 						projectile[owner][index3].Xspeed = Math.sin(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].Yspeed = Math.cos(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].phase = special.phase;
@@ -987,9 +1046,24 @@
 							player[index3].Ypos = (index2 + 0.5)*tileSize;
 							player[index3].rotation = Math.random()*Math.PI*2;
 							player[index3].dead = false;
+							//player[index3].powerUp = 0;
+							//player[index3].modifier = 0;
 							stop = true;
 						}
+						for(var index4 = 0;index4 < index3;index4++){
+							if(Math.sqrt(Math.pow(player[index3].Xpos - player[index4].Xpos,2) + Math.pow(player[index3].Ypos - player[index4].Ypos,2)) < tileSize*3){
+								stop = false;
+							}
+						}
 					}
+				}
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < projectile[index1].length;index2++){
+						projectile[index1][index2].dead = true;
+					}
+				}
+				for(index1 = 0;index1 < powerUp.length;index1++){
+					powerUp[index1].dead = true;
 				}
 				
 			}
@@ -1080,10 +1154,12 @@
 			initializeArrays();
 			generateMaze();
 			
+			
+			
+			
 			function draw(event) {     //=========================================================================================================================================================================================================
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				
 				
 				
 				drawMaze();
@@ -1097,14 +1173,19 @@
 				drawProjectiles();
 				drawTanks();
 				drawScores();
+				drawPowerups();
 				
-				if(winCountdown >= 0){
-					winCheck();
-					winCountdown--;
+				
+				winCheck();
+				if(winCountdown == 0) generateMaze();
+				if(winCountdown >= 0) winCountdown--;
+				
+				powerUpCountdown--;
+				if(powerUpCountdown == 0){
+					powerUpCountdown = Math.floor(Math.random()*10 + 5)*50;
+					spawnPickup();
 				}
-				if(winCountdown == 0){
-					generateMaze();
-				}
+				
 				
 				
 				
