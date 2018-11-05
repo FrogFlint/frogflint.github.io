@@ -38,19 +38,21 @@
 			var powerUp = [];
 			
 			var powerUpCountdown = 0;
-			var winCountDown = 0;
+			var winCountdown = -2;
 			
 			
 			var index1 = 0;
 			var index2 = 0;
+			var index3 = 0;
 			
-			var index3 = 0;  //group index
 			var stop = false;
 			var noIslands = true;
 			
 			var tankCorner = [[{}]];
 			var intoWall = 0;
 			var cornerSlope = 0;
+			
+			var movementVector = 0;
 			
 			
 			
@@ -63,7 +65,11 @@
 			var wallChance = 2;
 			var loopChance = 0.5;
 			
+			var missileDrift = 0.2; //low is more
+			
 			var squareCenterLine = [[1,0,"leftWall"],[0,1,"topWall"],[1,1,"leftWall"],[1,1,"topWall"]];
+			
+			var playerAxis = [];
 			
 			var players = 3;
 			var playerColor = ["Red","Lime","Blue","DarkOrange","Purple","Gold","Cyan","DeepPink","Green"];
@@ -88,7 +94,9 @@
 			var laserbounce = false;
 			
 			var gattlingAmmo = 20;
-			var gattlingReload = 3;
+			var gattlingSpeed = 3;
+			
+			var mineDelay = 30;
 			
 			
 			
@@ -112,19 +120,23 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:1,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						powerUp:0,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
 						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
 						cantMove:false,
 						cantShoot:false,
 						
-						ammo:gattlingAmmo*gattlingReload,
+						ammo:0,//gattlingAmmo*gattlingSpeed,
 						
 						forwards:false,
 						backwards:false,
 						left:false,
-						right:false
+						right:false,
+						
+						kills:0,
+						deaths:0,
+						wins:0
 					}
 				}
 				for(index1 = 0;index1 < players;index1++){
@@ -157,7 +169,7 @@
 				baseProjectile = [
 					{
 						type:0,
-						size:2.3,
+						size:8.5, //2.5
 						speedVector:3,
 						timeLeft:50*6
 					},
@@ -169,9 +181,9 @@
 					},
 					{
 						type:2,
-						size:0.8,
+						size:1,
 						speedVector:3,
-						timeLeft:50*1.5,
+						timeLeft:50*1.2, //1.2
 						updates:laserUpdates,
 						speed:laserSpeed,
 						
@@ -187,17 +199,18 @@
 					{
 						type:4,
 						size:4,
-						speedVector:-4,
-						timeLeft:1000000,
+						speedVector:-3,
+						timeLeft:100000,
 						
 						armed:false
 					},
 					{},
 					{
 						type:6,
-						size:2,
-						speedVector:4,
-						rotation:0
+						size:6,
+						speedVector:3,
+						rotation:0,
+						timeLeft:50*10
 					}
 				];
 			}
@@ -212,6 +225,11 @@
 						player[index1].cantShoot = false;
 						if(countProjectiles(index1, [6,7]) > 0){
 							player[index1].cantMove = true;
+						}
+						for(index2 = 0;index2 < projectile[index1].length;index2++){
+							if(!projectile[index1][index2].dead && projectile[index1][index2].type == 2 && projectile[index1][index2].timeLeft + projectile[index1][index2].updates/projectile[index1][index2].speed > baseProjectile[2].timeLeft){
+								player[index1].cantMove = true;
+							}
 						}
 						if((player[index1].powerUp == 0 && countProjectiles(index1, 0) >= 5) || countProjectiles(index1, [1,6,7,8,9]) > 0){
 							player[index1].cantShoot = true;
@@ -263,8 +281,8 @@
 											tankCorner[index1][index3].x = (cornerSlope*(inTile(player[index1].Xpos)*tileSize - wallWidth) + ((tankCorner[index1][index2].x - wallWidth)/cornerSlope) - (inTile(player[index1].Ypos)*tileSize - wallWidth) + (tankCorner[index1][index2].y - wallWidth))*cornerSlope/(cornerSlope*cornerSlope + 1);
 											tankCorner[index1][index3].y = cornerSlope*(tankCorner[index1][index3].x - (inTile(player[index1].Xpos)*tileSize - wallWidth)) + (inTile(player[index1].Ypos)*tileSize - wallWidth);
 
-											player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
-											player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
+											//player[index1].Ypos += tankCorner[index1][index3].x - tankCorner[index1][index2].x;
+											//player[index1].Xpos -= tankCorner[index1][index3].y - tankCorner[index1][index2].y;
 										}
 									}
 								}
@@ -274,10 +292,10 @@
 							for(index2 = 0;index2 < projectile[index1].length;index2++){
 								if(!projectile[index1][index2].dead && projectile[index1][index2].type == 6){
 									if(player[index1].left){
-										projectile[index1][index2].rotation += Math.PI/72;
+										projectile[index1][index2].rotation += Math.PI/20;
 									}
 									if(player[index1].right){
-										projectile[index1][index2].rotation -= Math.PI/72;
+										projectile[index1][index2].rotation -= Math.PI/20;
 									}
 								}
 							}
@@ -317,28 +335,108 @@
 				tankCorner[tank][3] = {x:player[tank].Xpos + Math.sin(-Math.PI/2 + Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13), y:player[tank].Ypos + Math.cos(-Math.PI/2 + Math.atan(-7/5) + player[tank].rotation)*tankScale*Math.sqrt(13)};
 			}
 			function moveProjectiles(){
+				var cornerAngle = 0;
+				var movementAngle = 0;
 				for(index1 = 0;index1 < players;index1++){
 					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
 							if(projectile[index1][index2].type != 2){
+								if(projectile[index1][index2].type == 6){
+									projectile[index1][index2].Xspeed += Math.sin(projectile[index1][index2].rotation)*projectile[index1][index2].speedVector * missileDrift;
+									projectile[index1][index2].Yspeed += Math.cos(projectile[index1][index2].rotation)*projectile[index1][index2].speedVector * missileDrift;
+									movementVector = projectile[index1][index2].speedVector / Math.sqrt(Math.pow(projectile[index1][index2].Xspeed, 2) + Math.pow(projectile[index1][index2].Yspeed, 2));
+									projectile[index1][index2].Xspeed *= movementVector;
+									projectile[index1][index2].Yspeed *= movementVector;
+								}
 								projectile[index1][index2].Xpos += projectile[index1][index2].Xspeed;
 								projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
+								
 								
 								if(inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
 									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
 									projectile[index1][index2].Xspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
 								}
 								if(inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
 									projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
 									projectile[index1][index2].Xspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
 								}
 								if(inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall == 1){
 									projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
 									projectile[index1][index2].Yspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
 								}
 								if(inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall == 1){
 									projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
 									projectile[index1][index2].Yspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+								}
+								
+								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+								&& inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
+									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
+									projectile[index1][index2].Xspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+								&& inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
+									projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+									projectile[index1][index2].Xspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+								&& inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+									projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
+									projectile[index1][index2].Yspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
+								&& inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+									projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+									projectile[index1][index2].Yspeed *= -1;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+								}
+								
+								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+								&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow(inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
+									cornerAngle = Math.atan((inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos)/(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos));
+									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed);
+									movementAngle = cornerAngle - movementAngle;
+									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
+									projectile[index1][index2].Xspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+								&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow(inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
+									cornerAngle = Math.atan((inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth  -  projectile[index1][index2].Ypos)/((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos));
+									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed);
+									movementAngle = cornerAngle - movementAngle;
+									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
+									projectile[index1][index2].Xspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
+								&& Math.sqrt(Math.pow(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
+									cornerAngle = Math.atan(((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos)/(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth  -  projectile[index1][index2].Xpos)) + Math.PI;
+									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed) + Math.PI;
+									movementAngle = cornerAngle - movementAngle;
+									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
+									projectile[index1][index2].Xspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
+								}
+								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall > 0
+								&& Math.sqrt(Math.pow((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos,2) + Math.pow((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos,2)) < projectile[index1][index2].size){
+									cornerAngle = Math.atan(((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Ypos)/((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth  -  projectile[index1][index2].Xpos)) + Math.PI;
+									movementAngle = Math.atan(projectile[index1][index2].Yspeed/projectile[index1][index2].Xspeed) + Math.PI;
+									movementAngle = cornerAngle - movementAngle;
+									projectile[index1][index2].speedVector = Math.sqrt(Math.pow(projectile[index1][index2].Xspeed,2) + Math.pow(projectile[index1][index2].Yspeed,2));
+									projectile[index1][index2].Xspeed = Math.cos(movementAngle)*projectile[index1][index2].speedVector;
+									projectile[index1][index2].Yspeed = Math.sin(movementAngle)*projectile[index1][index2].speedVector;
+									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = cornerAngle - projectile[index1][index2].rotation;
 								}
 							}
 							else if(projectile[index1][index2].type == 2){
@@ -404,6 +502,10 @@
 									
 								}
 							}
+							if(projectile[index1][index2].type == 4){
+								projectile[index1][index2].Xspeed *= 0.8;
+								projectile[index1][index2].Yspeed *= 0.8;
+							}
 							projectile[index1][index2].timeLeft--;
 							if(projectile[index1][index2].timeLeft == 0){
 								onKill(index1, index2);
@@ -415,7 +517,7 @@
 			}
 			function onKill(owner, target){
 				if(projectile[owner][target].type == 1 || projectile[owner][target].type == 4){
-					shoot(owner, owner/*temporary*/, 15, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
+					shoot(owner, owner*2/*temporary*/, 15, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
 				}
 			}
 			
@@ -459,14 +561,34 @@
 				for(index1 = 0;index1 < players;index1++){
 					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
-							if(projectile[index1][index2].type != 2){
+							if(projectile[index1][index2].type != 2 && projectile[index1][index2].type != 6){
 								ctx.beginPath();
 								ctx.arc(border.x + mazeBorder.x + projectile[index1][index2].Xpos * scale, border.y + mazeBorder.y + projectile[index1][index2].Ypos * scale, projectile[index1][index2].size * scale, 0, Math.PI*2);
 								ctx.fillStyle = "Black";
+								if(projectile[index1][index2].type == 4){
+									ctx.fillStyle = playerColor[index1];
+									ctx.strokeStyle = "Black";
+									ctx.lineWidth = 0.25*scale*tankScale;
+									ctx.globalAlpha = projectile[index1][index2].timeLeft < mineDelay ? 1 - (projectile[index1][index2].timeLeft / mineDelay) : (baseProjectile[4].timeLeft - projectile[index1][index2].timeLeft < mineDelay ? 1 - (baseProjectile[4].timeLeft - projectile[index1][index2].timeLeft)/mineDelay : 0);
+									ctx.stroke();
+								}
 								ctx.fill();
+								ctx.globalAlpha = 1;
 								ctx.closePath();
 							}
-							
+							if(projectile[index1][index2].type == 6){
+								ctx.beginPath();
+								ctx.moveTo(border.x + mazeBorder.x + (projectile[index1][index2].Xpos + Math.sin(projectile[index1][index2].rotation                )*projectile[index1][index2].size)*scale, border.y + mazeBorder.y + (projectile[index1][index2].Ypos + Math.cos(projectile[index1][index2].rotation                )*projectile[index1][index2].size)*scale);
+								ctx.lineTo(border.x + mazeBorder.x + (projectile[index1][index2].Xpos + Math.sin(projectile[index1][index2].rotation + Math.PI + 0.6)*projectile[index1][index2].size)*scale, border.y + mazeBorder.y + (projectile[index1][index2].Ypos + Math.cos(projectile[index1][index2].rotation + Math.PI + 0.6)*projectile[index1][index2].size)*scale);
+								ctx.lineTo(border.x + mazeBorder.x + (projectile[index1][index2].Xpos + Math.sin(projectile[index1][index2].rotation + Math.PI - 0.6)*projectile[index1][index2].size)*scale, border.y + mazeBorder.y + (projectile[index1][index2].Ypos + Math.cos(projectile[index1][index2].rotation + Math.PI - 0.6)*projectile[index1][index2].size)*scale);
+								ctx.lineTo(border.x + mazeBorder.x + (projectile[index1][index2].Xpos + Math.sin(projectile[index1][index2].rotation                )*projectile[index1][index2].size)*scale, border.y + mazeBorder.y + (projectile[index1][index2].Ypos + Math.cos(projectile[index1][index2].rotation                )*projectile[index1][index2].size)*scale);
+								ctx.fillStyle = playerColor[index1];
+								ctx.fill();
+								ctx.strokeStyle = "Black";
+								ctx.lineWidth = 0.25*scale*tankScale;
+								ctx.stroke();
+								ctx.closePath();
+							}
 						}
 					}
 				}
@@ -500,7 +622,23 @@
 					}
 				}
 			}
-			function drawScores(){}  //and active powerups and modifiers
+			function drawScores(){  //and active powerups and modifiers
+				for(index1 = 0;index1 < players;index1++){
+					ctx.beginPath();
+					ctx.arc(border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2), canvas.height - scoreArea*4/3, 15, 0, Math.PI*2);
+					ctx.fillStyle = playerColor[index1];
+					ctx.fill();
+					ctx.closePath();
+					
+					ctx.beginPath();
+					ctx.font = "20px Arial";
+		    		ctx.fillStyle = "Black";
+					ctx.fillText("Kills: " + player[index1].kills, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 - 20);
+					ctx.fillText("Deaths: " + player[index1].deaths, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2);
+					ctx.fillText("Wins: " + player[index1].score, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 + 20);
+					ctx.closePath();
+				}
+			}
 			
 			
 			function playerCollisions(x,y){
@@ -510,26 +648,28 @@
 				var checkAngle = 0;
 				var index4,index5 = 0;
 				for(index4 = 0;index4 < players;index4++){
-					check = true;
-					getTankCorners(index4);
-					for(index5 = 0;index5 < 4;index5++){
-						checkAngle = Math.atan((y - tankCorner[index4][index5].y)/(x - tankCorner[index4][index5].x)) + Math.PI/2;
-						if(y < tankCorner[index4][index5].y) checkAngle += Math.PI;
-						
-						cornerAngle = Math.atan((tankCorner[index4][(index5+1)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+1)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
-						if(tankCorner[index4][(index5+1)%4].y < tankCorner[index4][index5].y) cornerAngle += Math.PI;
-						
-						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) <= Math.PI*3/2){
-							check = false;
+					if(!player[index4].dead){
+						check = true;
+						getTankCorners(index4);
+						for(index5 = 0;index5 < 4;index5++){
+							checkAngle = Math.atan((y - tankCorner[index4][index5].y)/(x - tankCorner[index4][index5].x)) + Math.PI/2;
+							if(x < tankCorner[index4][index5].x) checkAngle += Math.PI;
+							
+							cornerAngle = Math.atan((tankCorner[index4][(index5+1)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+1)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
+							if(tankCorner[index4][(index5+1)%4].x < tankCorner[index4][index5].x) cornerAngle += Math.PI;
+							
+							if(Math.abs(cornerAngle - checkAngle) % (Math.PI*2) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) % (Math.PI*2) <= Math.PI*3/2){
+								check = false;
+							}
+							cornerAngle = Math.atan((tankCorner[index4][(index5+3)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+3)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
+							if(tankCorner[index4][(index5+3)%4].x < tankCorner[index4][index5].x) cornerAngle += Math.PI;
+							
+							if(Math.abs(cornerAngle - checkAngle) % (Math.PI*2) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) % (Math.PI*2) <= Math.PI*3/2){
+								check = false;
+							}
 						}
-						cornerAngle = Math.atan((tankCorner[index4][(index5+3)%4].y - tankCorner[index4][index5].y)/(tankCorner[index4][(index5+3)%4].x - tankCorner[index4][index5].x)) + Math.PI/2;
-						if(tankCorner[index4][(index5+3)%4].y < tankCorner[index4][index5].y) cornerAngle += Math.PI;
-						
-						if(Math.abs(cornerAngle - checkAngle) >= Math.PI/2 && Math.abs(cornerAngle - checkAngle) <= Math.PI*3/2){
-							check = false;
-						}
+						if(check){collisions[collisions.length] = index4;}
 					}
-					if(check){collisions[collisions.length] = index4;}
 				}
 				return collisions;
 			}
@@ -543,11 +683,64 @@
 				}
 				return count;
 			}
+			function getPlayerAxis(tank){
+				return [{x:Math.sin(player[tank].rotation),y:Math.cos(player[tank].rotation)},{x:Math.sin(player[tank].rotation + Math.PI/2),y:Math.cos(player[tank].rotation + Math.PI/2)},{x:Math.sin(player[tank].rotation + Math.PI),y:Math.cos(player[tank].rotation + Math.PI)},{x:Math.sin(player[tank].rotation + Math.PI*3/2),y:Math.cos(player[tank].rotation + Math.PI*3/2)}]
+			}
 			
-			function killPlayers(){}
-			function winCheck(){}
+			function killPlayers(){
+				var kill = false;
+				var killTanks = [];
+				var index4 = 0;
+				var index5 = 0;
+				for(index1 = 0;index1 < players;index1++){
+					for(index2 = 0;index2 < projectile[index1].length;index2++){
+						if(!projectile[index1][index2].dead){
+							
+							kill = false;
+							for(index3 = 0;index3 < players;index3++){
+								playerAxis = getPlayerAxis(index3);
+								for(index4 = 0;index4 < 4;index4++){
+									killTanks = playerCollisions(projectile[index1][index2].Xpos + playerAxis[index4].x * projectile[index1][index2].size, projectile[index1][index2].Ypos + playerAxis[index4].y * projectile[index1][index2].size);
+									for(index5 = 0;index5 < killTanks.length;index5++){
+										kill = true;
+										if(projectile[index1][index2].type != 4){
+											player[killTanks[index5]].dead = true;
+											player[killTanks[index5]].deaths++;
+											if(index1 != killTanks[index5]){
+												player[index1].kills++;
+											}
+										}
+									}
+								}
+							}
+							if(kill){
+								if(projectile[index1][index2].type == 4){
+									projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, mineDelay);
+								}
+								else if(projectile[index1][index2].type != 2){
+									onKill(index1, index2);
+									projectile[index1][index2].dead = true;
+								}
+							}
+						}
+					}
+				}
+			}
+			function winCheck(){
+				var winner = -1;
+				for(index1 = 0;index1 < players;index1++){
+					if(!player[index1].dead){
+						if(winner == -1)winner = index1;
+						else winner = -2;
+					}
+				}
+				if(winner > -2){
+					if(winner > -1) player[winner].score++;
+					winCountdown = 50*3;
+				}
+			}
 			
-			function pickUp(){}
+			function pickUp(tank, target){}
 			
 			
 			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}, addBarrel = true, x = player[owner].Xpos, y = player[owner].Ypos, r = player[owner].rotation){
@@ -561,8 +754,9 @@
 						else addRotation = (Math.random()-0.5)*spread;
 						if(type == 2)projectile[owner][index3].speed *= special.speed;
 						else projectile[owner][index3].speedVector *= special.speed;
-						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 10:1);
-						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 10:1);
+						if("rotation" in projectile[owner][index3])projectile[owner][index3].rotation = r + addRotation;
+						projectile[owner][index3].Xpos = x + Math.sin(r)*(addBarrel? 10 + baseProjectile[type].size:1)*(baseProjectile[type].speedVector < 0? -1:1);
+						projectile[owner][index3].Ypos = y + Math.cos(r)*(addBarrel? 10 + baseProjectile[type].size:1)*(baseProjectile[type].speedVector < 0? -1:1);
 						projectile[owner][index3].Xspeed = Math.sin(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].Yspeed = Math.cos(r + addRotation)*projectile[owner][index3].speedVector;
 						projectile[owner][index3].phase = special.phase;
@@ -731,6 +925,7 @@
 						if(maze[index1][index2].tile == 0){
 							player[index3].Xpos = (index1 + 0.5)*tileSize;
 							player[index3].Ypos = (index2 + 0.5)*tileSize;
+							player[index3].rotation = Math.random()*Math.PI*2;
 							player[index3].dead = false;
 							stop = true;
 						}
@@ -841,6 +1036,16 @@
 				
 				drawProjectiles();
 				drawTanks();
+				drawScores();
+				
+				if(winCountdown >= 0){
+					winCheck();
+					winCountdown--;
+				}
+				if(winCountdown == 0){
+					generateMaze();
+				}
+				
 				
 				
 				setTimeout(draw, 20);
