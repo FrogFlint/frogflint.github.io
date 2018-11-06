@@ -39,7 +39,7 @@
 			
 			var powerUpCountdown = 0;
 			var winCountdown = -2;
-			var frezeCountdown = 0
+			var frezeCountdown = 0;
 			
 			
 			var index1 = 0;
@@ -124,7 +124,7 @@
 						shooting:0,
 						reload:0,
 						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
-						modifier:0,  //nothing, swift, phase, triplet, 
+						modifier:3,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
 						cantMove:false,
@@ -710,10 +710,17 @@
 			function drawScores(){  //and active powerups and modifiers
 				for(index1 = 0;index1 < players;index1++){
 					ctx.beginPath();
-					ctx.arc(border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2), canvas.height - scoreArea*4/3, 15, 0, Math.PI*2);
+					ctx.arc(border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2), canvas.height - scoreArea*3/2, 15, 0, Math.PI*2);
 					ctx.fillStyle = playerColor[index1];
 					ctx.fill();
 					ctx.closePath();
+					
+					if(player[index1].powerUp > 0){
+						drawPickup(player[index1].powerUp, false, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - (player[index1].modifier > 0 ? 10:0), canvas.height - scoreArea*3/2 + 28, 0, 10);
+					}
+					if(player[index1].modifier > 0){
+						drawPickup(player[index1].modifier, true, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) + (player[index1].powerUp > 0 ? 10:0), canvas.height - scoreArea*3/2 + 28, 0, 10);
+					}
 					
 					ctx.beginPath();
 					ctx.font = "20px Arial";
@@ -741,7 +748,7 @@
 				ctx.fillStyle = modifier? "#AAAAAA":"#CCCCCC";
 				ctx.fill();
 				ctx.strokeStyle = "Black";
-				ctx.lineWidth = 0.25*scale*tankScale;
+				ctx.lineWidth = 0.25*pickupScale/15*tankScale;
 				ctx.stroke();
 				ctx.closePath();
 				
@@ -756,8 +763,9 @@
 				ctx.closePath();
 			}
 			function spawnPickup(){
-				for(index3 = 0;!powerUp[index3].dead;index3++){}
+				for(index3 = 0;index3 < powerUp.length && !powerUp[index3].dead;index3++){}
 				stop = false;
+				var index5 = 0;
 				while(!stop){
 					index1 = Math.floor(Math.random()*(maze.width + 1));
 					index2 = Math.floor(Math.random()*(maze.height + 1));
@@ -776,6 +784,11 @@
 							stop = false;
 						}
 					}
+					if(index5 > 100){
+						powerUp[index3].dead = true;
+						stop = true;
+					}
+					index5++;
 				}
 			}
 			
@@ -1088,7 +1101,7 @@
 					powerUp[index1].dead = true;
 				}
 				
-				powerUpCountdown = Math.floor(Math.random()*10 + 5)*5;
+				powerUpCountdown = Math.floor(Math.random()*10 + 5)*50;
 			}
 			
 			
@@ -1182,32 +1195,37 @@
 			
 			function draw(event) {     //=========================================================================================================================================================================================================
 				
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				if(frezeCountdown <= 0){
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+					drawMaze();
+					drawPowerups();
+
+					movePlayers();
+					moveProjectiles();
+
+					killPlayers();
+
+					drawProjectiles();
+					drawTanks();
+					drawScores();
+					
+					winCheck();
+					
+					if(powerUpCountdown == 0){
+						powerUpCountdown = Math.floor(Math.random()*10 + 5)*50;
+						spawnPickup();
+					}
+					powerUpCountdown--;
+				}
+				else frezeCountdown--;
+					
 				
-				
-				drawMaze();
-				
-				
-				movePlayers();
-				moveProjectiles();
-				
-				killPlayers();
-				
-				drawProjectiles();
-				drawTanks();
-				drawScores();
-				drawPowerups();
-				
-				
-				winCheck();
-				if(winCountdown == 0) generateMaze();
+				if(frezeCountdown == 1) generateMaze();
+				if(winCountdown == 0) frezeCountdown = 50;
 				if(winCountdown >= 0) winCountdown--;
 				
-				if(powerUpCountdown == 0){
-					powerUpCountdown = Math.floor(Math.random()*10 + 5)*5;
-					//spawnPickup();
-				}
-				powerUpCountdown--;
 				
 				
 				
