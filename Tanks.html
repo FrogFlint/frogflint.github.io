@@ -123,8 +123,8 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:2,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
-						modifier:3,  //nothing, swift, phase, triplet, 
+						powerUp:1,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
 						cantMove:false,
@@ -563,7 +563,32 @@
 									}
 									
 									
-									if(index3 == projectile[index1][index2].updates - 1 || projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft){laserBounce = true;}
+									var kill = false;
+									var killTanks = [];
+									var index4 = 0;
+									var index5 = 0;
+									var index6 = 0;
+
+									for(index6 = 0;index6 < players;index6++){
+										playerAxis = getPlayerAxis(index6);
+										for(index4 = 0;index4 < 4;index4++){
+											killTanks = playerCollisions(projectile[index1][index2].front.x + playerAxis[index4].x * projectile[index1][index2].size, projectile[index1][index2].front.y + playerAxis[index4].y * projectile[index1][index2].size);
+											for(index5 = 0;index5 < killTanks.length;index5++){
+												kill = true;
+												player[killTanks[index5]].dead = true;
+												player[killTanks[index5]].deaths++;
+												if(index1 != killTanks[index5]) player[index1].kills++;
+											}
+										}
+									}
+									if(kill){
+										projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, Math.ceil(index3/projectile[index1][index2].speed));
+										laserBounce = true;
+									}
+									
+									
+									
+									if(index3 == projectile[index1][index2].updates - 1 || projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft) laserBounce = true;
 									
 									if(laserBounce){
 										ctx.beginPath();
@@ -584,7 +609,6 @@
 										
 										if(projectile[index1][index2].timeLeft - index3/projectile[index1][index2].speed < 0 || projectile[index1][index2].timeLeft + index3/projectile[index1][index2].speed > baseProjectile[2].timeLeft){break;}
 									}
-									
 								}
 							}
 							if(projectile[index1][index2].type == 4){
@@ -711,7 +735,7 @@
 				for(index1 = 0;index1 < players;index1++){
 					ctx.beginPath();
 					ctx.arc(border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2), canvas.height - scoreArea*3/2, 15, 0, Math.PI*2);
-					ctx.fillStyle = playerColor[index1];
+					ctx.fillStyle = playerColor[index1 % playerColor.length];
 					ctx.fill();
 					ctx.closePath();
 					
@@ -894,6 +918,8 @@
 				}
 			}
 			
+			function mazePath(){}
+			
 			function pickUp(tank, target){}
 			
 			
@@ -1071,6 +1097,8 @@
 				
 				//other setup
 				for(index3 = 0;index3 < players;index3++){
+					var r = 3;
+					var i = 0;
 					stop = false;
 					while(!stop){
 						index1 = Math.floor(Math.random()*(maze.width + 1));
@@ -1086,10 +1114,16 @@
 							stop = true;
 						}
 						for(var index4 = 0;index4 < index3;index4++){
-							if(Math.sqrt(Math.pow(player[index3].Xpos - player[index4].Xpos,2) + Math.pow(player[index3].Ypos - player[index4].Ypos,2)) < tileSize*3){
+							if(Math.sqrt(Math.pow(player[index3].Xpos - player[index4].Xpos,2) + Math.pow(player[index3].Ypos - player[index4].Ypos,2)) < tileSize*r){
 								stop = false;
 							}
 						}
+						i++;
+						if(i > 100){
+							i = 0;
+							r -= 0.5;
+						}
+						if(r < 1) stop = true;
 					}
 				}
 				for(index1 = 0;index1 < players;index1++){
