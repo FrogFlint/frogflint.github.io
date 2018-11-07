@@ -74,9 +74,9 @@
 			
 			var playerAxis = [];
 			
-			var players = 10;
+			var players = 4;
 			var playerColor = ["Red","Lime","Blue","DarkOrange","Purple","Gold","Cyan","DeepPink","Green"];
-			var controls = [["ArrowUp","ArrowDown","ArrowRight","ArrowLeft","/"],["w","s","d","a","q"],["y","h","j","g","t"],["p",";","'","l","o"],[],[],[]];
+			var controls = [["ArrowUp","ArrowDown","ArrowRight","ArrowLeft","/"],["w","s","d","a","q"],["y","h","j","g","t"],["p",";","'","l","o"]];
 			var directionCode = ["forwards","backwards","right","left"];
 			
 			var tileSize = 50;
@@ -125,14 +125,14 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:6,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						powerUp:0,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
 						modifier:0,  //nothing, swift, phase, triplet, 
 						dead:false,
 						score:0,
 						cantMove:false,
 						cantShoot:false,
 						
-						ammo:0,//gattlingAmmo*gattlingSpeed,
+						ammo:10,//gattlingAmmo*gattlingSpeed,
 						
 						forwards:false,
 						backwards:false,
@@ -210,7 +210,12 @@
 						
 						armed:false
 					},
-					{},
+					{
+						type:5,
+						size:7,
+						speedVector:3,
+						timeLeft:50*6
+					},
 					{
 						type:6,
 						size:6,
@@ -277,7 +282,7 @@
 										player[index1].Ypos += (inTile(tankCorner[index1][index3].y)+1)*tileSize - tankCorner[index1][index2].y - wallWidth;
 									}
 								}
-							}
+							}/*
 							for(index2 = 0;index2 < 4;index2++){
 								for(index3 = 0;index3 < 4;index3++){
 									getTankCorners(index1);
@@ -292,7 +297,7 @@
 										}
 									}
 								}
-							}
+							}*/
 						}
 						else{
 							for(index2 = 0;index2 < projectile[index1].length;index2++){
@@ -310,12 +315,22 @@
 						if(player[index1].shooting == 2){
 							if(!player[index1].cantShoot){
 								if(player[index1].shooting == 2){
-									shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, player[index1].powerUp == 3 ? 0.3:0.1, player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
-
+									
 									if(player[index1].powerUp != 3){
 										player[index1].shooting = 1;
-										if(player[index1].PowerUp > 0){
-											player[index1].PowerUp = 0;
+									}
+									else{
+										if(player[index1].reload == 0){
+											player[index1].reload = 3;
+											player[index1].ammo--;
+										}
+										player[index1].reload--;
+									}
+									
+									if(!(player[index1].powerUp == 3 && player[index1].reload > 0)){
+										shoot(index1, player[index1].powerUp, player[index1].modifier == 3 ? 3 : 1, player[index1].powerUp == 3 ? 0.3:0.1, player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
+										if(player[index1].powerUp > 0 && player[index1].powerUp != 4){
+											player[index1].powerUp = 0;
 											player[index1].modifier = 0;
 										}
 									}
@@ -329,6 +344,17 @@
 										player[index1].shooting = 1;
 									}
 								}
+							}
+						}
+						if(player[index1].powerUp == 3 && player[index1].ammo == 0){
+							player[index1].powerUp = 0;
+							player[index1].modifier = 0;
+							player[index1].shooting = 1;
+						}
+						
+						for(index2 = 0;index2 < powerUp.length;index2++){
+							if(!powerUp[index2].dead && distance(player[index1].Xpos, player[index1].Ypos, powerUp[index2].Xpos, powerUp[index2].Ypos) < 20){
+								pickUp(index1, index2);
 							}
 						}
 					}
@@ -690,7 +716,6 @@
 									ctx.stroke();
 								}
 								ctx.fill();
-								ctx.globalAlpha = 1;
 								ctx.closePath();
 							}
 							if(projectile[index1][index2].type == 6){
@@ -706,6 +731,7 @@
 								ctx.stroke();
 								ctx.closePath();
 							}
+							ctx.globalAlpha = 1;
 						}
 					}
 				}
@@ -793,6 +819,26 @@
 				ctx.fillStyle = modifier? "#909090":"#AAAAAA";
 				ctx.fill();
 				ctx.closePath();
+				
+				if(modifier){
+					if(type == 3){
+						
+					}
+				}
+				else{
+					if(type == 1){
+						
+					}
+					//if(type == 2){
+						ctx.beginPath();
+						ctx.moveTo(x + Math.sin(r + 0.3)*pickupScale*pickupBorder*0.7, y + Math.cos(r + 0.3)*pickupScale*pickupBorder*0.7);
+						ctx.lineTo(x + Math.sin(r + 0.3 + Math.PI)*pickupScale*pickupBorder*0.7, y + Math.cos(r + 0.3 + Math.PI)*pickupScale*pickupBorder*0.7);
+						ctx.strokeStyle = modifier? "#707070":"#909090";
+						ctx.lineWidth = 0.25*pickupScale/15*tankScale;
+						ctx.stroke();
+						ctx.closePath();
+					//}
+				}
 			}
 			function spawnPickup(){
 				for(index3 = 0;index3 < powerUp.length && !powerUp[index3].dead;index3++){}
@@ -929,7 +975,13 @@
 			}
 			
 			
-			function pickUp(tank, target){}
+			function pickUp(tank, target){
+				var pickupType = powerUp[target].modifier ? "modifier":"powerUp";
+				if(player[tank][pickupType] == 0 && countProjectiles(tank, [1,2,5,6,8]) == 0){
+					player[tank][pickupType] = powerUp[target].type;
+					powerUp[target].dead = true;
+				}
+			}
 			
 			
 			function shoot(owner, type = 0, count = 1, spread = 0.1, random = false, special = {speed:1, phase:0}, addBarrel = true, x = player[owner].Xpos, y = player[owner].Ypos, r = player[owner].rotation){
@@ -1202,7 +1254,7 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
-				for(index1 = 0;index1 < players;index1++){
+				for(index1 = 0;index1 < players && index1 < controls.length;index1++){
 					for(index2 = 0;index2 < 4;index2++){
 						if(e.key == controls[index1][index2]){
 							player[index1][directionCode[index2]] = true;
@@ -1217,7 +1269,7 @@
 				}
 			}
 			function keyUpHandler(e) {
-				for(index1 = 0;index1 < players;index1++){
+				for(index1 = 0;index1 < players && index1 < controls.length;index1++){
 					for(index2 = 0;index2 < 4;index2++){
 						if(e.key == controls[index1][index2]){
 							player[index1][directionCode[index2]] = false;
