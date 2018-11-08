@@ -125,8 +125,8 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:0,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
-						modifier:0,  //nothing, swift, phase, triplet, colliding, frag
+						powerUp:1,//index1*2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						modifier:2,  //nothing, swift, phase, triplet, colliding, frag
 						dead:false,
 						score:0,
 						cantMove:false,
@@ -157,7 +157,10 @@
 							type:0,
 							dead:true,
 							
-							timeLeft:0
+							timeLeft:0,
+							
+							phase:0,
+							frag:0
 						}
 					}
 				}
@@ -206,9 +209,7 @@
 						type:4,
 						size:4,
 						speedVector:-3,
-						timeLeft:100000,
-						
-						armed:false
+						timeLeft:100000
 					},
 					{
 						type:5,
@@ -221,6 +222,17 @@
 						size:6,
 						speedVector:3,
 						rotation:0,
+						timeLeft:50*10
+					},
+					{},
+					{},
+					{
+						type:9,
+						size:2,
+						speedVector:3.5,
+						corner:[{x:0,y:0},{x:0,y:0},{x:0,y:0}],
+						rotation:0,
+						rotationSpeed:0,
 						timeLeft:50*10
 					}
 				];
@@ -326,7 +338,7 @@
 								if(player[index1].powerUp == 4) player[index1].ammo--;
 
 								if(!(player[index1].powerUp == 3 && player[index1].reload > 0)){
-									shoot(index1, player[index1].powerUp, player[index1].modifier == 3 && player[index1].powerUp > 0 ? 3 : 1, player[index1].powerUp == 3 ? 0.3:(player[index1].powerUp == 4 ? 0.7:0.1), player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? 5 : 0});
+									shoot(index1, player[index1].powerUp, player[index1].modifier == 3 && player[index1].powerUp > 0 ? 3 : 1, player[index1].powerUp == 3 ? 0.3:(player[index1].powerUp == 4 ? 0.7:0.1), player[index1].powerUp == 3, {speed:player[index1].modifier == 1 ? 2 : 1,phase:player[index1].modifier == 2 ? Math.min(50*2, baseProjectile[player[index1].powerUp].timeLeft/2) : 0});
 									if(player[index1].powerUp > 0 && player[index1].powerUp != 3 && player[index1].powerUp != 4){
 										player[index1].powerUp = 0;
 										player[index1].modifier = 0;
@@ -380,92 +392,98 @@
 								projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
 								
 								
-								if(inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
-									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
-									projectile[index1][index2].Xspeed *= -1;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
-								}
-								if(inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall == 1){
-									projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
-									projectile[index1][index2].Xspeed *= -1;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
-								}
-								if(inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall == 1){
-									projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
-									projectile[index1][index2].Yspeed *= -1;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
-								}
-								if(inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall == 1){
-									projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
-									projectile[index1][index2].Yspeed *= -1;
-									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
-								}
+									if(projectile[index1][index2].phase <= 0 && inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall == 1
+									  || maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos)].tile == 1){
+										projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].Xspeed *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+									}
+									if(projectile[index1][index2].phase <= 0 && inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall == 1
+									  || maze[inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos)].tile == 1){
+										projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].Xspeed *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+									}
+									if(projectile[index1][index2].phase <= 0 && inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall == 1
+									  || maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size)].tile == 1){
+										projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].Yspeed *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+									}
+									if(projectile[index1][index2].phase <= 0 && inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall == 1
+									  || maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size)].tile == 1){
+										projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].Yspeed *= -1;
+										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+									}
+
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+									   && inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth
+									  /*|| maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size)].tile  +  maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size)].tile > 0*/){
+										projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].Xspeed *= -1;
+										//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+									   && inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
+										projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].Xspeed *= -1;
+										//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+									   && inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+										projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
+										projectile[index1][index2].Yspeed *= -1;
+										//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
+									   && inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+										projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+										projectile[index1][index2].Yspeed *= -1;
+										//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+									}
+
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0){
+										movementVector = distance(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth, inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
+										if(movementVector < projectile[index1][index2].size){
+											projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + (projectile[index1][index2].Xpos - (inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + (projectile[index1][index2].Ypos - (inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Xspeed = Math.abs(projectile[index1][index2].Xspeed);
+											projectile[index1][index2].Yspeed = Math.abs(projectile[index1][index2].Yspeed);
+											if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2);
+										}
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0){
+										movementVector = distance((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth, inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
+										if(movementVector < projectile[index1][index2].size){
+											projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth + (projectile[index1][index2].Xpos - ((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + (projectile[index1][index2].Ypos - (inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Xspeed = -Math.abs(projectile[index1][index2].Xspeed);
+											projectile[index1][index2].Yspeed = Math.abs(projectile[index1][index2].Yspeed);
+											if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2) + Math.PI*3/2;
+										}
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0){
+										movementVector = distance(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth, (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
+										if(movementVector < projectile[index1][index2].size){
+											projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + (projectile[index1][index2].Xpos - (inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth + (projectile[index1][index2].Ypos - ((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Xspeed = Math.abs(projectile[index1][index2].Xspeed);
+											projectile[index1][index2].Yspeed = -Math.abs(projectile[index1][index2].Yspeed);
+											//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = -projectile[index1][index2].rotation % (Math.PI/2) + Math.PI;
+										}
+									}
+									if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall > 0){
+										movementVector = distance((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth, (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
+										if(movementVector < projectile[index1][index2].size){
+											projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth + (projectile[index1][index2].Xpos - ((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth + (projectile[index1][index2].Ypos - ((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+											projectile[index1][index2].Xspeed = -Math.abs(projectile[index1][index2].Xspeed);
+											projectile[index1][index2].Yspeed = -Math.abs(projectile[index1][index2].Yspeed);
+											//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2) + Math.PI;
+										}
+									}
 								
-								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
-								&& inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
-									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
-									projectile[index1][index2].Xspeed *= -1;
-									//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
-								&& inTile(projectile[index1][index2].Xpos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
-									projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
-									projectile[index1][index2].Xspeed *= -1;
-									//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation *= -1;
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
-								&& inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
-									projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + projectile[index1][index2].size;
-									projectile[index1][index2].Yspeed *= -1;
-									//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
-								&& inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
-									projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
-									projectile[index1][index2].Yspeed *= -1;
-									//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
-								}
-								
-								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0){
-									movementVector = distance(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth, inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
-									if(movementVector < projectile[index1][index2].size){
-										projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + (projectile[index1][index2].Xpos - (inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + (projectile[index1][index2].Ypos - (inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Xspeed = Math.abs(projectile[index1][index2].Xspeed);
-										projectile[index1][index2].Yspeed = Math.abs(projectile[index1][index2].Yspeed);
-										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2);
-									}
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0){
-								movementVector = distance((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth, inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
-									if(movementVector < projectile[index1][index2].size){
-										projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth + (projectile[index1][index2].Xpos - ((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + (projectile[index1][index2].Ypos - (inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Xspeed = -Math.abs(projectile[index1][index2].Xspeed);
-										projectile[index1][index2].Yspeed = Math.abs(projectile[index1][index2].Yspeed);
-										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2) + Math.PI*3/2;
-									}
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0){
-								movementVector = distance(inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth, (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
-									if(movementVector < projectile[index1][index2].size){
-										projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + (projectile[index1][index2].Xpos - (inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth + (projectile[index1][index2].Ypos - ((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Xspeed = Math.abs(projectile[index1][index2].Xspeed);
-										projectile[index1][index2].Yspeed = -Math.abs(projectile[index1][index2].Yspeed);
-										if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = -projectile[index1][index2].rotation % (Math.PI/2) + Math.PI;
-									}
-								}
-								if(maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall > 0){
-								movementVector = distance((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth, (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth, projectile[index1][index2].Xpos, projectile[index1][index2].Ypos);
-									if(movementVector < projectile[index1][index2].size){
-										projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth + (projectile[index1][index2].Xpos - ((inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth + (projectile[index1][index2].Ypos - ((inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-										projectile[index1][index2].Xspeed = -Math.abs(projectile[index1][index2].Xspeed);
-										projectile[index1][index2].Yspeed = -Math.abs(projectile[index1][index2].Yspeed);
-										//if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = projectile[index1][index2].rotation % (Math.PI/2) + Math.PI;
-									}
-								}
 							}
 							else if(projectile[index1][index2].type == 2){
 								projectile[index1][index2].front.x = projectile[index1][index2].Xpos;
@@ -486,108 +504,110 @@
 									projectile[index1][index2].front.y += projectile[index1][index2].front.yS;
 									
 									laserBounce = false;
-									if(inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall == 1){
-										wallPush = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.x;
-										projectile[index1][index2].front.x += wallPush;
-										projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
-										projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
-										laserBounce = true;
-									}
-									if(inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall == 1){
-										wallPush = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.x;
-										projectile[index1][index2].front.x += wallPush;
-										projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
-										projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
-										laserBounce = true;
-									}
-									if(inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall == 1){
-										wallPush = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.y;
-										projectile[index1][index2].front.y += wallPush;
-										projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
-										projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
-										laserBounce = true;
-									}
-									if(inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall == 1){
-										wallPush = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.y;
-										projectile[index1][index2].front.y += wallPush;
-										projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
-										projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
-										laserBounce = true;
-									}
-									
-									
-									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
-									&& inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
-										wallPush = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.x;
-										projectile[index1][index2].front.x += wallPush;
-										projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
-										projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
-										laserBounce = true;
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
-									&& inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
-										wallPush = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.x;
-										projectile[index1][index2].front.x += wallPush;
-										projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
-										projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
-										laserBounce = true;
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
-									&& inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
-										wallPush = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.y;
-										projectile[index1][index2].front.y += wallPush;
-										projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
-										projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
-										laserBounce = true;
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0
-									&& inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
-										wallPush = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.y;
-										projectile[index1][index2].front.y += wallPush;
-										projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
-										projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
-										laserBounce = true;
-									}   ///save point
-									
-									
-									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0){
-										movementVector = distance(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth, inTile(projectile[index1][index2].front.y)*tileSize + wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
-										if(movementVector < projectile[index1][index2].size){
-											projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + (projectile[index1][index2].front.x - (inTile(projectile[index1][index2].front.x)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + (projectile[index1][index2].front.y - (inTile(projectile[index1][index2].front.y)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+									if(projectile[index1][index2].phase - index3/projectile[index1][index2].speed <= 0){
+										if(inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall == 1){
+											wallPush = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.x;
+											projectile[index1][index2].front.x += wallPush;
+											projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
 											projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
+											laserBounce = true;
+										}
+										if(inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall == 1){
+											wallPush = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.x;
+											projectile[index1][index2].front.x += wallPush;
+											projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
+											projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
+											laserBounce = true;
+										}
+										if(inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall == 1){
+											wallPush = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.y;
+											projectile[index1][index2].front.y += wallPush;
+											projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
 											projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
 											laserBounce = true;
 										}
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0){
-										movementVector = distance((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth, inTile(projectile[index1][index2].front.y)*tileSize + wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
-										if(movementVector < projectile[index1][index2].size){
-											projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth + (projectile[index1][index2].front.x - ((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + (projectile[index1][index2].front.y - (inTile(projectile[index1][index2].front.y)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+										if(inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall == 1){
+											wallPush = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.y;
+											projectile[index1][index2].front.y += wallPush;
+											projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
+											projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
+											laserBounce = true;
+										}
+
+
+										if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+										&& inTile(projectile[index1][index2].front.x - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
+											wallPush = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.x;
+											projectile[index1][index2].front.x += wallPush;
+											projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
+											projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
+											laserBounce = true;
+										}
+										if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+										&& inTile(projectile[index1][index2].front.x + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.x) && projectile[index1][index2].front.y > inTile(projectile[index1][index2].front.y - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.y < inTile(projectile[index1][index2].front.y)*tileSize + wallWidth){
+											wallPush = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.x;
+											projectile[index1][index2].front.x += wallPush;
+											projectile[index1][index2].front.y += wallPush*projectile[index1][index2].front.yS/projectile[index1][index2].front.xS;
 											projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
+											laserBounce = true;
+										}
+										if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0
+										&& inTile(projectile[index1][index2].front.y - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
+											wallPush = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + projectile[index1][index2].size  - projectile[index1][index2].front.y;
+											projectile[index1][index2].front.y += wallPush;
+											projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
 											projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
 											laserBounce = true;
 										}
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0){
-										movementVector = distance(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth, (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
-										if(movementVector < projectile[index1][index2].size){
-											projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + (projectile[index1][index2].front.x - (inTile(projectile[index1][index2].front.x)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth + (projectile[index1][index2].front.y - ((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
+										if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0
+										&& inTile(projectile[index1][index2].front.y + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].front.y) && projectile[index1][index2].front.x > inTile(projectile[index1][index2].front.x - wallWidth)*tileSize - wallWidth && projectile[index1][index2].front.x < inTile(projectile[index1][index2].front.x)*tileSize + wallWidth){
+											wallPush = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth - projectile[index1][index2].size  - projectile[index1][index2].front.y;
+											projectile[index1][index2].front.y += wallPush;
+											projectile[index1][index2].front.x += wallPush*projectile[index1][index2].front.xS/projectile[index1][index2].front.yS;
 											projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
 											laserBounce = true;
+										}   ///save point
+
+
+										if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)-1].leftWall > 0){
+											movementVector = distance(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth, inTile(projectile[index1][index2].front.y)*tileSize + wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
+											if(movementVector < projectile[index1][index2].size){
+												projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + (projectile[index1][index2].front.x - (inTile(projectile[index1][index2].front.x)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + (projectile[index1][index2].front.y - (inTile(projectile[index1][index2].front.y)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
+												projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
+												laserBounce = true;
+											}
 										}
-									}
-									if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall > 0){
-										movementVector = distance((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth, (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
-										if(movementVector < projectile[index1][index2].size){
-											projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth + (projectile[index1][index2].front.x - ((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth + (projectile[index1][index2].front.y - ((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
-											projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
-											projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
-											laserBounce = true;
+										if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)-1].leftWall > 0){
+											movementVector = distance((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth, inTile(projectile[index1][index2].front.y)*tileSize + wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
+											if(movementVector < projectile[index1][index2].size){
+												projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth + (projectile[index1][index2].front.x - ((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.y = inTile(projectile[index1][index2].front.y)*tileSize + wallWidth + (projectile[index1][index2].front.y - (inTile(projectile[index1][index2].front.y)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
+												projectile[index1][index2].front.yS = Math.abs(projectile[index1][index2].front.yS);
+												laserBounce = true;
+											}
+										}
+										if(maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)-1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)].leftWall > 0){
+											movementVector = distance(inTile(projectile[index1][index2].front.x)*tileSize + wallWidth, (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
+											if(movementVector < projectile[index1][index2].size){
+												projectile[index1][index2].front.x = inTile(projectile[index1][index2].front.x)*tileSize + wallWidth + (projectile[index1][index2].front.x - (inTile(projectile[index1][index2].front.x)*tileSize + wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth + (projectile[index1][index2].front.y - ((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.xS = Math.abs(projectile[index1][index2].front.xS);
+												projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
+												laserBounce = true;
+											}
+										}
+										if(maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)+1].leftWall + maze[inTile(projectile[index1][index2].front.x)][inTile(projectile[index1][index2].front.y)+1].topWall + maze[inTile(projectile[index1][index2].front.x)+1][inTile(projectile[index1][index2].front.y)].leftWall > 0){
+											movementVector = distance((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth, (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth, projectile[index1][index2].front.x, projectile[index1][index2].front.y);
+											if(movementVector < projectile[index1][index2].size){
+												projectile[index1][index2].front.x = (inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth + (projectile[index1][index2].front.x - ((inTile(projectile[index1][index2].front.x)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.y = (inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth + (projectile[index1][index2].front.y - ((inTile(projectile[index1][index2].front.y)+1)*tileSize - wallWidth))*projectile[index1][index2].size/movementVector;
+												projectile[index1][index2].front.xS = -Math.abs(projectile[index1][index2].front.xS);
+												projectile[index1][index2].front.yS = -Math.abs(projectile[index1][index2].front.yS);
+												laserBounce = true;
+											}
 										}
 									}
 									
@@ -646,6 +666,7 @@
 								projectile[index1][index2].Xspeed *= 0.8;
 								projectile[index1][index2].Yspeed *= 0.8;
 							}
+							if(projectile[index1][index2].phase > 0) projectile[index1][index2].phase--;
 							projectile[index1][index2].timeLeft--;
 							if(projectile[index1][index2].timeLeft == 0){
 								onKill(index1, index2);
@@ -818,6 +839,13 @@
 				ctx.closePath();
 				
 				if(modifier){
+					if(type == 1){
+						ctx.beginPath();
+						ctx.arc(x + Math.sin(r + Math.PI/2)*pickupScale*pickupBorder*0.3, y + Math.cos(r + Math.PI/2)*pickupScale*pickupBorder*0.3, pickupScale/8, 0, Math.PI*2);
+						ctx.fillStyle = "#666666";
+						ctx.fill();
+						ctx.closePath();
+					}
 					if(type == 3){
 						ctx.fillStyle = "#666666";
 						for(var index4 = 0;index4 < 3;index4++){
