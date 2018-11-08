@@ -92,7 +92,7 @@
 			var tankSpeed = 2.3;
 			var backupSpeed = 0.6;
 			
-			var pickupBorder = 0.7;
+			var pickupBorder = 0.75;
 			
 			var laserUpdates = 80;
 			var laserSpeed = 6;
@@ -774,18 +774,18 @@
 					ctx.closePath();
 					
 					if(player[index1].powerUp > 0){
-						drawPickup(player[index1].powerUp, false, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - (player[index1].modifier > 0 ? 10:0), canvas.height - scoreArea*3/2 + 28, 0, 10);
+						drawPickup(player[index1].powerUp, false, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - (player[index1].modifier > 0 ? 15:0), canvas.height - scoreArea*3/2 + 38, 0, 16);
 					}
 					if(player[index1].modifier > 0){
-						drawPickup(player[index1].modifier, true, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) + (player[index1].powerUp > 0 ? 10:0), canvas.height - scoreArea*3/2 + 28, 0, 10);
+						drawPickup(player[index1].modifier, true, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) + (player[index1].powerUp > 0 ? 15:0), canvas.height - scoreArea*3/2 + 38, 0, 16);
 					}
 					
 					ctx.beginPath();
 					ctx.font = "20px Arial";
 		    			ctx.fillStyle = "Black";
-					ctx.fillText("Kills: " + player[index1].kills, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 - 20);
-					ctx.fillText("Deaths: " + player[index1].deaths, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2);
-					ctx.fillText("Wins: " + player[index1].score, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 20, canvas.height - scoreArea/2 + 20);
+					ctx.fillText("Kills: " + player[index1].kills, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 30, canvas.height - scoreArea/2);
+					ctx.fillText("Deaths: " + player[index1].deaths, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 30, canvas.height - scoreArea/2 + 20);
+					ctx.fillText("Wins: " + player[index1].score, border.x + (index1 + 1)/(players + 1) * (canvas.width - border.x*2) - 30, canvas.height - scoreArea/2 + 40);
 					ctx.closePath();
 				}
 			}
@@ -803,9 +803,9 @@
 				ctx.lineTo(x + Math.sin(Math.PI*5/4 + r)*pickupScale, y + Math.cos(Math.PI*5/4 + r)*pickupScale);
 				ctx.lineTo(x + Math.sin(Math.PI*7/4 + r)*pickupScale, y + Math.cos(Math.PI*7/4 + r)*pickupScale);
 				ctx.lineTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale, y + Math.cos(Math.PI*1/4 + r)*pickupScale);
-				ctx.fillStyle = modifier? "#AAAAAA":"#CCCCCC";
+				ctx.fillStyle = modifier? "#AAAAAA":"#BBBBBB";
 				ctx.fill();
-				ctx.strokeStyle = "Black";
+				ctx.strokeStyle = modifier? "#888888":"#999999";
 				ctx.lineWidth = 0.25*pickupScale/15*tankScale;
 				ctx.stroke();
 				ctx.closePath();
@@ -816,28 +816,45 @@
 				ctx.lineTo(x + Math.sin(Math.PI*5/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*5/4 + r)*pickupScale*pickupBorder);
 				ctx.lineTo(x + Math.sin(Math.PI*7/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*7/4 + r)*pickupScale*pickupBorder);
 				ctx.lineTo(x + Math.sin(Math.PI*1/4 + r)*pickupScale*pickupBorder, y + Math.cos(Math.PI*1/4 + r)*pickupScale*pickupBorder);
-				ctx.fillStyle = modifier? "#909090":"#AAAAAA";
+				ctx.fillStyle = modifier? "#888888":"#999999";
 				ctx.fill();
 				ctx.closePath();
 				
 				if(modifier){
 					if(type == 3){
-						
+						ctx.fillStyle = "#666666";
+						for(var index4 = 0;index4 < 3;index4++){
+							ctx.beginPath();
+							ctx.arc(x + Math.sin(r + (index4 + 0.5)/3 * Math.PI*2)*pickupScale*pickupBorder*0.4, y + (Math.cos(r + (index4 + 0.5)/3 * Math.PI*2)+0.1)*pickupScale*pickupBorder*0.4, pickupScale/5, 0, Math.PI*2);
+							ctx.fill();
+							ctx.closePath();
+						}
 					}
 				}
 				else{
 					if(type == 1){
 						
 					}
-					//if(type == 2){
+					if(type == 2){
 						ctx.beginPath();
-						ctx.moveTo(x + Math.sin(r + 0.3)*pickupScale*pickupBorder*0.7, y + Math.cos(r + 0.3)*pickupScale*pickupBorder*0.7);
-						ctx.lineTo(x + Math.sin(r + 0.3 + Math.PI)*pickupScale*pickupBorder*0.7, y + Math.cos(r + 0.3 + Math.PI)*pickupScale*pickupBorder*0.7);
-						ctx.strokeStyle = modifier? "#707070":"#909090";
-						ctx.lineWidth = 0.25*pickupScale/15*tankScale;
+						ctx.moveTo(x + Math.sin(r - Math.PI/4)*pickupScale*pickupBorder*0.7, y + Math.cos(r - Math.PI/4)*pickupScale*pickupBorder*0.7);
+						ctx.lineTo(x + Math.sin(r + Math.PI/4 + Math.PI)*pickupScale*pickupBorder*0.2, y + Math.cos(r + Math.PI/4 + Math.PI)*pickupScale*pickupBorder*0.2);
+						ctx.lineTo(x + Math.sin(r + Math.PI/4)*pickupScale*pickupBorder*0.2, y + Math.cos(r + Math.PI/4)*pickupScale*pickupBorder*0.2);
+						ctx.lineTo(x + Math.sin(r - Math.PI/4 + Math.PI)*pickupScale*pickupBorder*0.7, y + Math.cos(r - Math.PI/4 + Math.PI)*pickupScale*pickupBorder*0.7);
+						ctx.strokeStyle = "#666666";
+						ctx.lineWidth = 0.5*pickupScale/15*tankScale;
 						ctx.stroke();
 						ctx.closePath();
-					//}
+					}
+					if(type == 3){
+						ctx.fillStyle = "#666666";
+						for(var index4 = 0;index4 < 8;index4++){
+							ctx.beginPath();
+							ctx.arc(x + Math.sin(r + index4/8 * Math.PI*2)*pickupScale*pickupBorder*0.45, y + Math.cos(r + index4/8 * Math.PI*2)*pickupScale*pickupBorder*0.45, pickupScale/11, 0, Math.PI*2);
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
 				}
 			}
 			function spawnPickup(){
@@ -980,6 +997,10 @@
 				if(player[tank][pickupType] == 0 && countProjectiles(tank, [1,2,5,6,8]) == 0){
 					player[tank][pickupType] = powerUp[target].type;
 					powerUp[target].dead = true;
+					if(pickupType = "powerUp"){
+						if(powerUp[target].type == 3) player[tank].ammo = 20;
+						if(powerUp[target].type == 4) player[tank].ammo = 3;
+					}
 				}
 			}
 			
