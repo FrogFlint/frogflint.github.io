@@ -126,8 +126,8 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:1,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
-						modifier:3,  //nothing, swift, phase, triplet, colliding, frag
+						powerUp:0,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						modifier:0,  //nothing, swift, phase, triplet, colliding, frag
 						dead:false,
 						score:0,
 						cantMove:false,
@@ -198,7 +198,9 @@
 						speed:laserSpeed,
 						
 						front:{x:0,y:0,xS:0,yS:0,move:laserUpdates},
+						//front:{Xpos:0,Ypos:0,Xspeed:0,Yspeed:0,size:1,move:laserUpdates},
 						back:{x:0,y:0}
+						//back:{Xpos:0,Ypos:0}
 					},
 					{
 						type:3,
@@ -380,6 +382,7 @@
 					for(index2 = 0;index2 < projectile[index1].length;index2++){
 						if(!projectile[index1][index2].dead){
 							if(projectile[index1][index2].type != 2){
+								
 								//if(projectile[index1][index2].timeLeft != baseProjectile[projectile[index1][index2].type].timeLeft){
 									if(projectile[index1][index2].type == 9) projectile[index1][index2].rotation += projectile[index1][index2].rotationSpeed;
 									if(projectile[index1][index2].type == 6){
@@ -393,7 +396,8 @@
 									projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
 								//}
 								
-								
+								wallBounce(projectile[index1][index2]);
+								/*
 								if(projectile[index1][index2].phase <= 0 && inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall == 1
 								  || maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos)].tile == 1){
 									projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + projectile[index1][index2].size;
@@ -441,8 +445,8 @@
 										projectile[index1][index2].rotationSpeed = 0;
 									}
 									if(projectile[index1][index2].type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
-								}
-
+								}*/
+								
 								if(projectile[index1][index2].phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
 								   && inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth
 								  /*|| maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos - wallWidth - projectile[index1][index2].size)].tile  +  maze[inTile(projectile[index1][index2].Xpos - wallWidth - projectile[index1][index2].size)][inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size)].tile > 0*/){
@@ -766,6 +770,116 @@
 					}
 				}
 			}
+			function wallBounce(target, realTarget = target){
+				
+				if(realTarget.phase <= 0 && inTile(target.Xpos - wallWidth - realTarget.size) != inTile(target.Xpos) && maze[inTile(target.Xpos)][inTile(target.Ypos)].leftWall == 1
+				   || maze[inTile(target.Xpos - wallWidth - realTarget.size)][inTile(target.Ypos)].tile == 1){
+					target.Xpos = inTile(target.Xpos)*tileSize + wallWidth + realTarget.size;
+					target.Xspeed *= -1;
+					if(realTarget.type == 9){
+						target.timeLeft = Math.min(target.timeLeft, shrapnelFade);
+						target.Xspeed = 0;
+						target.Yspeed = 0;
+						target.rotationSpeed = 0;
+					}
+					if(realTarget.type == 6)target.rotation *= -1;
+				}
+				if(realTarget.phase <= 0 && inTile(target.Xpos + wallWidth + realTarget.size) != inTile(target.Xpos) && maze[inTile(target.Xpos)+1][inTile(target.Ypos)].leftWall == 1
+				   || maze[inTile(target.Xpos + wallWidth + realTarget.size)][inTile(target.Ypos)].tile == 1){
+					target.Xpos = (inTile(target.Xpos)+1)*tileSize - wallWidth - realTarget.size;
+					target.Xspeed *= -1;
+					if(realTarget.type == 9){
+						target.timeLeft = Math.min(target.timeLeft, shrapnelFade);
+						target.Xspeed = 0;
+						target.Yspeed = 0;
+						target.rotationSpeed = 0;
+					}
+					if(realTarget.type == 6)target.rotation *= -1;
+				}
+				if(realTarget.phase <= 0 && inTile(target.Ypos - wallWidth - realTarget.size) != inTile(target.Ypos) && maze[inTile(target.Xpos)][inTile(target.Ypos)].topWall == 1
+				   || maze[inTile(target.Xpos)][inTile(target.Ypos - wallWidth - realTarget.size)].tile == 1){
+					target.Ypos = inTile(target.Ypos)*tileSize + wallWidth + realTarget.size;
+					target.Yspeed *= -1;
+					if(realTarget.type == 9){
+						target.timeLeft = Math.min(target.timeLeft, shrapnelFade);
+						target.Xspeed = 0;
+						target.Yspeed = 0;
+						target.rotationSpeed = 0;
+					}
+					if(realTarget.type == 6)target.rotation = Math.PI - target.rotation;
+				}
+				if(realTarget.phase <= 0 && inTile(target.Ypos + wallWidth + realTarget.size) != inTile(target.Ypos) && maze[inTile(target.Xpos)][inTile(target.Ypos)+1].topWall == 1
+				   || maze[inTile(target.Xpos)][inTile(target.Ypos + wallWidth + realTarget.size)].tile == 1){
+					target.Ypos = (inTile(target.Ypos)+1)*tileSize - wallWidth - realTarget.size;
+					target.Yspeed *= -1;
+					if(realTarget.type == 9){
+						target.timeLeft = Math.min(target.timeLeft, shrapnelFade);
+						target.Xspeed = 0;
+						target.Yspeed = 0;
+						target.rotationSpeed = 0;
+					}
+					if(realTarget.type == 6)target.rotation = Math.PI - target.rotation;
+				}
+				
+				if(realTarget.phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+				   && inTile(projectile[index1][index2].Xpos - wallWidth - realTarget.size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth
+				   /*|| maze[inTile(projectile[index1][index2].Xpos - wallWidth - realTarget.size)][inTile(projectile[index1][index2].Ypos - wallWidth - realTarget.size)].tile  +  maze[inTile(projectile[index1][index2].Xpos - wallWidth - realTarget.size)][inTile(projectile[index1][index2].Ypos + wallWidth + realTarget.size)].tile > 0*/){
+					projectile[index1][index2].Xpos = inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth + realTarget.size;
+					if(realTarget.type == 9){
+						projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, shrapnelFade);
+						projectile[index1][index2].Xspeed = 0;
+						projectile[index1][index2].Yspeed = 0;
+						projectile[index1][index2].rotationSpeed = 0;
+					}
+					else{
+						projectile[index1][index2].Xspeed *= -1;
+					}
+					//if(realTarget.type == 6)projectile[index1][index2].rotation *= -1;
+				}
+				if(realTarget.phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)+1][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+				   && inTile(projectile[index1][index2].Xpos + wallWidth + realTarget.size) != inTile(projectile[index1][index2].Xpos) && projectile[index1][index2].Ypos > inTile(projectile[index1][index2].Ypos)*tileSize - wallWidth && projectile[index1][index2].Ypos < inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth){
+					if(realTarget.type == 9){
+						projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, shrapnelFade);
+						projectile[index1][index2].Xspeed = 0;
+						projectile[index1][index2].Yspeed = 0;
+						projectile[index1][index2].rotationSpeed = 0;
+					}
+					else{
+						projectile[index1][index2].Xpos = (inTile(projectile[index1][index2].Xpos)+1)*tileSize - wallWidth - realTarget.size;
+						projectile[index1][index2].Xspeed *= -1;
+					}
+					//if(realTarget.type == 6)projectile[index1][index2].rotation *= -1;
+				}
+				if(realTarget.phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)-1].leftWall > 0
+				   && inTile(projectile[index1][index2].Ypos - wallWidth - realTarget.size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+					if(realTarget.type == 9){
+						projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, shrapnelFade);
+						projectile[index1][index2].Xspeed = 0;
+						projectile[index1][index2].Yspeed = 0;
+						projectile[index1][index2].rotationSpeed = 0;
+					}
+					else{
+						projectile[index1][index2].Ypos = inTile(projectile[index1][index2].Ypos)*tileSize + wallWidth + realTarget.size;
+						projectile[index1][index2].Yspeed *= -1;
+					}
+					//if(realTarget.type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+				}
+				if(realTarget.phase <= 0 && maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)+1].leftWall + maze[inTile(projectile[index1][index2].Xpos)-1][inTile(projectile[index1][index2].Ypos)+1].topWall + maze[inTile(projectile[index1][index2].Xpos)][inTile(projectile[index1][index2].Ypos)].leftWall > 0
+				   && inTile(projectile[index1][index2].Ypos + wallWidth + projectile[index1][index2].size) != inTile(projectile[index1][index2].Ypos) && projectile[index1][index2].Xpos > inTile(projectile[index1][index2].Xpos)*tileSize - wallWidth && projectile[index1][index2].Xpos < inTile(projectile[index1][index2].Xpos)*tileSize + wallWidth){
+					if(realTarget.type == 9){
+						projectile[index1][index2].timeLeft = Math.min(projectile[index1][index2].timeLeft, shrapnelFade);
+						projectile[index1][index2].Xspeed = 0;
+						projectile[index1][index2].Yspeed = 0;
+						projectile[index1][index2].rotationSpeed = 0;
+					}
+					else{
+						projectile[index1][index2].Ypos = (inTile(projectile[index1][index2].Ypos)+1)*tileSize - wallWidth - projectile[index1][index2].size;
+						projectile[index1][index2].Yspeed *= -1;
+					}
+					//if(realTarget.type == 6)projectile[index1][index2].rotation = Math.PI - projectile[index1][index2].rotation;
+				}
+			}
+			
 			function onKill(owner, target){
 				if(projectile[owner][target].type == 1 || projectile[owner][target].type == 4){
 					shoot(owner, 9, 20, Math.PI*2, true, {speed:projectile[owner][target].speedVector/baseProjectile[projectile[owner][target].type].speedVector, phase:projectile[owner][target].phase}, false, projectile[owner][target].Xpos, projectile[owner][target].Ypos, 0);
@@ -1180,8 +1294,8 @@
 						if(type == 2)shot.speed *= special.speed;
 						else shot.speedVector *= special.speed;
 						if("rotation" in shot)shot.rotation = r + addRotation;
-						shot.Xpos = x + Math.sin(r)*(addBarrel ? 10 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
-						shot.Ypos = y + Math.cos(r)*(addBarrel ? 10 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
+						shot.Xpos = x + Math.sin(r)*(addBarrel ? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
+						shot.Ypos = y + Math.cos(r)*(addBarrel ? 11 + baseProjectile[type].size:0)*(baseProjectile[type].speedVector < 0 ? -1:1);
 						shot.Xspeed = Math.sin(r + addRotation)*shot.speedVector;
 						shot.Yspeed = Math.cos(r + addRotation)*shot.speedVector;
 						shot.phase = special.phase;
