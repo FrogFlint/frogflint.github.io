@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Loading...</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="625">   </canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+    
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var time = -3000;
+			
+			var size = 18;
+			var speed = 30/Math.PI;
+			
+			var index = 0;
+			
+			
+			function draw() {
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				for(index = 1;index <= 16;index++){
+					ctx.beginPath();
+					ctx.arc(canvas.width/2, canvas.height/2, index*size, time / (speed * index) - Math.PI*5/8, time / (speed * index) - Math.PI*3/8);
+					ctx.strokeStyle = "White";
+					ctx.lineWidth = size/4;
+					ctx.stroke();
+					ctx.closePath();
+				}
+				
+				
+				time++;
+				
+				setTimeout(draw, 10);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
