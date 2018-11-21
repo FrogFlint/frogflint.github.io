@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Rainbow!</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="800" height="600"></canvas>
+
+	<body style="background-color:#black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var tileSize = 8;
+			var width  = Math.floor(canvas.width /tileSize);
+			var height = Math.floor(canvas.height/tileSize);
+			
+			var index1 = 0;
+			var index2 = 0;
+			var index3 = 0;
+			var color;
+			
+			var ring = [];
+			
+			
+			function distance(x,y){
+				return Math.sqrt(x*x + y*y);
+			}
+			function wierdDistance(x,y,a,b){
+				return Math.pow(Math.pow(Math.abs(x), a) + Math.pow(Math.abs(y), a), 1/b);
+			}
+			
+			function createRing(x,y){
+				ring[ring.length] = {x:x,y:y,age:-15};
+			}
+			
+			document.addEventListener("click", onClick);
+			function onClick(evt){
+				var rect = canvas.getBoundingClientRect();
+				createRing(Math.floor((evt.clientX - rect.left)/tileSize), Math.floor((evt.clientY - rect.top)/tileSize));
+			}
+			
+			//createRing(0,0);
+			
+			function draw(event) {     //=========================================================================================================================================================================================================
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				for(index1 = 0;index1 < width;index1++){
+					for(index2 = 0;index2 < height;index2++){
+						color = 0;
+						for(index3 = 0;index3 < ring.length;index3++){
+							color += Math.max(Math.min(360 - wierdDistance(index1 - ring[index3].x, index2 - ring[index3].y, 2, 2)*30 + ring[index3].age*20,360),0);
+						}
+							
+						ctx.beginPath();
+						ctx.fillStyle = "hsl(" + color + ", 100%, 50%)";
+						ctx.fillRect(index1*tileSize, index2*tileSize, tileSize, tileSize);
+						ctx.closePath();
+					}
+				}
+				
+				for(index3 = 0;index3 < ring.length;index3++){
+					ring[index3].age++;
+					//if(ring[index3].age > 100)ring.splice[index3, 1];
+				}
+				
+				
+				
+				
+				setTimeout(draw, 20);
+			}
+			draw();
+			
+		</SCRIPT>
+	</body>
+</html>
