@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lime;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Recursive Flag</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1082" height="625">   </canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+    
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var zoom = 0;
+			var zooming = false;
+			var zoomSpeed = 150;
+			
+			var index1 = 0;
+			var index2 = 0;
+			
+			var directions = [[1,1],[1,-1],[-1,-1],[-1,1]];
+			var axis = ["width","height"]
+			
+			var size = canvas.height * 2/9;
+			
+			
+			function draw() {
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				for(index1 = 0;index1 < 16;index1++){
+					for(index2 = 0;index2 < 4;index2++){
+						ctx.beginPath();
+						ctx.moveTo(canvas.width/2 + (directions[index2][0]*canvas[axis[index1 % 2]]/2 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[index2][1]*canvas[axis[(index1 + 1) % 2]]/2       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (directions[index2][0]*canvas[axis[index1 % 2]]/2       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[index2][1]*canvas[axis[(index1 + 1) % 2]]/2 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (directions[index2][0]*canvas[axis[index1 % 2]]/2 - size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[index2][1]*canvas[axis[(index1 + 1) % 2]]/2       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (directions[index2][0]*canvas[axis[index1 % 2]]/2       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[index2][1]*canvas[axis[(index1 + 1) % 2]]/2 - size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (directions[index2][0]*canvas[axis[index1 % 2]]/2 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[index2][1]*canvas[axis[(index1 + 1) % 2]]/2       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.fillStyle = "Yellow";
+						ctx.fill();
+						ctx.closePath();
+					}
+					for(index2 = 0;index2 < 2;index2++){
+						ctx.beginPath();
+						ctx.moveTo(canvas.width/2 + (((index1 + 1) % 2)*directions[1][index2]*canvas.width/3 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + ((index1 % 2)*directions[index2][1]*canvas.width/3       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (((index1 + 1) % 2)*directions[1][index2]*canvas.width/3       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + ((index1 % 2)*directions[index2][1]*canvas.width/3 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (((index1 + 1) % 2)*directions[1][index2]*canvas.width/3 - size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + ((index1 % 2)*directions[index2][1]*canvas.width/3       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (((index1 + 1) % 2)*directions[1][index2]*canvas.width/3       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + ((index1 % 2)*directions[index2][1]*canvas.width/3 - size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.lineTo(canvas.width/2 + (((index1 + 1) % 2)*directions[1][index2]*canvas.width/3 + size) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + ((index1 % 2)*directions[index2][1]*canvas.width/3       ) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+						ctx.fillStyle = "Yellow";
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+				for(index1 = 0;index1 < 16;index1++){
+					ctx.beginPath();
+					ctx.moveTo(canvas.width/2 + (directions[0               ][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[0               ][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+					ctx.lineTo(canvas.width/2 + (directions[3 - (index1%2)*2][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[3 - (index1%2)*2][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+					ctx.moveTo(canvas.width/2 + (directions[1 + (index1%2)*2][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[1 + (index1%2)*2][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+					ctx.lineTo(canvas.width/2 + (directions[2               ][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[2               ][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
+					ctx.strokeStyle = "Black";
+					ctx.lineWidth = Math.max(Math.min(3/Math.pow(3, index1/2 - (zoom/zoomSpeed)), 2), 0.5);
+					ctx.stroke();
+					ctx.closePath();
+				}
+				
+				
+				document.addEventListener("keydown", keyDownHandler, false);
+				function keyDownHandler(e) {
+					if(e.keyCode == 32 || e.key == "p"){
+						zooming = !zooming;
+					}
+				}
+				
+				if(zooming)zoom = zoom % zoomSpeed + 1;
+				
+				setTimeout(draw, 10);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
