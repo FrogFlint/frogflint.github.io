@@ -30,22 +30,103 @@
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
 			
+			var time = 0;
+			var maxTime = 60*60*24*365*20000;
+			var selection = {seconds:0,minutes:0,hours:0,days:0,months:0,years:0}
+			
+			var unitNames = ["seconds","minutes","hours","days","months","years"];
+			var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+			var monthLength = [31,28,31,30,31,30,31,31,30,31,30,31];
+			
+			var inSeconds = [1,60,60*60,60*60*24,60*60*24,60*60*24*365];
+			
+			
+			var boxSize = 200;
+			var boxCornerSize = 20;
+			var cursorSize = 15;
+			
+			var cursor = {x:0, y:0, oldX:0, oldY:0, drag:false};
 			
 			
 			
+			function convert(amount, from, to){
+				if(from == "months"){
+					amount = sumMonths(amount);
+					from = "days";
+				}
+				if(to == "months"){
+					return getMonths(convert(amount, from, "days"));
+				}
+				return amount * inSeconds[unitNames.indexOf(from)]/inSeconds[unitNames.indexOf(to)];
+			}
+			function getMonths(days){
+				var months = 0;
+				for(var index = 0;days >= monthLength[index];index = (index + 1) % 12){
+					days -= monthLength[index];
+					months++;
+				}
+				return months;
+			}
+			function sumMonths(months){
+				var days = 0;
+				for(var index = 0;index < Math.floor(months);index++){
+					days += monthLength[index % 12];
+				}
+				return days;
+			}
+			
+			cursor.oldX = cursor.x;
+			cursor.oldY = cursor.y;
 			
 			
+			window.addEventListener('mousedown', function() { cursor.drag = true;  });
+			window.addEventListener('mouseup'  , function() { cursor.drag = false; });
 			
+			addEventListener('mousemove', function(evt) {
+				if(cursor.drag){
+					var mouse = getMousePos(canvas, evt);
+					cursor.x = Math.max(Math.min(mouse.x - canvas.width /2 + boxSize, boxSize*2), 0);
+					cursor.y = Math.max(Math.min(mouse.y - canvas.height/2 + boxSize, boxSize*2), 0);
+					
+					if((cursor.x - cursor.oldX)**2 + (cursor.y - cursor.oldY)**2 > cursorSize**2){
+						//cursor.x = cursor.oldX;
+						//cursor.y = cursor.oldY;
+					}
+				}
+			}, false);
+			
+			function getMousePos(canvas, evt) {
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: Math.floor(evt.clientX - rect.left),
+					y: Math.floor(evt.clientY - rect.top)
+				};
+			}
 			
 			
 			function draw() {
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
+				ctx.beginPath();
+				ctx.moveTo(canvas.width/2 + boxSize, canvas.height/2 - boxSize + boxCornerSize);
+				ctx.arc(canvas.width/2 + boxSize - boxCornerSize, canvas.height/2 + boxSize - boxCornerSize, boxCornerSize, 0, Math.PI/2);
+				ctx.arc(canvas.width/2 - boxSize + boxCornerSize, canvas.height/2 + boxSize - boxCornerSize, boxCornerSize, Math.PI/2, Math.PI);
+				ctx.arc(canvas.width/2 - boxSize + boxCornerSize, canvas.height/2 - boxSize + boxCornerSize, boxCornerSize, Math.PI, Math.PI*3/2);
+				ctx.arc(canvas.width/2 + boxSize - boxCornerSize, canvas.height/2 - boxSize + boxCornerSize, boxCornerSize, Math.PI*3/2, Math.PI*2);
+				ctx.strokeStyle = "White";
+				ctx.stroke();
+				ctx.closePath();
+				
+				ctx.beginPath();
+				ctx.arc(canvas.width/2 - boxSize + cursor.x, canvas.height/2 - boxSize + cursor.y, cursorSize, 0, Math.PI*2);
+				ctx.stroke();
+				ctx.closePath();
 				
 				
 				
-				setTimeout(draw, 10);
+				
+				setTimeout(draw, 50);
 			}    
 			draw();
         		
