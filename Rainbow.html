@@ -35,6 +35,8 @@
 			var width  = Math.floor(canvas.width /tileSize);
 			var height = Math.floor(canvas.height/tileSize);
 			
+			var speed = 1;
+			
 			var index1 = 0;
 			var index2 = 0;
 			var index3 = 0;
@@ -50,14 +52,15 @@
 				return Math.pow(Math.pow(Math.abs(x), a) + Math.pow(Math.abs(y), a), 1/b);
 			}
 			
-			function createRing(x,y){
-				ring[ring.length] = {x:x,y:y,age:-15};
+			function createRing(x, y, l = 0){
+				ring[ring.length] = {x:x, y:y, age:-15, layer:l, reflected:true};/******/
 			}
 			
 			document.addEventListener("click", onClick);
 			function onClick(evt){
 				var rect = canvas.getBoundingClientRect();
 				createRing(Math.floor((evt.clientX - rect.left)/tileSize), Math.floor((evt.clientY - rect.top)/tileSize));
+				if(ring[ring.length - 1].x < 0 || ring[ring.length - 1].x >= width || ring[ring.length - 1].y < 0 || ring[ring.length - 1].y >= height) ring[ring.length - 1].age = 100000;
 			}
 			
 			//createRing(0,0);
@@ -72,7 +75,9 @@
 						for(index3 = 0;index3 < ring.length;index3++){
 							color += Math.max(Math.min(360 - wierdDistance(index1 - ring[index3].x, index2 - ring[index3].y, 2, 2)*30 + ring[index3].age*20,360),0);
 						}
-							
+						
+							//if((color + 36000) % 360 != 0)color = (Math.sin(distance(index1,index2)/5)+1)*180;
+						
 						ctx.beginPath();
 						ctx.fillStyle = "hsl(" + color + ", 100%, 50%)";
 						ctx.fillRect(index1*tileSize, index2*tileSize, tileSize, tileSize);
@@ -81,8 +86,16 @@
 				}
 				
 				for(index3 = 0;index3 < ring.length;index3++){
-					ring[index3].age++;
-					//if(ring[index3].age > 100)ring.splice[index3, 1];
+					if(ring[index3].reflected == false && ring[index3].layer < 2){
+						if(ring[index3].x > 0 && !(ring[index3].x > width && !(ring[index3].y > 0 && ring[index3].y < height))) createRing(-ring[index3].x, ring[index3].y, ring[index3].layer + 1);
+						if(ring[index3].y > 0)                                                                                  createRing(ring[index3].x, -ring[index3].y, ring[index3].layer + 1);
+						if(ring[index3].x < width && !(ring[index3].x < 0 && !(ring[index3].y > 0 && ring[index3].y < height))) createRing(2*(width - 1) - ring[index3].x,  ring[index3].y, ring[index3].layer + 1);
+						if(ring[index3].y < height)                                                                             createRing(ring[index3].x, 2*(height - 1) - ring[index3].y, ring[index3].layer + 1);
+						ring[index3].reflected = true;
+					}
+					
+					ring[index3].age += speed;
+					if(ring[index3].age > 200*(ring[index3].layer + 1)) ring.splice(index3, 1);
 				}
 				
 				
