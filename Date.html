@@ -31,12 +31,16 @@
 			var ctx = canvas.getContext("2d");
 			
 			var time = 0;
-			var maxTime = 60*60*24*365*20000;
-			var selection = {seconds:0,minutes:0,hours:0,days:0,months:0,years:0}
+			var maxTime = 60*60*24*365*19999;
+			var selection = {seconds:0,minutes:0,hours:0,days:0,months:0,years:0};
+			
+			var index = 0;
 			
 			var unitNames = ["seconds","minutes","hours","days","months","years"];
-			var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+			var monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 			var monthLength = [31,28,31,30,31,30,31,31,30,31,30,31];
+			
+			var suffix = ["th","st","nd","rd","th","th","th","th","th","th"];
 			
 			var inSeconds = [1,60,60*60,60*60*24,60*60*24,60*60*24*365];
 			
@@ -45,7 +49,7 @@
 			var boxCornerSize = 20;
 			var cursorSize = 15;
 			
-			var cursor = {x:0, y:0, oldX:0, oldY:0, drag:false};
+			var cursor = {x:boxSize, y:boxSize, oldX:boxSize, oldY:boxSize, drag:false, snap:false};
 			
 			
 			
@@ -61,7 +65,7 @@
 			}
 			function getMonths(days){
 				var months = 0;
-				for(var index = 0;days >= monthLength[index];index = (index + 1) % 12){
+				for(index = 0;days >= monthLength[index];index = (index + 1) % 12){
 					days -= monthLength[index];
 					months++;
 				}
@@ -69,29 +73,31 @@
 			}
 			function sumMonths(months){
 				var days = 0;
-				for(var index = 0;index < Math.floor(months);index++){
+				for(index = 0;index < Math.floor(months);index++){
 					days += monthLength[index % 12];
 				}
 				return days;
 			}
 			
-			cursor.oldX = cursor.x;
-			cursor.oldY = cursor.y;
 			
 			
-			window.addEventListener('mousedown', function() { cursor.drag = true;  });
+			window.addEventListener('mousedown', function() { cursor.drag = true; cursor.snap = true;});
 			window.addEventListener('mouseup'  , function() { cursor.drag = false; });
 			
 			addEventListener('mousemove', function(evt) {
 				if(cursor.drag){
 					var mouse = getMousePos(canvas, evt);
-					cursor.x = Math.max(Math.min(mouse.x - canvas.width /2 + boxSize, boxSize*2), 0);
-					cursor.y = Math.max(Math.min(mouse.y - canvas.height/2 + boxSize, boxSize*2), 0);
 					
-					if((cursor.x - cursor.oldX)**2 + (cursor.y - cursor.oldY)**2 > cursorSize**2){
-						//cursor.x = cursor.oldX;
-						//cursor.y = cursor.oldY;
+					if(cursor.snap && (cursor.x - (mouse.x - canvas.width/2 + boxSize))**2 + (cursor.y - (mouse.y - canvas.height/2 + boxSize))**2 > cursorSize**2){
+						cursor.x = cursor.oldX;
+						cursor.y = cursor.oldY;
+						cursor.drag = false;
 					}
+					else{
+						cursor.x = Math.max(Math.min(mouse.x - canvas.width /2 + boxSize, boxSize*2), 0);
+						cursor.y = Math.max(Math.min(mouse.y - canvas.height/2 + boxSize, boxSize*2), 0);
+					}
+					cursor.snap = false;
 				}
 			}, false);
 			
@@ -104,9 +110,38 @@
 			}
 			
 			
+			var date = new Date();
+			time = convert(date.getFullYear() + 10000, "years", "seconds") + convert(date.getMonth(), "months", "seconds") + convert(date.getDate() - 1, "days", "seconds") + convert(date.getHours() - 1, "hours", "seconds") + convert(date.getMinutes(), "minutes", "seconds") + date.getSeconds();
+			
+			
 			function draw() {
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				time += (cursor.x - cursor.oldX)/400 * 10**((boxSize*2 - cursor.y)*(11.7998366026 - 1.7781512503836)/400 + 1.7781512503836);
+				time = Math.max(Math.min(time, maxTime), 0);
+				
+				cursor.oldX = cursor.x;
+				cursor.oldY = cursor.y;
+				
+				
+				
+				selection = {seconds:Math.floor(time),minutes:0,hours:0,days:0,months:0,years:0};
+				selection.years = Math.floor(convert(selection.seconds, "seconds", "years"));
+				selection.seconds -= convert(selection.years, "years", "seconds");
+				selection.months = Math.floor(convert(selection.seconds, "seconds", "months"));
+				selection.seconds -= convert(selection.months, "months", "seconds");
+				selection.days = Math.floor(convert(selection.seconds, "seconds", "days"));
+				selection.seconds -= convert(selection.days, "days", "seconds");
+				selection.hours = Math.floor(convert(selection.seconds, "seconds", "hours"));
+				selection.seconds -= convert(selection.hours, "hours", "seconds");
+				selection.minutes = Math.floor(convert(selection.seconds, "seconds", "minutes"));
+				selection.seconds -= convert(selection.minutes, "minutes", "seconds");
+				
+				selection.days++;
+				
+				
 				
 				ctx.beginPath();
 				ctx.moveTo(canvas.width/2 + boxSize, canvas.height/2 - boxSize + boxCornerSize);
@@ -121,6 +156,17 @@
 				ctx.beginPath();
 				ctx.arc(canvas.width/2 - boxSize + cursor.x, canvas.height/2 - boxSize + cursor.y, cursorSize, 0, Math.PI*2);
 				ctx.stroke();
+				ctx.closePath();
+				
+				
+				ctx.beginPath();
+				ctx.font = "15px Arial";
+				ctx.fillStyle = "White";
+				ctx.textAlign = "right";
+				ctx.fillText(monthNames[selection.months] + "  " + (selection.days < 10 ? " ":"") + selection.days + (selection.days >= 11 && selection.days <= 13 ? "th":suffix[selection.days % 10]) + ", " + (Math.abs(selection.years - 10000) < 10000 ? " ":"") + (Math.abs(selection.years - 10000) < 1000 ? " ":"") + (Math.abs(selection.years - 10000) < 100 ? " ":"") + (Math.abs(selection.years - 10000) < 10 ? " ":"") + Math.abs(selection.years - 10000) + (selection.years < 10000 ? "  BC":"  AD"),
+					canvas.width*6/7, canvas.height*2/5);
+				ctx.fillText((selection.hours % 12 + 1) + ":" + (selection.minutes < 10 ? "0":"") + selection.minutes + ":" + (selection.seconds < 10 ? "0":"") + selection.seconds + ((selection.hours + 2) % 24 > 12 ? "  PM":"  AM"),
+					canvas.width*6/7, canvas.height/2);
 				ctx.closePath();
 				
 				
