@@ -33,25 +33,26 @@
 			
 			var speed = 6;
 			
-			var player = {
-				Xpos:canvas.width/2,
-				Ypos:canvas.height/2,
-				up:0,
-				down:0,
-				left:0,
-				right:0,
-				score:0,
-				highscore:getCookie("Highscore"),
-				dead:1,
-				start:1
-			}
-			if(!(player.highscore > 0)){player.highscore = 0;}
+			var players = 2;
+			var player = [{}];
+			
 			
 			var projectile = [];
 			var index = 0;
-			var indexMax = 100;
+			var indexMax = 500 * players;
 			var nextProjectile = 0;
 			var frame = 0;
+			var frameSpeed = 1;
+			
+			var index0 = 0;
+			
+			var controls = [["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"],["w","s","a","d"]];
+			var playerColor = ["Lime","#009900"];
+			
+			var menu = true;
+			var start = true;
+			
+			
 			
 			
 			
@@ -62,6 +63,20 @@
 					direction:0,
 					split:0
 				}
+			}
+			for(index = 0;index < players;index++){
+				player[index] = {
+					Xpos:canvas.width/2,
+					Ypos:canvas.height/2,
+					up:0,
+					down:0,
+					left:0,
+					right:0,
+					score:0,
+					highscore:getCookie("Highscore"),
+					dead:1
+				}
+				if(!(player[index].highscore > 0)){player[index].highscore = 0;}
 			}
 			
 			
@@ -91,33 +106,38 @@
 				document.addEventListener("keyup", keyUpHandler, false);
 				
 				function keyDownHandler(e) {
-					if((e.keyCode == 87 || e.keyCode == 38) && player.up    == 0){player.up    = 1;}
-					if((e.keyCode == 83 || e.keyCode == 40) && player.down  == 0){player.down  = 1;}
-					if((e.keyCode == 65 || e.keyCode == 37) && player.left  == 0){player.left  = 1;}
-					if((e.keyCode == 68 || e.keyCode == 39) && player.right == 0){player.right = 1;}
-					
-					if(e.keyCode == 32 && player.dead == 1){
-						player.dead = 0;
-						player.start = 0;
-						player.score = 0;
-						player.Xpos = canvas.width/2;
-						player.Ypos = canvas.height/2;
-						for(index = 0; index < indexMax; index++){
-							projectile[index] = {
-								Xpos:-100,
-								Ypos:0,
-								direction:0,
-								split:0
+					for(index0 = 0;index0 < players;index0++){
+						if((e.key == controls[index0][0]) && player[index0].up    == 0){player[index0].up    = 1;}
+						if((e.key == controls[index0][1]) && player[index0].down  == 0){player[index0].down  = 1;}
+						if((e.key == controls[index0][2]) && player[index0].left  == 0){player[index0].left  = 1;}
+						if((e.key == controls[index0][3]) && player[index0].right == 0){player[index0].right = 1;}
+
+						if(e.keyCode == 32 && menu){
+							player[index0].dead = 0;
+							player[index0].score = 0;
+							player[index0].Xpos = canvas.width * (index0 + 1)/(players + 1);
+							player[index0].Ypos = canvas.height/2;
+							menu = false;
+							start = false;
+							for(index = 0; index < indexMax; index++){
+								projectile[index] = {
+									Xpos:-100,
+									Ypos:0,
+									direction:0,
+									split:0
+								}
 							}
 						}
 					}
 					event.preventDefault();
 				}
 				function keyUpHandler(e) {
-					if(e.keyCode == 87 || e.keyCode == 38){player.up = 0;}
-					if(e.keyCode == 83 || e.keyCode == 40){player.down = 0;}
-					if(e.keyCode == 65 || e.keyCode == 37){player.left = 0;}
-					if(e.keyCode == 68 || e.keyCode == 39){player.right = 0;}
+					for(index0 = 0;index0 < players;index0++){
+						if(e.key == controls[index0][0]){player[index0].up = 0;}
+						if(e.key == controls[index0][1]){player[index0].down = 0;}
+						if(e.key == controls[index0][2]){player[index0].left = 0;}
+						if(e.key == controls[index0][3]){player[index0].right = 0;}
+					}
 					event.preventDefault();
 				}
 				
@@ -134,23 +154,27 @@
 				}
 				
 				//create new projectiles
-				if(frame == 0 && player.dead == 0){
-					player.score++;
-					
-					projectile[nextProjectile].direction = Math.random() * 2 * Math.PI;
-					projectile[nextProjectile].Xpos = player.Xpos - Math.sin(projectile[nextProjectile].direction)*1000;
-					projectile[nextProjectile].Ypos = player.Ypos - Math.cos(projectile[nextProjectile].direction)*1000;
-					projectile[nextProjectile].split = 0;
-					
-					nextProjectile = (nextProjectile + 1) % indexMax;
+				if(!menu){
+					if(frame == 0){
+						for(index0 = 0;index0 < players;index0++){
+							projectile[nextProjectile].direction = Math.random() * 2 * Math.PI;
+							projectile[nextProjectile].Xpos = player[index0].Xpos - Math.sin(projectile[nextProjectile].direction)*1000;
+							projectile[nextProjectile].Ypos = player[index0].Ypos - Math.cos(projectile[nextProjectile].direction)*1000;
+							projectile[nextProjectile].split = 0;
+
+							nextProjectile = (nextProjectile + 1) % indexMax;
+						}
+					}
+					player[0].score += 0.1/frameSpeed;
+					frame = (frame + 1) % (frameSpeed * players);
+				
 				}
-				frame = (frame + 1) % 10;
 				
 				
 				//splitting
 				for(index = 0; index < indexMax; index++){
-					if(player.score >= 200 && projectile[index].split == 0 &&
-					   Math.sqrt(Math.pow(player.Xpos - projectile[index].Xpos,2) + Math.pow(player.Ypos - projectile[index].Ypos,2)) <= 600 &&
+					if(player[0].score >= 200 && projectile[index].split == 0 &&
+					   Math.sqrt(Math.pow(player[0].Xpos - projectile[index].Xpos,2) + Math.pow(player[0].Ypos - projectile[index].Ypos,2)) <= 600 &&
 					
 						projectile[index].Xpos > 20 &&
 						projectile[index].Xpos < canvas.width - 20 &&
@@ -180,23 +204,26 @@
 				
 				
 				
-				if(player.dead == 0){
-					
-					if(player.up    == 1 && player.Ypos >                 10){player.Ypos -= speed;}
-					if(player.down  == 1 && player.Ypos < canvas.height - 10){player.Ypos += speed;}
-					if(player.left  == 1 && player.Xpos >                 10){player.Xpos -= speed;}
-					if(player.right == 1 && player.Xpos < canvas.width  - 10){player.Xpos += speed;}
-					
+				for(index0 = 0;index0 < players;index0++){
+					if(player[index0].dead == 0){
+						if(player[index0].up    == 1 && player[index0].Ypos >                 10){player[index0].Ypos -= speed;}
+						if(player[index0].down  == 1 && player[index0].Ypos < canvas.height - 10){player[index0].Ypos += speed;}
+						if(player[index0].left  == 1 && player[index0].Xpos >                 10){player[index0].Xpos -= speed;}
+						if(player[index0].right == 1 && player[index0].Xpos < canvas.width  - 10){player[index0].Xpos += speed;}
+					}
 				}
 				
 				
 				for(index = 0; index < indexMax; index++){
-					if(Math.sqrt(Math.pow(player.Xpos - projectile[index].Xpos,2) + Math.pow(player.Ypos - projectile[index].Ypos,2)) <= 12){
-						player.dead = 1;
+					if(Math.sqrt(Math.pow(player[0].Xpos - projectile[index].Xpos,2) + Math.pow(player[0].Ypos - projectile[index].Ypos,2)) <= 12){
+						player[0].dead = 1;
+						if(true){
+							menu = true;
+						}
 						
-						if(player.score > player.highscore){
-							player.highscore = player.score;
-							setCookie('Highscore',player.highscore,365);
+						if(player[0].score > player[0].highscore){
+							player[0].highscore = Math.floor(player[0].score);
+							setCookie('Highscore',player[0].highscore,365);
 						}
 					}
 				}
@@ -204,12 +231,13 @@
 				
 				
 				
-				
-				ctx.beginPath();
-				ctx.arc(player.Xpos, player.Ypos, 6, 0, Math.PI * 2);
-				ctx.fillStyle = "lime";
-				ctx.fill();
-				ctx.closePath();
+				for(index0 = 0;index0 < players;index0++){
+					ctx.beginPath();
+					ctx.arc(player[index0].Xpos, player[index0].Ypos, 6, 0, Math.PI * 2);
+					ctx.fillStyle = playerColor[index0];
+					ctx.fill();
+					ctx.closePath();
+				}
 				
 				for(index = 0; index < indexMax; index++){
 					
@@ -226,12 +254,12 @@
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "white";
 				ctx.textAlign = "left";
-				ctx.fillText("Score: " + player.score, 10, canvas.height - 5);
+				ctx.fillText("Score: " + Math.floor(player[0].score), 10, canvas.height - 5);
 				ctx.textAlign = "right";
-				ctx.fillText("Highscore: " + player.highscore, canvas.width - 30, canvas.height - 5);
+				ctx.fillText("Highscore: " + player[0].highscore, canvas.width - 30, canvas.height - 5);
 				
 				
-				if(player.dead == 1 && player.start == 0){
+				if(player[0].dead == 1 && !start){
 					ctx.font = "150px Arial";
 					ctx.fillStyle = "black";
 					ctx.textAlign = "center";
