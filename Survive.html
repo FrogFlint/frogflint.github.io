@@ -111,12 +111,14 @@
 							}
 						}
 					}
+					event.preventDefault();
 				}
 				function keyUpHandler(e) {
 					if(e.keyCode == 87 || e.keyCode == 38){player.up = 0;}
 					if(e.keyCode == 83 || e.keyCode == 40){player.down = 0;}
 					if(e.keyCode == 65 || e.keyCode == 37){player.left = 0;}
 					if(e.keyCode == 68 || e.keyCode == 39){player.right = 0;}
+					event.preventDefault();
 				}
 				
 				
