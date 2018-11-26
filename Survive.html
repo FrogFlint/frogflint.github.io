@@ -45,6 +45,7 @@
 			var frameSpeed = 1;
 			
 			var index0 = 0;
+			var playerCount = 0;
 			
 			var controls = [["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"],["w","s","a","d"]];
 			var playerColor = ["Lime","#009900"];
@@ -66,7 +67,7 @@
 			}
 			for(index = 0;index < players;index++){
 				player[index] = {
-					Xpos:canvas.width/2,
+					Xpos:canvas.width * (index + 1)/(players + 1),
 					Ypos:canvas.height/2,
 					up:0,
 					down:0,
@@ -112,20 +113,22 @@
 						if((e.key == controls[index0][2]) && player[index0].left  == 0){player[index0].left  = 1;}
 						if((e.key == controls[index0][3]) && player[index0].right == 0){player[index0].right = 1;}
 
-						if(e.keyCode == 32 && menu){
-							player[index0].dead = 0;
-							player[index0].score = 0;
-							player[index0].Xpos = canvas.width * (index0 + 1)/(players + 1);
-							player[index0].Ypos = canvas.height/2;
-							menu = false;
-							start = false;
-							for(index = 0; index < indexMax; index++){
-								projectile[index] = {
-									Xpos:-100,
-									Ypos:0,
-									direction:0,
-									split:0
-								}
+					}
+					if(e.keyCode == 32 && menu){
+						for(index = 0;index < players;index++){
+							player[index].dead = 0;
+							player[index].score = 0;
+							player[index].Xpos = canvas.width * (index + 1)/(players + 1);
+							player[index].Ypos = canvas.height/2;
+						}
+						menu = false;
+						start = false;
+						for(index = 0; index < indexMax; index++){
+							projectile[index] = {
+								Xpos:-100,
+								Ypos:0,
+								direction:0,
+								split:0
 							}
 						}
 					}
@@ -173,8 +176,11 @@
 				
 				//splitting
 				for(index = 0; index < indexMax; index++){
+					playerCount = 0;
+					for(index0 = 0;index0 < players;index0++){
+						if(Math.sqrt((player[index0].Xpos - projectile[index].Xpos)**2 + (player[index0].Ypos - projectile[index].Ypos)**2) <= 600) playerCount++;
+					}
 					if(player[0].score >= 200 && projectile[index].split == 0 &&
-					   Math.sqrt(Math.pow(player[0].Xpos - projectile[index].Xpos,2) + Math.pow(player[0].Ypos - projectile[index].Ypos,2)) <= 600 &&
 					
 						projectile[index].Xpos > 20 &&
 						projectile[index].Xpos < canvas.width - 20 &&
@@ -215,15 +221,25 @@
 				
 				
 				for(index = 0; index < indexMax; index++){
-					if(Math.sqrt(Math.pow(player[0].Xpos - projectile[index].Xpos,2) + Math.pow(player[0].Ypos - projectile[index].Ypos,2)) <= 12){
-						player[0].dead = 1;
-						if(true){
-							menu = true;
+					for(index0 = 0;index0 < players;index0++){
+						if(Math.sqrt((player[index0].Xpos - projectile[index].Xpos)**2 + (player[index0].Ypos - projectile[index].Ypos)**2) <= 12){
+							player[index0].dead = 1;
+							if(true){
+								menu = true;
+							}
+							
+							if(player[index0].score > player[index0].highscore){
+								player[index0].highscore = Math.floor(player[index0].score);
+								setCookie('Highscore', player[index0].highscore, 365);
+							}
 						}
-						
-						if(player[0].score > player[0].highscore){
-							player[0].highscore = Math.floor(player[0].score);
-							setCookie('Highscore',player[0].highscore,365);
+					}
+				}
+				if(menu){
+					playerCount = 0;
+					for(index0 = 0;index0 < players;index0++){
+						if(player[index0].dead == 0){
+							
 						}
 					}
 				}
