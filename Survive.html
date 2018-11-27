@@ -42,7 +42,7 @@
 			var indexMax = 500 * players;
 			var nextProjectile = 0;
 			var frame = 0;
-			var frameSpeed = 1;
+			var frameSpeed = 3;
 			
 			var index0 = 0;
 			var playerCount = 0;
@@ -62,7 +62,8 @@
 					Xpos:-100,
 					Ypos:0,
 					direction:0,
-					split:0
+					split:0,
+					seeking:true
 				}
 			}
 			for(index = 0;index < players;index++){
@@ -91,6 +92,28 @@
 			function getCookie(name) {
 				var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
 				return v ? v[2] : null;
+			}
+			
+			
+			function getAngle(x, y){
+				return Math.atan(y/x) + (x < 0 ? Math.PI : 0);
+			}
+			
+			function mod(x, b){
+				return (x + Math.ceil(Math.abs(x/b)) * b) % b;
+			}
+			
+			
+			
+			function winCheck(){
+				var winner = -1;
+				for(index0 = 0;index0 < players;index0++){
+					if(player[index0].dead == 0){
+						if(winner == -1) winner = index0;
+						else winner = -2;
+					}
+				}
+				return winner;
 			}
 			
 			
@@ -168,7 +191,7 @@
 							nextProjectile = (nextProjectile + 1) % indexMax;
 						}
 					}
-					player[0].score += 0.1/frameSpeed;
+					player[0].score += 0.1;
 					frame = (frame + 1) % (frameSpeed * players);
 				
 				}
@@ -248,11 +271,13 @@
 				
 				
 				for(index0 = 0;index0 < players;index0++){
-					ctx.beginPath();
-					ctx.arc(player[index0].Xpos, player[index0].Ypos, 6, 0, Math.PI * 2);
-					ctx.fillStyle = playerColor[index0];
-					ctx.fill();
-					ctx.closePath();
+					if(player[index0].dead == 0 || start){
+						ctx.beginPath();
+						ctx.arc(player[index0].Xpos, player[index0].Ypos, 6, 0, Math.PI * 2);
+						ctx.fillStyle = playerColor[index0];
+						ctx.fill();
+						ctx.closePath();
+					}
 				}
 				
 				for(index = 0; index < indexMax; index++){
@@ -275,7 +300,7 @@
 				ctx.fillText("Highscore: " + player[0].highscore, canvas.width - 30, canvas.height - 5);
 				
 				
-				if(player[0].dead == 1 && !start){
+				if(menu && !start && players == 1){
 					ctx.font = "150px Arial";
 					ctx.fillStyle = "black";
 					ctx.textAlign = "center";
