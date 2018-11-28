@@ -36,6 +36,7 @@
 			var tile = [[]];
 			
 			var dificulty = 1;
+			var mineChance = 0.2; //0.2
 			var boardSize = {x:50,y:30};
 			
 			var border = {x:20, y:20};
@@ -58,7 +59,7 @@
 					tile[index1] = [];
 					for(index2 = 0;index2 < boardSize.y;index2++){
 						tile[index1][index2] = {
-							mine:Math.random() < 0.2,
+							mine:Math.random() < mineChance,
 							flag:false,
 							open:false//Math.random() < 0.5
 						}
@@ -126,10 +127,35 @@
 				fillArea[x][y] = true;
 				var stop = false;
 				while(!stop){
-					stop = true;
+					var stop = true;
 					for(index3 = 0;index3 < boardSize.x;index3++){
 						for(index4 = 0;index4 < boardSize.y;index4++){
-							if(false){}
+							if(fillArea[index3][index4]){
+								if(index3 > 0 && tile[index3 - 1][index4].open == false){
+									tile[index3 - 1][index4].open = true;
+									if(minesIn("box", index3 - 1, index4) == 0) fillArea[index3 - 1][index4] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index3 < boardSize.x - 1 && tile[index3 + 1][index4].open == false){
+									tile[index3 + 1][index4].open = true;
+									if(minesIn("box", index3 + 1, index4) == 0) fillArea[index3 + 1][index4] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index4 > 0 && tile[index3][index4 - 1].open == false){
+									tile[index3][index4 - 1].open = true;
+									if(minesIn("box", index3, index4 - 1) == 0) fillArea[index3][index4 - 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index4 < boardSize.y - 1 && tile[index3][index4 + 1].open == false){
+									tile[index3][index4 + 1].open = true;
+									if(minesIn("box", index3, index4 + 1) == 0) fillArea[index3][index4 + 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+							}
 						}
 					}
 				}
@@ -173,14 +199,16 @@
 							ctx.fill();
 							ctx.closePath();
 						}
-						var tileNumber = minesIn("box", index1, index2);
-						if(tile[index1][index2].open && !tile[index1][index2].mine && tileNumber > 0){
-							ctx.beginPath();
-							ctx.font = "15px Arial";
-							ctx.fillStyle = numberColor[tileNumber];
-							ctx.textAlign = "center";
-							ctx.fillText(tileNumber, border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize*4/5);
-							ctx.closePath();
+						if(tile[index1][index2].open && !tile[index1][index2].mine){
+							var tileNumber = minesIn("box", index1, index2);
+							if(tileNumber > 0){
+								ctx.beginPath();
+								ctx.font = "15px Arial";
+								ctx.fillStyle = numberColor[tileNumber];
+								ctx.textAlign = "center";
+								ctx.fillText(tileNumber, border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize*4/5);
+								ctx.closePath();
+							}
 						}
 					}
 				}
