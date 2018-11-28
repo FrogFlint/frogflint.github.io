@@ -45,10 +45,11 @@
 			var index1 = 0;
 			var index2 = 0;
 			
-			var index3 = 0; //adjacent checking
-			var index4 = 0;
+			var state = "playing"; //setup, playing, won, lost
 			
-			var countMines = 0;
+			var mineCount = 0;
+			
+			var numberColor = ["Black","Blue","Lime","Yellow","Orange","Red","Purple","Purple","Purple"]; //1 to 5
 			
 			
 			
@@ -57,9 +58,9 @@
 					tile[index1] = [];
 					for(index2 = 0;index2 < boardSize.y;index2++){
 						tile[index1][index2] = {
-							mine:Math.random() < 0.5,
-							flag:Math.random() < 0.5,
-							open:Math.random() < 0.5
+							mine:Math.random() < 0.2,
+							flag:false,
+							open:false//Math.random() < 0.5
 						}
 					}
 				}
@@ -67,15 +68,79 @@
 			
 			
 			
+			function minesIn(shape, x, y){
+				if(shape == "box") return countMines(Math.max(x - 1, 0), Math.max(y - 1, 0), Math.min(x + 1, boardSize.x - 1), Math.min(y + 1, boardSize.y - 1));
+			}
+			function countMines(x1, y1, x2, y2){
+				var count = 0;
+				for(var index3 = x1;index3 <= x2;index3++){
+					for(var index4 = y1;index4 <= y2;index4++){
+						if(tile[index3][index4].mine) count++;
+					}
+				}
+				return count;
+			}
+			
+			
+			function getMousePos(canvas, evt) {
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: Math.floor(evt.clientX - rect.left),
+					y: Math.floor(evt.clientY - rect.top)
+				};
+			}
+			document.addEventListener("click", onClick, false);
+			function onClick(evt){
+				if(event.button == 0){
+					var mouse = getMousePos(canvas, evt);
+					if(state == "playing"){
+						mouse.x = Math.floor((mouse.x - border.x)/tileSize);
+						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
+						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
+					}
+				}
+			}
+
+			window.oncontextmenu = function(){
+
+				return false;
+			}
+			
+			
+			function openTile(x, y){
+				if(!(tile[x][y].open || tile[x][y].flag)){
+					tile[x][y].open = true;
+					if(tile[x][y].mine) state = "lost";
+					else if(minesIn("box", x, y) == 0) floodFill(x, y);
+				}
+			}
+			function floodFill(x, y){
+				var index3, index4 = 0;
+				var fillArea = [];
+				for(index3 = 0;index3 < boardSize.x;index3++){
+					fillArea[index3] = [];
+					for(index4 = 0;index4 < boardSize.y;index4++){
+						fillArea[index3][index4] = false;
+					}
+				}
+				fillArea[x][y] = true;
+				var stop = false;
+				while(!stop){
+					stop = true;
+					for(index3 = 0;index3 < boardSize.x;index3++){
+						for(index4 = 0;index4 < boardSize.y;index4++){
+							if(false){}
+						}
+					}
+				}
+			}
 			
 			
 			function draw() {
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
-				window.oncontextmenu = function(){
-					return false;
-				}
+				
 				
 				/*
 				document.addEventListener("keydown", keyDownHandler, false);
@@ -97,7 +162,8 @@
 						ctx.fillRect(border.x + index1*tileSize + tileSize*(tileBorder), border.y + index2*tileSize + tileSize*(tileBorder), tileSize*(1 - 2*tileBorder), tileSize*(1 - 2*tileBorder));
 						ctx.closePath();
 						
-						if(tile[index1][index2].flag && !tile[index1][index2].open){
+						//if(tile[index1][index2].flag && !tile[index1][index2].open){
+						if(tile[index1][index2].mine){  //temporary
 							ctx.beginPath();
 							ctx.moveTo(border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize/5);
 							ctx.lineTo(border.x + index1*tileSize + tileSize*1/4, border.y + index2*tileSize + tileSize*4/5);
@@ -105,6 +171,15 @@
 							ctx.lineTo(border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize/5);
 							ctx.fillStyle = "Red";
 							ctx.fill();
+							ctx.closePath();
+						}
+						var tileNumber = minesIn("box", index1, index2);
+						if(tile[index1][index2].open && !tile[index1][index2].mine && tileNumber > 0){
+							ctx.beginPath();
+							ctx.font = "15px Arial";
+							ctx.fillStyle = numberColor[tileNumber];
+							ctx.textAlign = "center";
+							ctx.fillText(tileNumber, border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize*4/5);
 							ctx.closePath();
 						}
 					}
