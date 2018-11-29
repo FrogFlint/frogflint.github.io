@@ -127,7 +127,7 @@
 				fillArea[x][y] = true;
 				var stop = false;
 				while(!stop){
-					var stop = true;
+					stop = true;
 					for(index3 = 0;index3 < boardSize.x;index3++){
 						for(index4 = 0;index4 < boardSize.y;index4++){
 							if(fillArea[index3][index4]){
@@ -152,6 +152,32 @@
 								if(index4 < boardSize.y - 1 && tile[index3][index4 + 1].open == false){
 									tile[index3][index4 + 1].open = true;
 									if(minesIn("box", index3, index4 + 1) == 0) fillArea[index3][index4 + 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								
+								
+								if(index3 > 0 && index4 > 0 && tile[index3 - 1][index4 - 1].open == false){
+									tile[index3 - 1][index4 - 1].open = true;
+									if(minesIn("box", index3 - 1, index4 - 1) == 0) fillArea[index3 - 1][index4 - 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index3 < boardSize.x - 1 && index4 > 0 && tile[index3 + 1][index4 - 1].open == false){
+									tile[index3 + 1][index4 - 1].open = true;
+									if(minesIn("box", index3 + 1, index4 - 1) == 0) fillArea[index3 + 1][index4 - 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index3 < boardSize.x - 1 > 0 && index4 < boardSize.y - 1 && tile[index3 + 1][index4 + 1].open == false){
+									tile[index3 + 1][index4 + 1].open = true;
+									if(minesIn("box", index3 + 1, index4 + 1) == 0) fillArea[index3 + 1][index4 + 1] = true;
+									fillArea[index3][index4] = false;
+									stop = false;
+								}
+								if(index3 > 0 && index4 < boardSize.y - 1 && tile[index3 - 1][index4 + 1].open == false){
+									tile[index3 - 1][index4 + 1].open = true;
+									if(minesIn("box", index3 - 1, index4 + 1) == 0) fillArea[index3 - 1][index4 + 1] = true;
 									fillArea[index3][index4] = false;
 									stop = false;
 								}
