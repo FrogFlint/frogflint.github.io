@@ -100,6 +100,14 @@
 						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
 					}
 				}
+				if(event.button == 1){
+					var mouse = getMousePos(canvas, evt);
+					if(state == "playing"){
+						mouse.x = Math.floor((mouse.x - border.x)/tileSize);
+						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
+						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y];
+					}
+				}
 			}
 
 			window.oncontextmenu = function(){
@@ -214,8 +222,8 @@
 						ctx.fillRect(border.x + index1*tileSize + tileSize*(tileBorder), border.y + index2*tileSize + tileSize*(tileBorder), tileSize*(1 - 2*tileBorder), tileSize*(1 - 2*tileBorder));
 						ctx.closePath();
 						
-						//if(tile[index1][index2].flag && !tile[index1][index2].open){
-						if(tile[index1][index2].mine){  //temporary
+						if(tile[index1][index2].flag && !tile[index1][index2].open){
+						//if(tile[index1][index2].mine){  //temporary
 							ctx.beginPath();
 							ctx.moveTo(border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize/5);
 							ctx.lineTo(border.x + index1*tileSize + tileSize*1/4, border.y + index2*tileSize + tileSize*4/5);
