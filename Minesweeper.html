@@ -100,18 +100,15 @@
 						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
 					}
 				}
-				if(event.button == 1){
-					var mouse = getMousePos(canvas, evt);
-					if(state == "playing"){
-						mouse.x = Math.floor((mouse.x - border.x)/tileSize);
-						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
-						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y];
-					}
-				}
 			}
 
 			window.oncontextmenu = function(){
-
+				var mouse = getMousePos(canvas, evt);
+					if(state == "playing"){
+						mouse.x = Math.floor((mouse.x - border.x)/tileSize);
+						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
+						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y].flag;
+					}
 				return false;
 			}
 			
