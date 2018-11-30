@@ -73,14 +73,14 @@
 			
 			
 			
-			function minesIn(shape, x, y){
-				if(shape == "box") return countMines(Math.max(x - 1, 0), Math.max(y - 1, 0), Math.min(x + 1, boardSize.x - 1), Math.min(y + 1, boardSize.y - 1));
+			function minesIn(shape, x, y, prop = "mine"){
+				if(shape == "box") return countMines(Math.max(x - 1, 0), Math.max(y - 1, 0), Math.min(x + 1, boardSize.x - 1), Math.min(y + 1, boardSize.y - 1), prop);
 			}
-			function countMines(x1, y1, x2, y2){
+			function countMines(x1, y1, x2, y2, prop = "mine"){
 				var count = 0;
 				for(var index3 = x1;index3 <= x2;index3++){
 					for(var index4 = y1;index4 <= y2;index4++){
-						if(tile[index3][index4].mine) count++;
+						if(tile[index3][index4][prop]) count++;
 					}
 				}
 				return count;
@@ -111,7 +111,12 @@
 				if(state == "playing"){
 					mouse.x = Math.floor((mouse.x - border.x)/tileSize);
 					mouse.y = Math.floor((mouse.y - border.y)/tileSize);
-					if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y].flag;
+					if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y){
+						if(tile[mouse.x][mouse.y].open){
+							
+						}
+						else tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y].flag;
+					}
 				}
 				return false;
 			}
@@ -124,6 +129,7 @@
 						generateBoard(x,y);
 					}
 					tile[x][y].open = true;
+					tile[x][y].flag = false;
 					if(tile[x][y].mine) state = "lost";
 					else if(minesIn("box", x, y) == 0) floodFill(x, y);
 				}
