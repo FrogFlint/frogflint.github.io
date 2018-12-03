@@ -1,318 +1,62 @@
-
 <!DOCTYPE html>
 <html>
 
-<head>
+	<head>
 
-	<style>
-		* {
-			padding: 0;
-			margin: 0;
-		}
-		
-		canvas {
-			background: gray;
-			display: block;
-			margin: 0 auto;
-		}
-	</style>
+		<title> Main page | FrogFlint </title>
+		<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
-<title>Minesweeper</title>
-</head>
 
-<body>
+	</head>
 
-	<canvas id="myCanvas" width="1350" height="650"></canvas>
+	<body>
+	<h1><center>Home Page</center></h1>
+	<h1>My projects</h1>
 
-	<body style="background-color:gray;">
 
-		<SCRIPT LANGUAGE="JavaScript">
-			
-			
-			var canvas = document.getElementById("myCanvas");
-			var ctx = canvas.getContext("2d");
-			
-			var boardType = "square";  //square, hex
-			
-			var tile = [[]];
-			
-			var dificulty = 1;
-			var mineChance = 0.2; //0.2
-			var boardSize = {x:50,y:30};
-			
-			var border = {x:20, y:20};
-			var tileSize = 20;
-			var tileBorder = 0.08; //fraction
-			
-			var index1 = 0;
-			var index2 = 0;
-			
-			var state = "playing"; //setup, playing, won, lost
-			
-			var mineCount = 0;
-			var complete = false;
-			
-			var firstMove = true;
-			
-			var numberColor = ["Black","Blue","Lime","Yellow","Orange","Red","Purple","Purple","Purple"]; //1 to 5
-			
-			
-			
-			if(boardType == "square"){
-				for(index1 = 0;index1 < boardSize.x;index1++){
-					tile[index1] = [];
-					for(index2 = 0;index2 < boardSize.y;index2++){
-						tile[index1][index2] = {
-							mine:false,
-							flag:false,
-							open:false
-						}
-					}
-				}
-			}
-			
-			
-			
-			function minesIn(shape, x, y, prop = "mine"){
-				if(shape == "box") return countMines(Math.max(x - 1, 0), Math.max(y - 1, 0), Math.min(x + 1, boardSize.x - 1), Math.min(y + 1, boardSize.y - 1), prop);
-			}
-			function countMines(x1, y1, x2, y2, prop = "mine"){
-				var count = 0;
-				for(var index3 = x1;index3 <= x2;index3++){
-					for(var index4 = y1;index4 <= y2;index4++){
-						if(tile[index3][index4][prop]) count++;
-					}
-				}
-				return count;
-			}
-			
-			
-			function getMousePos(canvas, evt) {
-				var rect = canvas.getBoundingClientRect();
-				return {
-					x: Math.floor(evt.clientX - rect.left),
-					y: Math.floor(evt.clientY - rect.top)
-				};
-			}
-			document.addEventListener("click", onClick, false);
-			function onClick(evt){
-				if(event.button == 0){
-					var mouse = getMousePos(canvas, evt);
-					if(state == "playing"){
-						mouse.x = Math.floor((mouse.x - border.x)/tileSize);
-						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
-						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
-					}
-				}
-			}
 
-			window.oncontextmenu = function(evt){
-				var mouse = getMousePos(canvas, evt);
-				if(state == "playing"){
-					mouse.x = Math.floor((mouse.x - border.x)/tileSize);
-					mouse.y = Math.floor((mouse.y - border.y)/tileSize);
-					if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y){
-						if(tile[mouse.x][mouse.y].open){
-							
-						}
-						else tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y].flag;
-					}
-				}
-				return false;
-			}
-			
-			
-			function openTile(x, y){
-				if(!(tile[x][y].open || tile[x][y].flag)){
-					if(firstMove){
-						firstMove = false;
-						generateBoard(x,y);
-					}
-					tile[x][y].open = true;
-					tile[x][y].flag = false;
-					if(tile[x][y].mine) state = "lost";
-					else if(minesIn("box", x, y) == 0) floodFill(x, y);
-				}
-			}
-			function floodFill(x, y){
-				var index3, index4 = 0;
-				var fillArea = [];
-				for(index3 = 0;index3 < boardSize.x;index3++){
-					fillArea[index3] = [];
-					for(index4 = 0;index4 < boardSize.y;index4++){
-						fillArea[index3][index4] = false;
-					}
-				}
-				fillArea[x][y] = true;
-				var stop = false;
-				while(!stop){
-					stop = true;
-					for(index3 = 0;index3 < boardSize.x;index3++){
-						for(index4 = 0;index4 < boardSize.y;index4++){
-							if(fillArea[index3][index4]){
-								if(index3 > 0 && tile[index3 - 1][index4].open == false){
-									tile[index3 - 1][index4].open = true;
-									tile[index3 - 1][index4].flag = false;
-									if(minesIn("box", index3 - 1, index4) == 0) fillArea[index3 - 1][index4] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index3 < boardSize.x - 1 && tile[index3 + 1][index4].open == false){
-									tile[index3 + 1][index4].open = true;
-									tile[index3 + 1][index4].flag = false;
-									if(minesIn("box", index3 + 1, index4) == 0) fillArea[index3 + 1][index4] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index4 > 0 && tile[index3][index4 - 1].open == false){
-									tile[index3 - 1][index4 - 1].open = true;
-									tile[index3 - 1][index4 - 1].flag = false;
-									if(minesIn("box", index3, index4 - 1) == 0) fillArea[index3][index4 - 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index4 < boardSize.y - 1 && tile[index3][index4 + 1].open == false){
-									tile[index3 - 1][index4 + 1].open = true;
-									tile[index3 - 1][index4 + 1].flag = false;
-									if(minesIn("box", index3, index4 + 1) == 0) fillArea[index3][index4 + 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								
-								
-								if(index3 > 0 && index4 > 0 && tile[index3 - 1][index4 - 1].open == false){
-									tile[index3 - 1][index4 - 1].open = true;
-									tile[index3 - 1][index4 - 1].flag = false;
-									if(minesIn("box", index3 - 1, index4 - 1) == 0) fillArea[index3 - 1][index4 - 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index3 < boardSize.x - 1 && index4 > 0 && tile[index3 + 1][index4 - 1].open == false){
-									tile[index3 + 1][index4 - 1].open = true;
-									tile[index3 + 1][index4 - 1].flag = false;
-									if(minesIn("box", index3 + 1, index4 - 1) == 0) fillArea[index3 + 1][index4 - 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index3 < boardSize.x - 1 > 0 && index4 < boardSize.y - 1 && tile[index3 + 1][index4 + 1].open == false){
-									tile[index3 + 1][index4 + 1].open = true;
-									tile[index3 + 1][index4 + 1].flag = false;
-									if(minesIn("box", index3 + 1, index4 + 1) == 0) fillArea[index3 + 1][index4 + 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-								if(index3 > 0 && index4 < boardSize.y - 1 && tile[index3 - 1][index4 + 1].open == false){
-									tile[index3 - 1][index4 + 1].open = true;
-									tile[index3 - 1][index4 + 1].flag = false;
-									if(minesIn("box", index3 - 1, index4 + 1) == 0) fillArea[index3 - 1][index4 + 1] = true;
-									fillArea[index3][index4] = false;
-									stop = false;
-								}
-							}
-						}
-					}
-				}
-			}
-			
-			
-			function generateBoard(notX = -2, notY = -2){
-				for(index3 = 0;index3 < boardSize.x;index3++){
-					for(index4 = 0;index4 < boardSize.y;index4++){
-						tile[index3][index4] = {
-							mine:false,
-							flag:false,
-							open:false
-						}
-					}
-				}
-				
-				var x,y = 0;
-				var minesPlaced = 0;
-				while(minesPlaced < boardSize.x * boardSize.y * mineChance){
-					x = Math.floor(Math.random()*boardSize.x);
-					y = Math.floor(Math.random()*boardSize.y);
-					if(!(Math.abs(x - notX) <= 1 && Math.abs(y - notY) <= 1 || tile[x][y].mine)){
-						tile[x][y].mine = true;
-						minesPlaced++;
-					}
-				}
-			}
-			
-			function draw() {
-				
-				ctx.clearRect(0,0,canvas.width,canvas.height);
-				
-				
-				
-				/*
-				document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
-				
-				function keyDownHandler(e) {
-					
-				}*/
-				
-				
-				
-				
-				
-				if(state == "playing") complete = true;
-				for(index1 = 0;index1 < boardSize.x;index1++){
-					for(index2 = 0;index2 < boardSize.y;index2++){
-						if(state == "playing" && !tile[index1][index2].mine && !tile[index1][index2].open) complete = false;
-						
-						ctx.beginPath();
-						ctx.fillStyle = tile[index1][index2].mine && (tile[index1][index2].open || state == "lost") ? "Red":(tile[index1][index2].open ? "#AAAAAA" : "#CCCCCC");
-						ctx.fillRect(border.x + index1*tileSize + tileSize*(tileBorder), border.y + index2*tileSize + tileSize*(tileBorder), tileSize*(1 - 2*tileBorder), tileSize*(1 - 2*tileBorder));
-						ctx.closePath();
-						
-						if(tile[index1][index2].flag && !tile[index1][index2].open){
-							ctx.beginPath();
-							ctx.moveTo(border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize/5);
-							ctx.lineTo(border.x + index1*tileSize + tileSize*1/4, border.y + index2*tileSize + tileSize*4/5);
-							ctx.lineTo(border.x + index1*tileSize + tileSize*3/4, border.y + index2*tileSize + tileSize*4/5);
-							ctx.lineTo(border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize/5);
-							ctx.fillStyle = "Red";
-							ctx.fill();
-							ctx.closePath();
-						}
-						if(tile[index1][index2].open && !tile[index1][index2].mine){
-							var tileNumber = minesIn("box", index1, index2);
-							if(tileNumber > 0){
-								ctx.beginPath();
-								ctx.font = "15px Arial";
-								ctx.fillStyle = numberColor[tileNumber];
-								ctx.textAlign = "center";
-								ctx.fillText(tileNumber, border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize*4/5);
-								ctx.closePath();
-							}
-						}
-					}
-				}
-				if(complete){
-					state = "won";
-					for(index1 = 0;index1 < boardSize.x;index1++){
-						for(index2 = 0;index2 < boardSize.y;index2++){
-							tile[index1][index2].flag = tile[index1][index2].mine;
-						}
-					}
-				}
-				if(state == "won"){
-					ctx.beginPath();
-					ctx.font = "100px Arial";
-					ctx.fillStyle = "Black";
-					ctx.textAlign = "center";
-					ctx.fillText("Board complete!", border.x + boardSize.x*tileSize/2, border.y + boardSize.y*tileSize/2);
-					ctx.closePath();
-				}
-				
-				
-				
-				
-				setTimeout(draw, 20);
-			}    
-			draw();
-        		
-   		 </SCRIPT>
+	<h3>Finished</h3>
+	<ol>
+		<li><a href="/rubber_square_chaos">Bouncing Square Chaos</a></li>
+		<li><a href="/Random_Snakes">Random Snakes</a></li>
+		<li><a href="/Pong">Pong</a></li>
+		<li><a href="/Territory">Territory Wars</a></li>
+		<li><a href="/Snek">Snek</a></li>
+		<li><a href="/Go">Go</a></li>
+		<li><a href="/UltimateTicTacToe">Ultimate Tic-Tac-Toe</a></li>
+		<li><a href="/Survive">Projectile Survival</a></li>
+		<li><a href="/Catan">Catan Generator</a></li>
+		<li><a href="/Loading">Loading Spinner</a></li>
+		<li><a href="/Flag">Recursive Flag</a></li>
+		<li><a href="/Reflex">Reflex Thing</a></li>
+	</ol>
+
+
+	<h3>Still in beta</h3>
+	<ol>
+		<li><a href="/Minesweeper">Minesweeper</a></li>
+		<li><a href="/Tanks">Tank Trouble Remake</a></li>
+		<li><a href="/Colors">Color Thing</a></li>
+		<li><a href="/Gravity">Gravity Simulation</a></li>
+		<li><a href="/pewpewpew">pewpewpew</a></li>
+		<li><a href="/CauseAndEffect">Consequences squared</a></li>
+	</ol>
+
+
+
+	<object type="application/x-shockwave-flash" 
+	       style="outline:none;" 
+	       data="http://cdn.abowman.com/widgets/treefrog/treefrog.swf?up_patternColor=03AD0C&up_footColor=FFBB00&up_bodyColor=00FA0C&up_tongueColor=FC53E6&up_flyColor=000000&up_pattern=0&up_releaseFly=0&up_frogName=Tree Frog&up_eyeColor=FF0000&up_bellySize=.5&up_backgroundColor=33CC33&up_backgroundImage=http://&" 
+	       width="1000" 
+	       height="500">
+	       <param name="movie" value="http://cdn.abowman.com/widgets/treefrog/treefrog.swf?up_patternColor=03AD0C&up_footColor=FFBB00&up_bodyColor=00FA0C&up_tongueColor=FC53E6&up_flyColor=000000&up_pattern=0&up_releaseFly=0&up_frogName=Tree Frog&up_eyeColor=FF0000&up_bellySize=.5&up_backgroundColor=33CC33&up_backgroundImage=http://&"></param>
+	       <param name="AllowScriptAccess" value="always"></param>
+	       <param name="wmode" value="opaque"></param>
+	       <param name="scale" value="noscale"/>
+	       <param name="salign" value="tl"/>
+	</object>
+
+	       <br/>I did not make this
 	</body>
+
 </html>
