@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Dungeon Crawler</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="640"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			var map = [[{}]];
+			var mapEdge = {top:900, bottom:1100, left:900, right:1100};
+			var tileSize = 35;
+			
+			var enemy = [{}];
+			var projectile = {player:[{}], enemy:[{}]};
+			
+			
+			
+			var player = {
+				pos:{
+					x:1000,
+					y:1000
+				},
+				speed:{
+					x:0,
+					y:0
+				},
+				dead:false,
+				inventory:{
+					hotbar:[],
+					equipment:{head:0,body:0,legs:0}
+				},
+				slot:0,
+				itemCooldown:0,
+				stat:{
+					health:100,
+					mana:0,
+					maxLife:100,
+					maxMana:10,
+					speed:0.2,
+					regen:0.1,
+					manaRegen:0.1,
+					armor:0,
+					damageBonus:0
+				},
+				key:{up:false,down:false,left:false,right:false}
+			};
+			
+			
+			var index1;
+			var index2;
+			
+			var enemyCap = 100;
+			var projectileCap = 1000;
+			var projOwner = ["player","enemy"];
+			
+			for(index1 = mapEdge.left;index1 <= mapEdge.right;index1++){
+				map[index1] = [];
+				for(index2 = mapEdge.top;index2 <= mapEdge.bottom;index2++){
+					map[index1][index2] = {
+						discovered:false,
+						wall:true,
+						object:"", //door, chest
+						open:false,
+						rotation:0
+					};
+				}
+			}
+			
+			for(index1 = 0;index1 < enemyCap;index1++){
+				enemy[index1] = {
+					pos:{
+						x:0,
+						y:0
+					},
+					speed:{
+						x:0,
+						y:0
+					},
+					type:"",
+					target:null,
+					dead:true,
+					cooldown:0,
+					stat:{
+						health:100,
+						mana:0,
+						maxLife:100,
+						maxMana:10,
+						speed:1,
+						regen:0.1,
+						manaRegen:0.1,
+						armor:0
+					}
+				}
+			}
+			
+			for(index1 = 0;index1 < 2;index1++){
+				for(index2 = 0;index2 < projectileCap;index2++){
+					projectile[projOwner[index1]][index2] = {
+						pos:{
+							x:0,
+							y:0
+						},
+						speed:{
+							x:0,
+							y:0
+						},
+						type:"",
+						dead:0,
+						size:0,
+						damage:0
+					}
+				}
+			}
+			
+			var controls = ["w","s","a","d"];  //up, down, left, right
+			var item = [
+				{
+					name:"Wooden Sword",
+					type:"sword",
+					damage:3,
+					speed:15
+				}
+			];
+			
+			
+			
+			
+			function getMousePos(canvas, evt) {
+				var rect = canvas.getBoundingClientRect();
+				return {
+					x: Math.floor(evt.clientX - rect.left),
+					y: Math.floor(evt.clientY - rect.top)
+				};
+			}
+			document.addEventListener("click", onClick, false);
+			function onClick(evt){
+				if(event.button == 0){
+					var mouse = getMousePos(canvas, evt);
+					
+				}
+			}
+
+			window.oncontextmenu = function(evt){
+				var mouse = getMousePos(canvas, evt);
+				
+				return false;
+			}
+			
+			
+			
+			
+			
+			
+			
+			function buildRoom(x, y, doors = 2){}
+			
+			
+			
+			function movePlayer(){
+				if(player.key.left ) player.speed.x -= 0.03;
+				if(player.key.right) player.speed.x += 0.03;
+				if(player.key.up   ) player.speed.y -= 0.03;
+				if(player.key.down ) player.speed.y += 0.03;
+				player.speed.x = Math.max(Math.min(player.speed.x, player.stat.speed), -player.stat.speed);
+				player.speed.y = Math.max(Math.min(player.speed.y, player.stat.speed), -player.stat.speed);
+				player.pos.x += player.speed.x;
+				player.pos.y += player.speed.y;
+			}
+			function moveEnemies(){}
+			function moveProjectiles(){}
+			
+			
+			
+			function drawMap(){
+				for(index1 = mapEdge.left;index1 <= mapEdge.right;index1++){
+					for(index2 = mapEdge.top;index2 <= mapEdge.bottom;index2++){
+						if(!map[index1][index2].wall){
+							ctx.beginPath();
+							ctx.fillStyle = "Gray";
+							ctx.fillRect(canvas.width/2 + (index1 - player.pos.x)*tileSize, canvas.height/2 + (index2 - player.pos.y)*tileSize, tileSize, tileSize);
+							ctx.closePath();
+						}
+					}
+				}
+			}
+			function drawPlayer(){
+				ctx.beginPath();
+				ctx.arc(canvas.width/2, canvas.height/2, tileSize * 0.4, 0, Math.PI*2);
+				ctx.fillStyle = "Brown";
+				ctx.fill();
+				ctx.closePath();
+			}
+			function drawProjectiles(){}
+			
+			
+			
+			function draw() {
+				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
+				
+				
+				//map[1000 + Math.floor(Math.random()*20-10)][1000 + Math.floor(Math.random()*20-10)].wall = Math.random() < 0.5;
+				
+				
+				
+				movePlayer();
+				
+				
+				drawMap();
+				drawPlayer();
+				
+				
+				
+				
+				
+				setTimeout(draw, 20);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
