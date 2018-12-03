@@ -113,7 +113,13 @@
 					mouse.y = Math.floor((mouse.y - border.y)/tileSize);
 					if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y){
 						if(tile[mouse.x][mouse.y].open){
-							
+							if(minesIn("box", mouse.x, mouse.y) == minesIn("box", mouse.x, mouse.y, "flag")){
+								for(index1 = Math.max(mouse.x - 1, 0);index1 < Math.min(mouse.x + 2, boardSize.x);index1++){
+									for(index2 = Math.max(mouse.y - 1, 0);index2 < Math.min(mouse.y + 2, boardSize.y);index2++){
+										openTile(index1, index2);
+									}
+								}
+							}
 						}
 						else tile[mouse.x][mouse.y].flag = !tile[mouse.x][mouse.y].flag;
 					}
@@ -252,6 +258,7 @@
 				for(index1 = 0;index1 < boardSize.x;index1++){
 					for(index2 = 0;index2 < boardSize.y;index2++){
 						if(state == "playing" && !tile[index1][index2].mine && !tile[index1][index2].open) complete = false;
+						if(tile[index1][index2].open) tile[index1][index2].flag = false;
 						
 						ctx.beginPath();
 						ctx.fillStyle = tile[index1][index2].mine && (tile[index1][index2].open || state == "lost") ? "Red":(tile[index1][index2].open ? "#AAAAAA" : "#CCCCCC");
