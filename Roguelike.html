@@ -141,6 +141,7 @@
 			
 			var controls = ["w","s","a","d"];
 			var direction = ["up","down","left","right"];
+			var edgeDirection = ["top","bottom","left","right"];
 			var item = [
 				{
 					name:"Base Item",
@@ -207,13 +208,47 @@
 			
 			
 			
-			function buildRoom(x, y, doors = 2){}  //random generation
+			function buildRoom(x, y, size = Math.floor(Math.random()*8 + 6), doors = 2, chests = 0, enemies = []){  //random generation
+				if(map[x][y].object != "door") return false;
+				
+				var index3, index4;
+				
+				var entrance = "";
+				var roomDirection = "";
+				if(!map[x - 1][y].wall){entrance = "left"; roomDirection = "right";}
+				if(!map[x + 1][y].wall){entrance = "right"; roomDirection = "left";}
+				if(!map[x][y - 1].wall){entrance = "top"; roomDirection = "bottom";}
+				if(!map[x][y + 1].wall){entrance = "bottom"; roomDirection = "top";}
+				
+				var extend = {};
+				for(index3 = 0;index3 < 4;index3++){
+					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor((Math.random()*(size - 6) + 6)/(roomDirection == edgeDirection[index3] ? 1 : 2));
+				}
+				var boundaries = {};
+				for(index3 = 0;index3 < 4;index3++){
+					boundaries[edgeDirection[index3]] = (index3 < 2 ? y:x) + extend[edgeDirection[index3]]*(index3 % 2 == 0 ? -1:1);
+				}
+				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
+					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
+						map[index3][index4].wall = false;
+					}
+				}
+				
+				
+				
+				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
+					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
+						if(!map[index3][index4].wall) map[index3][index4].discovered = true;
+					}
+				}
+			}
 			
 			function makeRoom(plan, x, y){  //plan is a 2D array
 				for(var index4 = 0;index4 < plan.length;index4++){
 					for(var index3 = 0;index3 < plan[index4].length;index3++){
 						if(!(plan[index4][index3] == "w" || plan[index4][index3] == "i")){
 							map[x + index3][y + index4].wall = false;
+							map[x + index3][y + index4].discovered = true;
 						}
 						if(plan[index4][index3] == "d"){
 							map[x + index3][y + index4].object = "door";
@@ -303,11 +338,57 @@
 			function drawMap(){
 				for(index1 = mapEdge.left;index1 <= mapEdge.right;index1++){
 					for(index2 = mapEdge.top;index2 <= mapEdge.bottom;index2++){
-						if(!map[index1][index2].wall){
-							ctx.beginPath();
-							ctx.fillStyle = "Gray";
-							ctx.fillRect(canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize), tileSize, tileSize);
-							ctx.closePath();
+						if(map[index1][index2].discovered){
+							var drawPos = {x:canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize)};
+							if(!map[index1][index2].wall){
+								ctx.beginPath();
+								ctx.fillStyle = "Gray";
+								ctx.fillRect(drawPos.x, drawPos.y, tileSize, tileSize);
+								ctx.closePath();
+							}
+							if(map[index1][index2].object == "door"){
+								if(map[index1][index2].open){
+
+								}
+								else{
+									if(map[index1][index2].rotation % 2 == 0){
+										if(!map[index1][index2 - 1].discovered){
+											ctx.beginPath();
+											ctx.fillStyle = "Black";
+											ctx.fillRect(drawPos.x, drawPos.y, tileSize, tileSize/2);
+											ctx.closePath();
+										}
+										if(!map[index1][index2 + 1].discovered){
+											ctx.beginPath();
+											ctx.fillStyle = "Black";
+											ctx.fillRect(drawPos.x, drawPos.y + tileSize/2, tileSize, tileSize/2);
+											ctx.closePath();
+										}
+										ctx.beginPath();
+										ctx.fillStyle = "#873600";
+										ctx.fillRect(drawPos.x, drawPos.y + tileSize*2/5, tileSize, tileSize*1/5);
+										ctx.closePath();
+									}
+									else{
+										if(!map[index1 - 1][index2].discovered){
+											ctx.beginPath();
+											ctx.fillStyle = "Black";
+											ctx.fillRect(drawPos.x, drawPos.y, tileSize/2, tileSize);
+											ctx.closePath();
+										}
+										if(!map[index1 + 1][index2].discovered){
+											ctx.beginPath();
+											ctx.fillStyle = "Black";
+											ctx.fillRect(drawPos.x + tileSize/2, drawPos.y, tileSize/2, tileSize);
+											ctx.closePath();
+										}
+										ctx.beginPath();
+										ctx.fillStyle = "#873600";
+										ctx.fillRect(drawPos.x + tileSize*2/5, drawPos.y, tileSize*1/5, tileSize);
+										ctx.closePath();
+									}
+								}
+							}
 						}
 					}
 				}
@@ -315,7 +396,7 @@
 			function drawPlayer(){
 				ctx.beginPath();
 				ctx.arc(canvas.width/2, canvas.height/2, tileSize * player.size/2, 0, Math.PI*2);
-				ctx.fillStyle = "Brown";
+				ctx.fillStyle = "#873600";
 				ctx.fill();
 				ctx.closePath();
 			}
