@@ -42,13 +42,14 @@
 			
 			var player = {
 				pos:{
-					x:1000,
-					y:1000
+					x:1000.5,
+					y:1000.5
 				},
 				speed:{
 					x:0,
 					y:0
 				},
+				size:0.8,
 				dead:false,
 				inventory:{
 					hotbar:[],
@@ -102,6 +103,7 @@
 						y:0
 					},
 					type:"",
+					size:0.8,
 					target:null,
 					dead:true,
 					cooldown:0,
@@ -137,15 +139,43 @@
 				}
 			}
 			
-			var controls = ["w","s","a","d"];  //up, down, left, right
+			var controls = ["w","s","a","d"];
+			var direction = ["up","down","left","right"];
 			var item = [
 				{
+					name:"Base Item",
+					type:["swing","stab","shoot"],
+					damage:0,
+					speed:0,
+					autoUse:false,
+					ammoType:["arrows","knives"],
+					useAmmo:0,
+					useMana:0
+				},
+				{
 					name:"Wooden Sword",
-					type:"sword",
+					type:"swing",
 					damage:3,
-					speed:15
+					speed:15,
+					autoUse:false
+				},
+				{
+					name:"Knives",
+					type:"stab",
+					damage:3,
+					speed:15,
+					autoUse:false
 				}
 			];
+			var startRoom = [
+				["w","w","w","d","w","w","w"],
+				["w"," "," "," "," "," ","w"],
+				["w"," "," "," "," "," ","w"],
+				["w"," "," ","c"," "," ","w"],
+				["w"," "," "," "," "," ","w"],
+				["w"," "," "," "," "," ","w"],
+				["w","w","w","w","w","w","w"]
+			];  //Wall, Door, Chest, Ignore
 			
 			
 			
@@ -177,8 +207,26 @@
 			
 			
 			
-			function buildRoom(x, y, doors = 2){}
+			function buildRoom(x, y, doors = 2){}  //random generation
 			
+			function makeRoom(plan, x, y){  //plan is a 2D array
+				for(var index4 = 0;index4 < plan.length;index4++){
+					for(var index3 = 0;index3 < plan[index4].length;index3++){
+						if(!(plan[index4][index3] == "w" || plan[index4][index3] == "i")){
+							map[x + index3][y + index4].wall = false;
+						}
+						if(plan[index4][index3] == "d"){
+							map[x + index3][y + index4].object = "door";
+							map[x + index3][y + index4].open = false;
+							
+						}
+						if(plan[index4][index3] == "c"){
+							map[x + index3][y + index4].object = "chest";
+							map[x + index3][y + index4].open = false;
+						}
+					}
+				}
+			}
 			
 			
 			function movePlayer(){
@@ -186,10 +234,66 @@
 				if(player.key.right) player.speed.x += 0.03;
 				if(player.key.up   ) player.speed.y -= 0.03;
 				if(player.key.down ) player.speed.y += 0.03;
+				
+				if(!(player.key.left || player.key.right || player.speed.x == 0)) player.speed.x += 0.03 * (player.speed.x > 0 ? -1 : 1);
+				if(!(player.key.up   || player.key.down  || player.speed.y == 0)) player.speed.y += 0.03 * (player.speed.y > 0 ? -1 : 1);
+				
+				if(Math.abs(player.speed.x) < 0.03) player.speed.x = 0;
+				if(Math.abs(player.speed.y) < 0.03) player.speed.y = 0;
+				
 				player.speed.x = Math.max(Math.min(player.speed.x, player.stat.speed), -player.stat.speed);
 				player.speed.y = Math.max(Math.min(player.speed.y, player.stat.speed), -player.stat.speed);
 				player.pos.x += player.speed.x;
 				player.pos.y += player.speed.y;
+				
+				
+				if(!map[Math.floor(player.pos.x)][Math.floor(player.pos.y)].wall){
+					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].wall){
+						player.pos.x = Math.floor(player.pos.x) + player.size/2;
+						player.speed.x = 0;
+					}
+					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].wall){
+						player.pos.x = Math.floor(player.pos.x) - player.size/2 + 1;
+						player.speed.x = 0;
+					}
+					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].wall){
+						player.pos.y = Math.floor(player.pos.y) + player.size/2;
+						player.speed.y = 0;
+					}
+					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].wall){
+						player.pos.y = Math.floor(player.pos.y) - player.size/2 + 1;
+						player.speed.y = 0;
+					}
+					
+					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y - player.size/2)].wall){
+						var cornerDistance = distance(player.pos.x - Math.floor(player.pos.x), player.pos.y - Math.floor(player.pos.y));
+						if(cornerDistance < player.size/2){
+							player.pos.x = Math.floor(player.pos.x) + ((player.pos.x - Math.floor(player.pos.x)) * (player.size/2)/cornerDistance);
+							player.pos.y = Math.floor(player.pos.y) + ((player.pos.y - Math.floor(player.pos.y)) * (player.size/2)/cornerDistance);
+						}
+					}
+					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y - player.size/2)].wall){
+						var cornerDistance = distance(player.pos.x - Math.ceil (player.pos.x), player.pos.y - Math.floor(player.pos.y));
+						if(cornerDistance < player.size/2){
+							player.pos.x = Math.ceil (player.pos.x) + ((player.pos.x - Math.ceil (player.pos.x)) * (player.size/2)/cornerDistance);
+							player.pos.y = Math.floor(player.pos.y) + ((player.pos.y - Math.floor(player.pos.y)) * (player.size/2)/cornerDistance);
+						}
+					}
+					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y + player.size/2)].wall){
+						var cornerDistance = distance(player.pos.x - Math.floor(player.pos.x), player.pos.y - Math.ceil (player.pos.y));
+						if(cornerDistance < player.size/2){
+							player.pos.x = Math.floor(player.pos.x) + ((player.pos.x - Math.floor(player.pos.x)) * (player.size/2)/cornerDistance);
+							player.pos.y = Math.ceil (player.pos.y) + ((player.pos.y - Math.ceil (player.pos.y)) * (player.size/2)/cornerDistance);
+						}
+					}
+					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y + player.size/2)].wall){
+						var cornerDistance = distance(player.pos.x - Math.ceil (player.pos.x), player.pos.y - Math.ceil (player.pos.y));
+						if(cornerDistance < player.size/2){
+							player.pos.x = Math.ceil (player.pos.x) + ((player.pos.x - Math.ceil (player.pos.x)) * (player.size/2)/cornerDistance);
+							player.pos.y = Math.ceil (player.pos.y) + ((player.pos.y - Math.ceil (player.pos.y)) * (player.size/2)/cornerDistance);
+						}
+					}
+				}
 			}
 			function moveEnemies(){}
 			function moveProjectiles(){}
@@ -202,7 +306,7 @@
 						if(!map[index1][index2].wall){
 							ctx.beginPath();
 							ctx.fillStyle = "Gray";
-							ctx.fillRect(canvas.width/2 + (index1 - player.pos.x)*tileSize, canvas.height/2 + (index2 - player.pos.y)*tileSize, tileSize, tileSize);
+							ctx.fillRect(canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize), tileSize, tileSize);
 							ctx.closePath();
 						}
 					}
@@ -210,7 +314,7 @@
 			}
 			function drawPlayer(){
 				ctx.beginPath();
-				ctx.arc(canvas.width/2, canvas.height/2, tileSize * 0.4, 0, Math.PI*2);
+				ctx.arc(canvas.width/2, canvas.height/2, tileSize * player.size/2, 0, Math.PI*2);
 				ctx.fillStyle = "Brown";
 				ctx.fill();
 				ctx.closePath();
@@ -219,12 +323,35 @@
 			
 			
 			
+			
+			function distance(x,y){
+				return Math.sqrt(x*x + y*y);
+			}
+			
+			document.addEventListener("keydown", keyDownHandler, false);
+			document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+				for(index1 = 0;index1 < controls.length;index1++){
+					if(e.key == controls[index1]) player.key[direction[index1]] = true;
+				}
+			}
+			function keyUpHandler(e) {
+				for(index1 = 0;index1 < controls.length;index1++){
+					if(e.key == controls[index1]) player.key[direction[index1]] = false;
+				}
+			}
+			
+			
+			
+			
+			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
+			
 			function draw() {
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
 				
-				//map[1000 + Math.floor(Math.random()*20-10)][1000 + Math.floor(Math.random()*20-10)].wall = Math.random() < 0.5;
+				
 				
 				
 				
