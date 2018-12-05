@@ -219,6 +219,10 @@
 				if(!map[x + 1][y].wall){entrance = "right"; roomDirection = "left";}
 				if(!map[x][y - 1].wall){entrance = "top"; roomDirection = "bottom";}
 				if(!map[x][y + 1].wall){entrance = "bottom"; roomDirection = "top";}
+				if(roomDirection == "") return false;
+				
+				var doorSide = {top:false,bottom:false,left:false,right:false};
+				doorSide[roomDirection] = true;
 				
 				var extend = {};
 				for(index3 = 0;index3 < 4;index3++){
@@ -234,7 +238,13 @@
 					}
 				}
 				
-				
+				var doorCount = 1;/*
+				while(doorCount < doors){
+					var rand = {x:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top), y:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left)};
+					if(map[rand.x][rand.y].wall && map[rand.x - 1][rand.y].wall + map[rand.x + 1][rand.y].wall + map[rand.x][rand.y - 1].wall + map[rand.x][rand.y + 1].wall == 3){
+						if(map[rand.x - 1][rand.y].wall && !doorSide.left
+					}
+				}*/
 				
 				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
 					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
