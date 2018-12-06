@@ -32,7 +32,8 @@
 			var ctx = canvas.getContext("2d");
 			
 			var map = [[{}]];
-			var mapEdge = {top:900, bottom:1100, left:900, right:1100};
+			var loadRadius = 50;
+			var mapEdge = {top:1000 - loadRadius, bottom:1000 + loadRadius, left:1000 - loadRadius, right:1000 + loadRadius};
 			var tileSize = 35;
 			
 			var gameState = "playing";  //playing, dead, choosing
@@ -231,7 +232,7 @@
 			
 			
 			
-			function buildRoom(x, y, size = Math.floor(Math.random()*8 + 6), doors = 2, chests = 0, enemies = []){  //random generation
+			function buildRoom(x, y, size = Math.floor(Math.random()*8 + 6), doors = 3, chests = 0, enemies = []){  //random generation
 				if(map[x][y].object != "door") return false;
 				
 				var index3, index4;
@@ -261,21 +262,50 @@
 					}
 				}
 				
-				var doorCount = 1;/*
-				while(doorCount < doors){
-					var rand = {x:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top), y:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left)};
+				var doorCount = 1;
+				var giveUp = 100;
+				var noRoom = false;
+				while(doorCount < doors && giveUp > 0){
+					var rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top)};
 					if(map[rand.x][rand.y].wall && map[rand.x - 1][rand.y].wall + map[rand.x + 1][rand.y].wall + map[rand.x][rand.y - 1].wall + map[rand.x][rand.y + 1].wall == 3){
-						if(!(map[rand.x + 1][rand.y].wall || doorSide.left)){
+						if(!(map[rand.x - 1][rand.y].wall || doorSide.left)){
+							noRoom = false;
+							for(index3 = rand.x + 6;index3 > rand.x;index3--){
+								for(index4 = rand.y - 3;index4 <= rand.y + 3;index4++){
+									if(!map[index3][index4].wall) noRoom = true;
+								}
+							}
+							if(!noRoom){
+								map[rand.x][rand.y].wall = false;
+								map[rand.x][rand.y].object = "door";
+								map[rand.x][rand.y].rotation = 1;
+								doorCount++;
+							}
+						}
+						if(!(map[rand.x + 1][rand.y].wall || doorSide.right)){
 							map[rand.x][rand.y].wall = false;
 							map[rand.x][rand.y].object = "door";
 							map[rand.x][rand.y].rotation = 1;
 							doorCount++;
 						}
+						if(!(map[rand.x][rand.y - 1].wall || doorSide.top)){
+							map[rand.x][rand.y].wall = false;
+							map[rand.x][rand.y].object = "door";
+							map[rand.x][rand.y].rotation = 0;
+							doorCount++;
+						}
+						if(!(map[rand.x][rand.y + 1].wall || doorSide.bottom)){
+							map[rand.x][rand.y].wall = false;
+							map[rand.x][rand.y].object = "door";
+							map[rand.x][rand.y].rotation = 0;
+							doorCount++;
+						}
 					}
-				}*/
+					giveUp--;
+				}
 				
-				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
-					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
+				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
+					for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
 						if(!map[index3][index4].wall) map[index3][index4].discovered = true;
 					}
 				}
@@ -503,6 +533,30 @@
 				return Math.sqrt(x*x + y*y);
 			}
 			
+			function adjustMapEdge(){
+				var newMap = {left:Math.min(Math.floor(player.pos.x - loadRadius), mapEdge.left), right:Math.max(Math.ceil(player.pos.x + loadRadius), mapEdge.right), top:Math.min(Math.floor(player.pos.y - loadRadius), mapEdge.top), bottom:Math.max(Math.ceil(player.pos.y + loadRadius), mapEdge.bottom)};
+				if(newMap.left != mapEdge.left || newMap.right != mapEdge.right || newMap.top != mapEdge.top || newMap.bottom != mapEdge.bottom){
+					for(index1 = newMap.left;index1 < newMap.right;index1++){
+						if(index1 < mapEdge.left || index1 >= mapEdge.right){
+							map[index1] = [];
+						}
+						for(index2 = newMap.top;index2 < newMap.bottom;index2++){
+							if(index1 < mapEdge.left || index1 >= mapEdge.right || index2 < mapEdge.top || index2 >= mapEdge.bottom){
+								map[index1][index2] = {
+									discovered:false,
+									wall:true,
+									object:"",
+									open:false,
+									rotation:0
+								};
+							}
+						}
+					}
+					
+				}
+			}
+			
+			
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			document.addEventListener("keypress", keyPressHandler, false);
@@ -550,6 +604,7 @@
 				
 				
 				if(gameState == "playing"){
+					adjustMapEdge();
 					if(playerView == "game"){
 						movePlayer();
 						
