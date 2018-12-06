@@ -35,6 +35,11 @@
 			var mapEdge = {top:900, bottom:1100, left:900, right:1100};
 			var tileSize = 35;
 			
+			var gameState = "playing";  //playing, dead, choosing
+			var playerView = "game";  //game, inventory, map
+			
+			var inventorySize = {width:7, height:4};
+			
 			var enemy = [{}];
 			var projectile = {player:[{}], enemy:[{}]};
 			
@@ -52,8 +57,9 @@
 				size:0.8,
 				dead:false,
 				inventory:{
-					hotbar:[],
-					equipment:{head:0,body:0,legs:0}
+					hotbar:[0],
+					storage:[0],
+					equipment:{head:null, body:null, legs:null, feet:null, arm1:null, arm2:null, hands:null, neck:null}
 				},
 				slot:0,
 				itemCooldown:0,
@@ -63,6 +69,7 @@
 					maxLife:100,
 					maxMana:10,
 					speed:0.2,
+					acceleration:0.03,
 					regen:0.1,
 					manaRegen:0.1,
 					armor:0,
@@ -163,9 +170,25 @@
 				{
 					name:"Knives",
 					type:"stab",
-					damage:3,
-					speed:15,
-					autoUse:false
+					damage:2,
+					speed:7,
+					autoUse:true
+				},
+				{
+					name:"Laser Gun",
+					type:"shoot",
+					damage:10,
+					speed:10,
+					autoUse:true,
+					useMana:3
+				},
+				{
+					name:"Fire Staff",
+					type:"shoot",
+					damage:30,
+					speed:30,
+					autoUse:false,
+					useMana:12
 				}
 			];
 			var startRoom = [
@@ -238,13 +261,18 @@
 					}
 				}
 				
-				var doorCount = 1;/*
+				var doorCount = 1;
 				while(doorCount < doors){
 					var rand = {x:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top), y:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left)};
 					if(map[rand.x][rand.y].wall && map[rand.x - 1][rand.y].wall + map[rand.x + 1][rand.y].wall + map[rand.x][rand.y - 1].wall + map[rand.x][rand.y + 1].wall == 3){
-						if(map[rand.x - 1][rand.y].wall && !doorSide.left
+						if(!(map[rand.x + 1][rand.y].wall || doorSide.left)){
+							map[rand.x][rand.y].wall = false;
+							map[rand.x][rand.y].object = "door";
+							map[rand.x][rand.y].rotation = 1;
+							doorCount++;
+						}
 					}
-				}*/
+				}
 				
 				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
 					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
@@ -275,16 +303,16 @@
 			
 			
 			function movePlayer(){
-				if(player.key.left ) player.speed.x -= 0.03;
-				if(player.key.right) player.speed.x += 0.03;
-				if(player.key.up   ) player.speed.y -= 0.03;
-				if(player.key.down ) player.speed.y += 0.03;
+				if(player.key.left ) player.speed.x -= player.stat.acceleration;
+				if(player.key.right) player.speed.x += player.stat.acceleration;
+				if(player.key.up   ) player.speed.y -= player.stat.acceleration;
+				if(player.key.down ) player.speed.y += player.stat.acceleration;
 				
-				if(!(player.key.left || player.key.right || player.speed.x == 0)) player.speed.x += 0.03 * (player.speed.x > 0 ? -1 : 1);
-				if(!(player.key.up   || player.key.down  || player.speed.y == 0)) player.speed.y += 0.03 * (player.speed.y > 0 ? -1 : 1);
+				if(!(player.key.left || player.key.right || player.speed.x == 0)) player.speed.x += player.stat.acceleration * (player.speed.x > 0 ? -1 : 1);
+				if(!(player.key.up   || player.key.down  || player.speed.y == 0)) player.speed.y += player.stat.acceleration * (player.speed.y > 0 ? -1 : 1);
 				
-				if(Math.abs(player.speed.x) < 0.03) player.speed.x = 0;
-				if(Math.abs(player.speed.y) < 0.03) player.speed.y = 0;
+				if(Math.abs(player.speed.x) < player.stat.acceleration) player.speed.x = 0;
+				if(Math.abs(player.speed.y) < player.stat.acceleration) player.speed.y = 0;
 				
 				player.speed.x = Math.max(Math.min(player.speed.x, player.stat.speed), -player.stat.speed);
 				player.speed.y = Math.max(Math.min(player.speed.y, player.stat.speed), -player.stat.speed);
@@ -294,69 +322,33 @@
 				
 				if(!map[Math.floor(player.pos.x)][Math.floor(player.pos.y)].wall){
 					//wall side
-					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].wall){
-						player.pos.x = Math.floor(player.pos.x) + player.size/2;
-						player.speed.x = 0;
-					}
-					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].wall){
-						player.pos.x = Math.floor(player.pos.x) - player.size/2 + 0.9999;
-						player.speed.x = 0;
-					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].wall){
-						player.pos.y = Math.floor(player.pos.y) + player.size/2;
-						player.speed.y = 0;
-					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].wall){
-						player.pos.y = Math.floor(player.pos.y) - player.size/2 + 0.9999;
-						player.speed.y = 0;
-					}
-					//corner
-					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y - player.size/2)].wall){
-						var cornerDistance = distance(player.pos.x - Math.floor(player.pos.x), player.pos.y - Math.floor(player.pos.y));
-						if(cornerDistance < player.size/2){
-							player.pos.x = Math.floor(player.pos.x) + ((player.pos.x - Math.floor(player.pos.x)) * (player.size/2)/cornerDistance);
-							player.pos.y = Math.floor(player.pos.y) + ((player.pos.y - Math.floor(player.pos.y)) * (player.size/2)/cornerDistance);
-						}
-					}
-					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y - player.size/2)].wall){
-						var cornerDistance = distance(player.pos.x - Math.ceil (player.pos.x), player.pos.y - Math.floor(player.pos.y));
-						if(cornerDistance < player.size/2){
-							player.pos.x = Math.ceil (player.pos.x) + ((player.pos.x - Math.ceil (player.pos.x)) * (player.size/2)/cornerDistance);
-							player.pos.y = Math.floor(player.pos.y) + ((player.pos.y - Math.floor(player.pos.y)) * (player.size/2)/cornerDistance);
-						}
-					}
-					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y + player.size/2)].wall){
-						var cornerDistance = distance(player.pos.x - Math.floor(player.pos.x), player.pos.y - Math.ceil (player.pos.y));
-						if(cornerDistance < player.size/2){
-							player.pos.x = Math.floor(player.pos.x) + ((player.pos.x - Math.floor(player.pos.x)) * (player.size/2)/cornerDistance);
-							player.pos.y = Math.ceil (player.pos.y) + ((player.pos.y - Math.ceil (player.pos.y)) * (player.size/2)/cornerDistance);
-						}
-					}
-					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y + player.size/2)].wall){
-						var cornerDistance = distance(player.pos.x - Math.ceil (player.pos.x), player.pos.y - Math.ceil (player.pos.y));
-						if(cornerDistance < player.size/2){
-							player.pos.x = Math.ceil (player.pos.x) + ((player.pos.x - Math.ceil (player.pos.x)) * (player.size/2)/cornerDistance);
-							player.pos.y = Math.ceil (player.pos.y) + ((player.pos.y - Math.ceil (player.pos.y)) * (player.size/2)/cornerDistance);
-						}
-					}
+					var bounce = wallCollisions(player.pos.x, player.pos.y, player.size/2);
+					player.pos.x = bounce.x;
+					player.pos.y = bounce.y;
+					if(bounce.left || bounce.right) player.speed.x = 0;
+					if(bounce.up   || bounce.down ) player.speed.y = 0;
 					//door
-					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].door &&
+					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].object == "door" &&
 					  !map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].open &&
+					   map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].rotation % 2 == 1 &&
 					  (player.pos.x - player.size/2) % 1 < 3/5){
 						player.pos.x = Math.floor(player.pos.x - player.size/2) + 3/5 + player.size/2;
 					}
-					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].door &&
+					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].object == "door" &&
 					  !map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].open &&
+					   map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].rotation % 2 == 1 &&
 					  (player.pos.x + player.size/2) % 1 > 2/5){
 						player.pos.x = Math.floor(player.pos.x + player.size/2) + 2/5 - player.size/2 - 0.0001;
 					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].door &&
+					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].object == "door" &&
 					  !map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].open &&
+					   map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].rotation % 2 == 0 &&
 					  (player.pos.y - player.size/2) % 1 < 3/5){
 						player.pos.y = Math.floor(player.pos.y - player.size/2) + 3/5 + player.size/2;
 					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].door &&
+					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].object == "door" &&
 					  !map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].open &&
+					   map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].rotation % 2 == 0 &&
 					  (player.pos.y + player.size/2) % 1 > 2/5){
 						player.pos.y = Math.floor(player.pos.y + player.size/2) + 2/5 - player.size/2 - 0.0001;
 					}
@@ -365,11 +357,70 @@
 			function moveEnemies(){}
 			function moveProjectiles(){}
 			
+			function wallCollisions(x, y, size, disable = false){
+				var collisions = {x:x, y:y, up:false, down:false, left:false, right:false, upLeft:false, upRight:false, downLeft:false, downRight:false};
+				if(!map[Math.floor(x)][Math.floor(y)].wall){
+					if(map[Math.floor(x - size)][Math.floor(y)].wall){
+						x = Math.floor(x) + size;
+						collisions.left = true;
+					}
+					if(map[Math.floor(x + size)][Math.floor(y)].wall){
+						x = Math.floor(x) - size + 0.9999;
+						collisions.right = true;
+					}
+					if(map[Math.floor(x)][Math.floor(y - size)].wall){
+						y = Math.floor(y) + size;
+						collisions.up = true;
+					}
+					if(map[Math.floor(x)][Math.floor(y + size)].wall){
+						y = Math.floor(y) - size + 0.9999;
+						collisions.down = true;
+					}
+					if(map[Math.floor(x - size)][Math.floor(y - size)].wall){
+						var cornerDistance = distance(x - Math.floor(x), y - Math.floor(y));
+						if(cornerDistance < size){
+							x = Math.floor(x) + ((x - Math.floor(x)) * (size)/cornerDistance);
+							y = Math.floor(y) + ((y - Math.floor(y)) * (size)/cornerDistance);
+							collisions.upLeft = true;
+						}
+					}
+					if(map[Math.floor(x + size)][Math.floor(y - size)].wall){
+						var cornerDistance = distance(x - Math.ceil(x), y - Math.floor(y));
+						if(cornerDistance < size){
+							x = Math.ceil (x) + ((x - Math.ceil (x)) * (size)/cornerDistance);
+							y = Math.floor(y) + ((y - Math.floor(y)) * (size)/cornerDistance);
+							collisions.upRight = true;
+						}
+					}
+					if(map[Math.floor(x - size)][Math.floor(y + size)].wall){
+						var cornerDistance = distance(x - Math.floor(x), y - Math.ceil (y));
+						if(cornerDistance < size){
+							x = Math.floor(x) + ((x - Math.floor(x)) * (size)/cornerDistance);
+							y = Math.ceil (y) + ((y - Math.ceil (y)) * (size)/cornerDistance);
+							collisions.downLeft = true;
+						}
+					}
+					if(map[Math.floor(x + size)][Math.floor(y + size)].wall){
+						var cornerDistance = distance(x - Math.ceil (x), y - Math.ceil (y));
+						if(cornerDistance < size){
+							x = Math.ceil (x) + ((x - Math.ceil (x)) * (size)/cornerDistance);
+							y = Math.ceil (y) + ((y - Math.ceil (y)) * (size)/cornerDistance);
+							collisions.downRight = true;
+						}
+					}
+					
+					collisions.x = x;
+					collisions.y = y;
+				}
+				
+				return collisions;
+			}
+			
 			
 			
 			function drawMap(){
-				for(index1 = mapEdge.left;index1 <= mapEdge.right;index1++){
-					for(index2 = mapEdge.top;index2 <= mapEdge.bottom;index2++){
+				for(index1 = Math.max(mapEdge.left, Math.floor(player.pos.x - (canvas.width/2)/tileSize));index1 <= Math.min(mapEdge.right, Math.ceil(player.pos.x + (canvas.width/2)/tileSize));index1++){
+					for(index2 = Math.max(mapEdge.top, Math.floor(player.pos.y - (canvas.height/2)/tileSize));index2 <= Math.min(mapEdge.bottom, Math.ceil(player.pos.y + (canvas.height/2)/tileSize));index2++){
 						if(map[index1][index2].discovered){
 							var drawPos = {x:canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize)};
 							if(!map[index1][index2].wall){
@@ -380,7 +431,16 @@
 							}
 							if(map[index1][index2].object == "door"){
 								if(map[index1][index2].open){
-
+									if(map[index1][index2].rotation == 0){
+										ctx.beginPath();
+										ctx.fillStyle = "#772600";
+										ctx.fillRect(drawPos.x, drawPos.y, tileSize*1/5, tileSize*3/5);
+										ctx.fillRect(drawPos.x + tileSize*4/5, drawPos.y, tileSize*1/5, tileSize*3/5);
+										ctx.closePath();
+									}
+									else{
+										
+									}
 								}
 								else{
 									if(map[index1][index2].rotation % 2 == 0){
@@ -397,7 +457,7 @@
 											ctx.closePath();
 										}
 										ctx.beginPath();
-										ctx.fillStyle = "#873600";
+										ctx.fillStyle = "#772600";
 										ctx.fillRect(drawPos.x, drawPos.y + tileSize*2/5, tileSize, tileSize*1/5);
 										ctx.closePath();
 									}
@@ -415,7 +475,7 @@
 											ctx.closePath();
 										}
 										ctx.beginPath();
-										ctx.fillStyle = "#873600";
+										ctx.fillStyle = "#772600";
 										ctx.fillRect(drawPos.x + tileSize*2/5, drawPos.y, tileSize*1/5, tileSize);
 										ctx.closePath();
 									}
@@ -428,12 +488,14 @@
 			function drawPlayer(){
 				ctx.beginPath();
 				ctx.arc(canvas.width/2, canvas.height/2, tileSize * player.size/2, 0, Math.PI*2);
-				ctx.fillStyle = "#873600";
+				ctx.fillStyle = "#772600";
 				ctx.fill();
 				ctx.closePath();
 			}
 			function drawProjectiles(){}
 			
+			function drawInventory(){}
+			function drawBigMap(){}
 			
 			
 			
@@ -454,7 +516,7 @@
 					if(e.key == controls[index1]) player.key[direction[index1]] = false;
 				}
 			}
-			function keyPressHandler(e){
+			function keyPressHandler(e) {
 				if(e.key == "e"){
 					var x, y;
 					var opened = false;
@@ -487,21 +549,20 @@
 				
 				
 				
-				
-				
-				
-				movePlayer();
-				
-				
-				drawMap();
-				drawPlayer();
-				
+				if(gameState == "playing"){
+					if(playerView == "game"){
+						movePlayer();
+						
+						drawMap();
+						drawPlayer();
+					}
+				}
 				
 				
 				
 				
 				setTimeout(draw, 20);
-			}    
+			}
 			draw();
         		
    		 </SCRIPT>
