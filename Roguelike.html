@@ -149,7 +149,7 @@
 				}
 			}
 			
-			var controls = ["w","s","a","d"];
+			var controls = ["w","s","a","d","i","e","j"];
 			var direction = ["up","down","left","right"];
 			var edgeDirection = ["top","bottom","left","right"];
 			var item = [
@@ -539,25 +539,25 @@
 					ctx.closePath();
 				}
 				ctx.globalAlpha = 1;
-				var hearts = Math.ceil(player.stat.maxHealth/10);
+				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 <= hearts;index1++){
 					ctx.beginPath();
-					ctx.arc(index1*15 + 800, 20, 8, 0, Math.PI);
+					ctx.arc(index1*20 + 1000, 20, 8, 0, Math.PI*2);
 					ctx.fillStyle = "Red";
 					ctx.fill();
 					ctx.strokeStyle = "Black";
-					ctx.lineWidth = 0.5;
+					ctx.lineWidth = 1;
 					ctx.stroke();
 					ctx.closePath();
 				}
 				var orbs = Math.ceil(player.stat.maxMana/10);
 				for(index1 = 0;index1 <= hearts;index1++){
 					ctx.beginPath();
-					ctx.arc(index1*15 + 800, 40, 8, 0, Math.PI);
+					ctx.arc(index1*20 + 1000, 40, 8, 0, Math.PI*2);
 					ctx.fillStyle = "Blue";
 					ctx.fill();
 					ctx.strokeStyle = "Black";
-					ctx.lineWidth = 0.5;
+					ctx.lineWidth = 1;
 					ctx.stroke();
 					ctx.closePath();
 				}
@@ -597,8 +597,11 @@
 			document.addEventListener("keyup", keyUpHandler, false);
 			document.addEventListener("keypress", keyPressHandler, false);
 			function keyDownHandler(e) {
-				for(index1 = 0;index1 < controls.length;index1++){
+				for(index1 = 0;index1 < 4;index1++){
 					if(e.key == controls[index1]) player.key[direction[index1]] = true;
+				}
+				if(e.key == controls[6]){
+					
 				}
 			}
 			function keyUpHandler(e) {
@@ -607,7 +610,7 @@
 				}
 			}
 			function keyPressHandler(e) {
-				if(e.key == "e"){
+				if(e.key == controls[4]){
 					var x, y;
 					var opened = false;
 					for(index1 = 0;index1 < 4;index1++){
@@ -623,6 +626,10 @@
 							}
 						}
 					}
+				}
+				if(e.key == controls[5]){
+					if(playerView == "game") playerView = "inventory";
+					else if(playerView == "inventory") playerView = "game";
 				}
 			}
 			
