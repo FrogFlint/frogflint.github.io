@@ -36,6 +36,8 @@
 			var mapEdge = {top:1000 - loadRadius, bottom:1000 + loadRadius, left:1000 - loadRadius, right:1000 + loadRadius};
 			var tileSize = 35;
 			
+			var GUIscale = 1;
+			
 			var gameState = "playing";  //playing, dead, choosing
 			var playerView = "game";  //game, inventory, map
 			
@@ -526,6 +528,40 @@
 			
 			function drawInventory(){}
 			function drawBigMap(){}
+			function drawOverlay(){
+				for(index1 = 0;index1 < inventorySize.width;index1++){
+					ctx.beginPath();
+					ctx.rect(index1*70 + 20, 20, 50, 50);
+					ctx.strokeStyle = index1 == player.slot ? "LightBlue" : "Goldenrod";
+					ctx.globalAlpha = 0.7;
+					ctx.lineWidth = 4 * GUIscale;
+					ctx.stroke();
+					ctx.closePath();
+				}
+				ctx.globalAlpha = 1;
+				var hearts = Math.ceil(player.stat.maxHealth/10);
+				for(index1 = 0;index1 <= hearts;index1++){
+					ctx.beginPath();
+					ctx.arc(index1*15 + 800, 20, 8, 0, Math.PI);
+					ctx.fillStyle = "Red";
+					ctx.fill();
+					ctx.strokeStyle = "Black";
+					ctx.lineWidth = 0.5;
+					ctx.stroke();
+					ctx.closePath();
+				}
+				var orbs = Math.ceil(player.stat.maxMana/10);
+				for(index1 = 0;index1 <= hearts;index1++){
+					ctx.beginPath();
+					ctx.arc(index1*15 + 800, 40, 8, 0, Math.PI);
+					ctx.fillStyle = "Blue";
+					ctx.fill();
+					ctx.strokeStyle = "Black";
+					ctx.lineWidth = 0.5;
+					ctx.stroke();
+					ctx.closePath();
+				}
+			}
 			
 			
 			
@@ -610,10 +646,10 @@
 						
 						drawMap();
 						drawPlayer();
+						
+						drawOverlay();
 					}
 				}
-				
-				
 				
 				
 				setTimeout(draw, 20);
