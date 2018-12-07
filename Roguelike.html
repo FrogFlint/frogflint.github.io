@@ -62,19 +62,19 @@
 				inventory:{
 					hotbar:[0],
 					storage:[0],
-					equipment:{head:null, body:null, legs:null, feet:null, arm1:null, arm2:null, hands:null, neck:null}
+					equipment:{head:null, body:null, legs:null, feet:null, arm1:null, arm2:null, hands:null, neck:null, back:null}
 				},
 				slot:0,
 				itemCooldown:0,
 				stat:{
 					health:100,
-					mana:0,
+					mana:10,
 					maxLife:100,
 					maxMana:10,
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
-					manaRegen:0.1,
+					manaRegen:0,
 					armor:0,
 					damageBonus:0
 				},
@@ -155,31 +155,50 @@
 			var item = [
 				{
 					name:"Base Item",
-					type:["swing","stab","shoot"],
+					tooltip:"An item",
+					type:["weapon","equipment","ammo"],
+					subType:[["swing","stab","shoot"],["head","body","legs","feet","arm","hands","neck","back"]],
 					damage:0,
 					speed:0,
 					autoUse:false,
 					ammoType:["arrows","knives"],
 					useAmmo:0,
-					useMana:0
+					useMana:0,
+					armor:0
 				},
 				{
 					name:"Wooden Sword",
-					type:"swing",
+					tooltip:"A basic wood sword",
+					type:"weapon",
+					subType:"swing",
 					damage:3,
 					speed:15,
 					autoUse:false
 				},
 				{
 					name:"Knives",
-					type:"stab",
+					tooltip:"A light, agile pair of knives",
+					type:"weapon",
+					subType:"stab",
 					damage:2,
 					speed:7,
 					autoUse:true
 				},
 				{
+					name:"Bow",
+					tooltip:"A basic wooden bow",
+					type:"weapon",
+					subType:"shoot",
+					damage:10,
+					speed:9,
+					autoUse:false,
+					useAmmo:"Arrows"
+				},
+				{
 					name:"Laser Gun",
-					type:"shoot",
+					tooltip:"A quick weapon which shoots bouncing lasers",
+					type:"weapon",
+					subType:"shoot",
 					damage:10,
 					speed:10,
 					autoUse:true,
@@ -187,11 +206,52 @@
 				},
 				{
 					name:"Fire Staff",
-					type:"shoot",
+					tooltip:"A magical staff that shoots exploding fireballs",
+					type:"weapon",
+					subType:"shoot",
 					damage:30,
 					speed:30,
 					autoUse:false,
 					useMana:12
+				},
+				{
+					name:"Arrows",
+					tooltip:"Ammo for use with a bow",
+					type:"ammo",
+					damage:5
+				},
+				{
+					name:"Quiver",
+					tooltip:"Increases ammo slots",
+					type:"equipment",
+					subType:"back"
+				},
+				{
+					name:"Backpack",
+					tooltip:"Increases inventory space",
+					type:"equipment",
+					subType:"back"
+				},
+				{
+					name:"Sneaky Cloak",
+					tooltip:"Lets you stealth mode by holding shift, making you invisible and enabling sneak attacks",
+					type:"equipment",
+					subType:"head",
+					armor:2
+				},
+				{
+					name:"Wizard Hat",
+					tooltip:"Increases maximum mana and enables passive mana regen",
+					type:"equipment",
+					subType:"head",
+					armor:1
+				},
+				{
+					name:"Chainmail Helmet",
+					tooltip:"A strong defensive helmet",
+					type:"equipment",
+					subType:"head",
+					armor:5
 				}
 			];
 			var startRoom = [
@@ -334,6 +394,14 @@
 			}
 			
 			
+			function updatePlayerStats(){
+				
+				
+				
+				player.stat.health = Math.min(player.stat.health + player.stat.regen, player.stat.maxLife);
+				player.stat.mana = Math.min(player.stat.mana + player.stat.manaRegen, player.stat.maxMana);
+			}
+			
 			function movePlayer(){
 				if(player.key.left ) player.speed.x -= player.stat.acceleration;
 				if(player.key.right) player.speed.x += player.stat.acceleration;
@@ -388,6 +456,8 @@
 			}
 			function moveEnemies(){}
 			function moveProjectiles(){}
+			
+			function killStuff(){}
 			
 			function wallCollisions(x, y, size, disable = false){
 				var collisions = {x:x, y:y, up:false, down:false, left:false, right:false, upLeft:false, upRight:false, downLeft:false, downRight:false};
@@ -524,7 +594,9 @@
 				ctx.fill();
 				ctx.closePath();
 			}
+			function drawEnemies(){}
 			function drawProjectiles(){}
+			function drawWeapons(){}
 			
 			function drawInventory(){}
 			function drawBigMap(){}
@@ -540,23 +612,23 @@
 				}
 				ctx.globalAlpha = 1;
 				var hearts = Math.ceil(player.stat.maxLife/10);
-				for(index1 = 0;index1 <= hearts;index1++){
+				for(index1 = 0;index1 < hearts;index1++){
 					ctx.beginPath();
 					ctx.arc(index1*20 + 1000, 20, 8, 0, Math.PI*2);
-					ctx.fillStyle = "Red";
+					ctx.fillStyle = player.stat.health > index1*10 ? "Red": "Black";
 					ctx.fill();
-					ctx.strokeStyle = "Black";
+					ctx.strokeStyle = "White";
 					ctx.lineWidth = 1;
 					ctx.stroke();
 					ctx.closePath();
 				}
 				var orbs = Math.ceil(player.stat.maxMana/10);
-				for(index1 = 0;index1 <= hearts;index1++){
+				for(index1 = 0;index1 < orbs;index1++){
 					ctx.beginPath();
 					ctx.arc(index1*20 + 1000, 40, 8, 0, Math.PI*2);
-					ctx.fillStyle = "Blue";
+					ctx.fillStyle = player.stat.mana > index1*10 ? "Blue": "Black";
 					ctx.fill();
-					ctx.strokeStyle = "Black";
+					ctx.strokeStyle = "White";
 					ctx.lineWidth = 1;
 					ctx.stroke();
 					ctx.closePath();
@@ -631,6 +703,7 @@
 					if(playerView == "game") playerView = "inventory";
 					else if(playerView == "inventory") playerView = "game";
 				}
+				if(e.key > 0 && e.key <= inventorySize.width) player.slot = e.key - 1;
 			}
 			
 			
@@ -648,13 +721,27 @@
 				
 				if(gameState == "playing"){
 					adjustMapEdge();
+					updatePlayerStats();
 					if(playerView == "game"){
 						movePlayer();
+						moveEnemies();
+						moveProjectiles();
+						
+						killStuff();
 						
 						drawMap();
+						drawEnemies();
 						drawPlayer();
+						drawWeapons();
+						drawProjectiles();
 						
 						drawOverlay();
+					}
+					if(playerView == "inventory"){
+						drawInventory();
+					}
+					if(playerView == "map"){
+						drawBigMap();
 					}
 				}
 				
