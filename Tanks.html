@@ -383,7 +383,7 @@
 						if(!projectile[index1][index2].dead){
 							if(projectile[index1][index2].type != 2){
 								
-								var moveStep = projectile[index1][index2].speedVector/Math.ceil(projectile[index1][index2].speedVector);
+								var moveStep = Math.ceil(projectile[index1][index2].speedVector) == 0 ? 0 : projectile[index1][index2].speedVector/Math.ceil(projectile[index1][index2].speedVector);
 								
 								if(projectile[index1][index2].type == 9) projectile[index1][index2].rotation += projectile[index1][index2].rotationSpeed;
 								if(projectile[index1][index2].type == 6){
