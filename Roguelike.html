@@ -32,7 +32,7 @@
 			var ctx = canvas.getContext("2d");
 			
 			var map = [[{}]];
-			var loadRadius = 50;
+			var loadRadius = 500;
 			var mapEdge = {top:1000 - loadRadius, bottom:1000 + loadRadius, left:1000 - loadRadius, right:1000 + loadRadius};
 			var tileSize = 35;
 			
@@ -45,8 +45,9 @@
 			
 			var enemy = [{}];
 			var projectile = {player:[{}], enemy:[{}]};
+			var itemDrop = [{}];
 			
-			
+			var tried;
 			
 			var player = {
 				pos:{
@@ -59,17 +60,18 @@
 				},
 				size:0.8,
 				dead:false,
-				inventory:{
-					hotbar:[0],
-					storage:[0],
-					equipment:{head:null, body:null, legs:null, feet:null, arm1:null, arm2:null, hands:null, neck:null, back:null}
-				},
+				inventory:[[{}]],
+				specialSlots:{ammo:[{}]},
+				equipment:{},
+				dragItem:{},
+				effects:[{name:"",duration:20}],
 				slot:0,
+				facing:0,
 				itemCooldown:0,
 				stat:{
-					health:100,
+					health:80,
 					mana:10,
-					maxLife:100,
+					maxLife:80,
 					maxMana:10,
 					speed:0.2,
 					acceleration:0.03,
@@ -81,9 +83,20 @@
 				key:{up:false,down:false,left:false,right:false}
 			};
 			
+			var index1, index2;
 			
-			var index1;
-			var index2;
+			for(index1 = 0;index1 < 7;index1++){
+				player.inventory[index1] = [];
+				for(index2 = 0;index2 < 6;index2++){
+					player.inventory[index1][index2] = {name:""};
+				}
+			}
+			var equipmentSlots = ["head","body","legs","feet","arm1","arm2","hands","neck","back"];
+			var equipmentSlotLocation = [{x:950,y:200},{x:950,y:270},{x:950,y:340},{x:950,y:410},{x:880,y:270},{x:1020,y:270},{x:1160,y:340},{x:1160,y:270},{x:1160,y:200}];
+			for(index1 = 0;index1 < equipmentSlots.length;index1++){
+				player.equipment[equipmentSlots[index1]] = {name:""};
+			}
+			
 			
 			var enemyCap = 100;
 			var projectileCap = 1000;
@@ -97,6 +110,7 @@
 						wall:true,
 						object:"", //door, chest
 						open:false,
+						disabled:false,
 						rotation:0
 					};
 				}
@@ -116,6 +130,8 @@
 					size:0.8,
 					target:null,
 					dead:true,
+					effects:[{name:"",duration:20}],
+					facing:0,
 					cooldown:0,
 					stat:{
 						health:100,
@@ -149,7 +165,8 @@
 				}
 			}
 			
-			var controls = ["w","s","a","d","i","e","j"];
+			var mouseControls = true;
+			var controls = ["w","s","a","d","q","e","j"];
 			var direction = ["up","down","left","right"];
 			var edgeDirection = ["top","bottom","left","right"];
 			var item = [
@@ -161,10 +178,14 @@
 					damage:0,
 					speed:0,
 					autoUse:false,
+					showHand:{main:false, off:false},
 					ammoType:["arrows","knives"],
-					useAmmo:0,
+					projectile:"",
+					velocity:0,
 					useMana:0,
-					armor:0
+					armor:0,
+					tier:0,
+					rarity:0
 				},
 				{
 					name:"Wooden Sword",
@@ -173,7 +194,10 @@
 					subType:"swing",
 					damage:3,
 					speed:15,
-					autoUse:false
+					autoUse:false,
+					showHand:{main:true, off:false},
+					tier:1,
+					rarity:1
 				},
 				{
 					name:"Knives",
@@ -182,7 +206,10 @@
 					subType:"stab",
 					damage:2,
 					speed:7,
-					autoUse:true
+					autoUse:true,
+					showHand:{main:true, off:true},
+					tier:1,
+					rarity:1
 				},
 				{
 					name:"Bow",
@@ -192,7 +219,12 @@
 					damage:10,
 					speed:9,
 					autoUse:false,
-					useAmmo:"Arrows"
+					showHand:{main:true, off:true},
+					ammoType:"Arrows",
+					projectile:"Arrow",
+					velocity:0.25,
+					tier:1,
+					rarity:1
 				},
 				{
 					name:"Laser Gun",
@@ -202,7 +234,12 @@
 					damage:10,
 					speed:10,
 					autoUse:true,
-					useMana:3
+					showHand:{main:true, off:false},
+					useMana:3,
+					projectile:"Laser",
+					velocity:0.4,
+					tier:2,
+					rarity:1
 				},
 				{
 					name:"Fire Staff",
@@ -212,46 +249,61 @@
 					damage:30,
 					speed:30,
 					autoUse:false,
-					useMana:12
+					showHand:{main:true, off:false},
+					useMana:12,
+					projectile:"Fireball",
+					velocity:0.15
 				},
 				{
 					name:"Arrows",
 					tooltip:"Ammo for use with a bow",
 					type:"ammo",
-					damage:5
+					damage:5,
+					tier:1,
+					rarity:1
 				},
 				{
 					name:"Quiver",
 					tooltip:"Increases ammo slots",
 					type:"equipment",
-					subType:"back"
+					subType:"back",
+					tier:2,
+					rarity:1
 				},
 				{
 					name:"Backpack",
 					tooltip:"Increases inventory space",
 					type:"equipment",
-					subType:"back"
+					subType:"back",
+					tier:2,
+					rarity:1
 				},
 				{
 					name:"Sneaky Cloak",
 					tooltip:"Lets you stealth mode by holding shift, making you invisible and enabling sneak attacks",
 					type:"equipment",
 					subType:"head",
-					armor:2
+					armor:2,
+					tier:3,
+					rarity:1
 				},
 				{
 					name:"Wizard Hat",
-					tooltip:"Increases maximum mana and enables passive mana regen",
+					tooltip:"Increases maximum mana and enables passive mana regeneration",
 					type:"equipment",
 					subType:"head",
-					armor:1
+					armor:1,
+					tier:3,
+					rarity:1
 				},
 				{
 					name:"Chainmail Helmet",
 					tooltip:"A strong defensive helmet",
 					type:"equipment",
 					subType:"head",
-					armor:5
+					armor:5,
+					tier:3,
+					rarity:1
 				}
 			];
 			var startRoom = [
@@ -275,11 +327,28 @@
 				};
 			}
 			document.addEventListener("click", onClick, false);
+			document.addEventListener("mousemove", onMove, false);
 			function onClick(evt){
 				if(event.button == 0){
 					var mouse = getMousePos(canvas, evt);
+					if(gameState == "playing" && playerView == "game" && mouseControls){
+						player.facing = playerIsFacing(mouse.x, mouse.y);
+						
+						if(player.itemCooldown == 0) useItem(player, player.inventory[player.slot][0]);
+					}
 					
 				}
+			}
+			function onMove(evt){
+				var mouse = getMousePos(canvas, evt);
+				if(gameState == "playing" && playerView == "game" && mouseControls){
+					player.facing = playerIsFacing(mouse.x, mouse.y);
+				}
+			}
+			function playerIsFacing(x, y){
+				x -= canvas.width/2;
+				y -= canvas.height/2;
+				return Math.atan(x / y) + (y >= 0 ? 0 : Math.PI);
 			}
 
 			window.oncontextmenu = function(evt){
@@ -291,13 +360,9 @@
 			
 			
 			
-			
-			
-			
-			function buildRoom(x, y, size = Math.floor(Math.random()*8 + 6), doors = 3, chests = 0, enemies = []){  //random generation
+			function buildRoom(x, y, doors = 13, chests = 0, enemies = []){  //random generation
 				if(map[x][y].object != "door") return false;
 				
-				var index3, index4;
 				
 				var entrance = "";
 				var roomDirection = "";
@@ -310,9 +375,84 @@
 				var doorSide = {top:false,bottom:false,left:false,right:false};
 				doorSide[roomDirection] = true;
 				
+				
+				var index3, index4;
+				var noRoom = false;
+				for(var size = 7;size <= 14 && !noRoom;size++){
+					if(roomDirection == "left"){
+						for(index3 = x - size;index3 <= x;index3++){
+							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
+									noRoom = true;
+								}
+							}
+						}
+						for(index3 = x - size - 3;index3 <= x + 3;index3++){
+							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2) + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							}
+						}
+						for(index3 = x - size - 6;index3 <= x + 6;index3++){
+							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+							}
+						}
+					}
+					if(roomDirection == "right"){
+						for(index3 = x + size;index3 >= x;index3--){
+							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
+									noRoom = true;
+								}
+							}
+						}
+						for(index3 = x + size - 3;index3 >= x + 3;index3--){
+							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2) + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							}
+						}
+						for(index3 = x + size + 6;index3 >= x - 6;index3--){
+							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+							}
+						}
+					}
+					if(roomDirection == "top"){
+						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
+							for(index4 = y - size;index4 <= y;index4++){
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
+									noRoom = true;
+								}
+							}
+						}
+						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
+							for(index4 = y - size - 6;index4 <= y + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							}
+						}
+						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2) + 6;index3++){
+							for(index4 = y - size - 3;index4 <= y + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+							}
+						}
+					}
+					if(roomDirection == "bottom"){
+						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
+							for(index4 = y + size;index4 >= y;index4--){
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
+									noRoom = true;
+								}
+							}
+						}
+					}
+					
+					if(noRoom) size--;
+				}
+				
+				
 				var extend = {};
 				for(index3 = 0;index3 < 4;index3++){
-					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor((Math.random()*(size - 6) + 6)/(roomDirection == edgeDirection[index3] ? 1 : 2));
+					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(*/randRange(size, 6)/*, 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
 				}
 				var boundaries = {};
 				for(index3 = 0;index3 < 4;index3++){
@@ -325,16 +465,35 @@
 				}
 				
 				var doorCount = 1;
-				var giveUp = 100;
-				var noRoom = false;
-				while(doorCount < doors && giveUp > 0){
-					var rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top)};
+				var giveUp = false;
+				tried = [];
+				for(index3 = 0;index3 <= boundaries.right - boundaries.left;index3++){
+					tried[index3] = [];
+					for(index4 = 0;index4 <= boundaries.bottom - boundaries.top;index4++){
+						tried[index3][index4] = false;
+					}
+				}
+				var rand = {x:boundaries.left, y:boundaries.top};
+				while(doorCount < doors && !giveUp){
+					while(tried[rand.x - boundaries.left][rand.y - boundaries.top]){
+						rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top)};
+					}
 					if(map[rand.x][rand.y].wall && map[rand.x - 1][rand.y].wall + map[rand.x + 1][rand.y].wall + map[rand.x][rand.y - 1].wall + map[rand.x][rand.y + 1].wall == 3){
 						if(!(map[rand.x - 1][rand.y].wall || doorSide.left)){
 							noRoom = false;
-							for(index3 = rand.x + 6;index3 > rand.x;index3--){
+							for(index3 = rand.x + 6;index3 >= rand.x;index3--){
 								for(index4 = rand.y - 3;index4 <= rand.y + 3;index4++){
 									if(!map[index3][index4].wall) noRoom = true;
+								}
+							}
+							for(index3 = rand.x + 6 + 3;index3 >= rand.x - 3;index3--){
+								for(index4 = rand.y - 3 - 6;index4 <= rand.y + 3 + 6;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+								}
+							}
+							for(index3 = rand.x + 6 + 6;index3 >= rand.x - 6;index3--){
+								for(index4 = rand.y - 3 - 3;index4 <= rand.y + 3 + 3;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
 								}
 							}
 							if(!noRoom){
@@ -345,25 +504,85 @@
 							}
 						}
 						if(!(map[rand.x + 1][rand.y].wall || doorSide.right)){
-							map[rand.x][rand.y].wall = false;
-							map[rand.x][rand.y].object = "door";
-							map[rand.x][rand.y].rotation = 1;
-							doorCount++;
+							noRoom = false;
+							for(index3 = rand.x - 6;index3 <= rand.x;index3++){
+								for(index4 = rand.y - 3;index4 <= rand.y + 3;index4++){
+									if(!map[index3][index4].wall) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 6 - 3;index3 <= rand.x + 3;index3++){
+								for(index4 = rand.y - 3 - 6;index4 <= rand.y + 3 + 6;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 6 - 6;index3 <= rand.x + 6;index3++){
+								for(index4 = rand.y - 3 - 3;index4 <= rand.y + 3 + 3;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								}
+							}
+							if(!noRoom){
+								map[rand.x][rand.y].wall = false;
+								map[rand.x][rand.y].object = "door";
+								map[rand.x][rand.y].rotation = 1;
+								doorCount++;
+							}
 						}
 						if(!(map[rand.x][rand.y - 1].wall || doorSide.top)){
-							map[rand.x][rand.y].wall = false;
-							map[rand.x][rand.y].object = "door";
-							map[rand.x][rand.y].rotation = 0;
-							doorCount++;
+							noRoom = false;
+							for(index3 = rand.x - 3;index3 <= rand.x + 3;index3++){
+								for(index4 = rand.y + 6;index4 >= rand.y;index4--){
+									if(!map[index3][index4].wall) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 3 - 3;index3 <= rand.x + 3 + 3;index3++){
+								for(index4 = rand.y + 6 + 6;index4 >= rand.y - 6;index4--){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 3 - 6;index3 <= rand.x + 3 + 6;index3++){
+								for(index4 = rand.y + 6 + 3;index4 >= rand.y - 3;index4--){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								}
+							}
+							if(!noRoom){
+								map[rand.x][rand.y].wall = false;
+								map[rand.x][rand.y].object = "door";
+								map[rand.x][rand.y].rotation = 0;
+								doorCount++;
+							}
 						}
 						if(!(map[rand.x][rand.y + 1].wall || doorSide.bottom)){
-							map[rand.x][rand.y].wall = false;
-							map[rand.x][rand.y].object = "door";
-							map[rand.x][rand.y].rotation = 0;
-							doorCount++;
+							noRoom = false;
+							for(index3 = rand.x - 3;index3 <= rand.x + 3;index3++){
+								for(index4 = rand.y - 6;index4 <= rand.y;index4++){
+									if(!map[index3][index4].wall) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 3 - 3;index3 <= rand.x + 3 + 3;index3++){
+								for(index4 = rand.y - 6 - 6;index4 <= rand.y + 6;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+								}
+							}
+							for(index3 = rand.x - 3 - 6;index3 <= rand.x + 3 + 6;index3++){
+								for(index4 = rand.y - 6 - 3;index4 <= rand.y + 3;index4++){
+									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								}
+							}
+							if(!noRoom){
+								map[rand.x][rand.y].wall = false;
+								map[rand.x][rand.y].object = "door";
+								map[rand.x][rand.y].rotation = 0;
+								doorCount++;
+							}
 						}
 					}
-					giveUp--;
+					tried[rand.x - boundaries.left][rand.y - boundaries.top] = true;
+					giveUp = true;
+					for(index3 = 0;index3 < tried.length;index3++){
+						for(index4 = 0;index4 < tried[index3].length;index4++){
+							if(!tried[index3][index4]) giveUp = false;
+						}
+					}
 				}
 				
 				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
@@ -401,12 +620,19 @@
 				player.stat.health = Math.min(player.stat.health + player.stat.regen, player.stat.maxLife);
 				player.stat.mana = Math.min(player.stat.mana + player.stat.manaRegen, player.stat.maxMana);
 			}
+			function applyEffects(){}
 			
 			function movePlayer(){
+				if(player.itemCooldown > 0) player.itemCooldown--;
+				
+				var stopped = player.speed.x == 0 && player.speed.y == 0;
+				
 				if(player.key.left ) player.speed.x -= player.stat.acceleration;
 				if(player.key.right) player.speed.x += player.stat.acceleration;
 				if(player.key.up   ) player.speed.y -= player.stat.acceleration;
 				if(player.key.down ) player.speed.y += player.stat.acceleration;
+				
+				if(!(mouseControls || stopped || (player.speed.x == 0 && player.speed.y == 0))) player.facing = playerIsFacing(canvas.width/2 + player.speed.x, canvas.height/2 + player.speed.y);
 				
 				if(!(player.key.left || player.key.right || player.speed.x == 0)) player.speed.x += player.stat.acceleration * (player.speed.x > 0 ? -1 : 1);
 				if(!(player.key.up   || player.key.down  || player.speed.y == 0)) player.speed.y += player.stat.acceleration * (player.speed.y > 0 ? -1 : 1);
@@ -456,10 +682,11 @@
 			}
 			function moveEnemies(){}
 			function moveProjectiles(){}
+			function meleeAttacks(){}
 			
 			function killStuff(){}
 			
-			function wallCollisions(x, y, size, disable = false){
+			function wallCollisions(x, y, size){
 				var collisions = {x:x, y:y, up:false, down:false, left:false, right:false, upLeft:false, upRight:false, downLeft:false, downRight:false};
 				if(!map[Math.floor(x)][Math.floor(y)].wall){
 					if(map[Math.floor(x - size)][Math.floor(y)].wall){
@@ -518,6 +745,32 @@
 				return collisions;
 			}
 			
+			function useItem(user, usedItem){
+				if(usedItem.type == "weapon"){
+					user.itemCooldown = usedItem.speed;
+					if(usedItem.subType == "shoot"){
+						var shot = getNext(projectile.player);
+						projectile[shot] = {
+							type:usedItem.projectile,
+							pos:{
+								x:user.pos.x,
+								y:user.pos.y
+							},
+							speed:{
+								x:Math.sin(user.facing) * usedItem.velocity,
+								y:Math.cos(user.facing) * usedItem.velocity
+							}
+						}
+					}
+					
+				}
+			}
+			function getNext(list){
+				for(var index5 = 0;index5 < list.length;index5++){
+					if(list[index5].length < 2 || list[index5].type == "") return index5;
+				}
+				return false;
+			}
 			
 			
 			function drawMap(){
@@ -596,9 +849,115 @@
 			}
 			function drawEnemies(){}
 			function drawProjectiles(){}
-			function drawWeapons(){}
+			function drawWeapons(){
+				if(player.itemCooldown > 0){
+					var swingAngle = 0;
+					
+					if(player.inventory[player.slot][0].name == "Bow"){
+						ctx.beginPath();
+						ctx.arc(canvas.width/2 - Math.sin(player.facing)*tileSize*0.3, canvas.height/2 - Math.cos(player.facing)*tileSize*0.3, tileSize*0.9, Math.PI/2 - player.facing - 0.7, Math.PI/2 - player.facing + 0.7);
+						ctx.strokeStyle = "#772600";
+						ctx.lineWidth = 3;
+						ctx.stroke();
+						ctx.closePath();
+					}
+					else if(player.inventory[player.slot][0].name != ""){
+						ctx.beginPath();
+						ctx.arc(canvas.width/2 + Math.sin(player.facing)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing)*tileSize*0.4, tileSize*0.1, 0, Math.PI*2);
+						ctx.fillStyle = "Red";
+						ctx.fill();
+						ctx.closePath();
+					}
+					
+					
+					if(player.inventory[player.slot][0].showHand.main){
+						ctx.beginPath();
+						ctx.arc(canvas.width/2 + Math.sin(player.facing + 0.65)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing + 0.65)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
+						ctx.fillStyle = "#6F1E00";
+						ctx.fill();
+						ctx.closePath();
+					}
+					if(player.inventory[player.slot][0].showHand.off){
+						ctx.beginPath();
+						ctx.arc(canvas.width/2 + Math.sin(player.facing - 0.65)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing - 0.65)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
+						ctx.fillStyle = "#6F1E00";
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
+			}
 			
-			function drawInventory(){}
+			function drawInventory(){
+				for(index1 = 0;index1 < inventorySize.width;index1++){
+					for(index2 = 0;index2 < inventorySize.height;index2++){
+						ctx.beginPath();
+						ctx.rect(index1*70 + 20, index2*70 + 20, 50, 50);
+						ctx.strokeStyle = "Goldenrod";
+						ctx.globalAlpha = 0.7;
+						ctx.lineWidth = 4 * GUIscale;
+						ctx.stroke();
+						ctx.globalAlpha = 1;
+						ctx.closePath();
+						
+						drawItem(player.inventory[index1][index2].name, index1*70 + 20, index2*70 + 20);
+					}
+				}
+				for(index1 = 0;index1 < equipmentSlots.length;index1++){
+					ctx.beginPath();
+					ctx.rect(equipmentSlotLocation[index1].x, equipmentSlotLocation[index1].y, 50, 50);
+					ctx.strokeStyle = "Gray";
+					ctx.globalAlpha = 0.7;
+					ctx.lineWidth = 4 * GUIscale;
+					ctx.stroke();
+					ctx.globalAlpha = 1;
+					ctx.closePath();
+					
+					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x, equipmentSlotLocation[index1].y);  //TODO: add textures for headEmpty, arm2Empty, ect
+				}
+				
+				var hearts = Math.ceil(player.stat.maxLife/10);
+				for(index1 = 0;index1 < hearts;index1++){
+					ctx.beginPath();
+					ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
+					ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
+					ctx.fill();
+					if(player.stat.health < (index1 + 1)*10 && player.stat.health >= index1*10){
+						ctx.globalAlpha = (player.stat.health - index1*10)/10;
+						ctx.fillStyle = "Red";
+						ctx.fill();
+						ctx.globalAlpha = 1;
+					}
+					ctx.strokeStyle = "White";
+					ctx.lineWidth = 1;
+					ctx.stroke();
+					ctx.closePath();
+				}
+				var orbs = Math.ceil(player.stat.maxMana/10);
+				for(index1 = 0;index1 < orbs;index1++){
+					ctx.beginPath();
+					ctx.arc((index1 %10)*20 + 1000, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*20, 8, 0, Math.PI*2);
+					ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
+					ctx.fill();
+					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
+						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
+						ctx.fillStyle = "Red";
+						ctx.fill();
+						ctx.globalAlpha = 1;
+					}
+					ctx.strokeStyle = "White";
+					ctx.lineWidth = 1;
+					ctx.stroke();
+					ctx.closePath();
+				}
+				ctx.beginPath();
+				ctx.font = "15px Arial";
+				ctx.fillStyle = "White";
+				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, orbs), 10)*20 + 1000, 25);
+				ctx.fillText(Math.round(player.stat.regen * 20) + "/s", Math.min(Math.max(hearts, orbs), 10)*20 + 1080, 25);
+				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, orbs), 10)*20 + 1000, 45);
+				ctx.fillText(Math.round(player.stat.manaRegen * 20) + "/s", Math.min(Math.max(hearts, orbs), 10)*20 + 1080, 45);
+				ctx.closePath();
+			}
 			function drawBigMap(){}
 			function drawOverlay(){
 				for(index1 = 0;index1 < inventorySize.width;index1++){
@@ -608,15 +967,23 @@
 					ctx.globalAlpha = 0.7;
 					ctx.lineWidth = 4 * GUIscale;
 					ctx.stroke();
+					ctx.globalAlpha = 1;
 					ctx.closePath();
+					
+					drawItem(player.inventory[index1][0].name, index1*70 + 20, 20);
 				}
-				ctx.globalAlpha = 1;
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
 					ctx.beginPath();
-					ctx.arc(index1*20 + 1000, 20, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.health > index1*10 ? "Red": "Black";
+					ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
+					ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
 					ctx.fill();
+					if(player.stat.health < (index1 + 1)*10 && player.stat.health >= index1*10){
+						ctx.globalAlpha = (player.stat.health - index1*10)/10;
+						ctx.fillStyle = "Red";
+						ctx.fill();
+						ctx.globalAlpha = 1;
+					}
 					ctx.strokeStyle = "White";
 					ctx.lineWidth = 1;
 					ctx.stroke();
@@ -625,9 +992,15 @@
 				var orbs = Math.ceil(player.stat.maxMana/10);
 				for(index1 = 0;index1 < orbs;index1++){
 					ctx.beginPath();
-					ctx.arc(index1*20 + 1000, 40, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.mana > index1*10 ? "Blue": "Black";
+					ctx.arc((index1 %10)*20 + 1000, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*20, 8, 0, Math.PI*2);
+					ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
 					ctx.fill();
+					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
+						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
+						ctx.fillStyle = "Red";
+						ctx.fill();
+						ctx.globalAlpha = 1;
+					}
 					ctx.strokeStyle = "White";
 					ctx.lineWidth = 1;
 					ctx.stroke();
@@ -635,10 +1008,29 @@
 				}
 			}
 			
+			function drawItem(name, x, y, scale = 50){
+				if(name != ""){
+					ctx.beginPath();
+					ctx.arc(x + scale/2, y + scale/2, scale/3, 0, Math.PI*2);
+					ctx.fillStyle = "Red";
+					ctx.fill();
+					ctx.closePath();
+				}
+			}
 			
+			
+			function itemIndex(name){
+				for(var index5 = 0;index5 < item.length;index5++){
+					if(item[index5].name == name) return index5;
+				}
+			}
 			
 			function distance(x,y){
 				return Math.sqrt(x*x + y*y);
+			}
+			function randRange(a, b = 0){
+				if(a > b) return randRange(b, a);
+				return Math.random()*(b - a) + a;
 			}
 			
 			function adjustMapEdge(){
@@ -660,7 +1052,30 @@
 							}
 						}
 					}
-					
+					setProperties(mapEdge, newMap);
+				}
+			}
+			
+			
+			function isEquivalent(a, b) {
+				var aProps = Object.getOwnPropertyNames(a);
+				var bProps = Object.getOwnPropertyNames(b);
+				if (aProps.length != bProps.length) {
+					return false;
+				}
+				
+				for (var i = 0; i < aProps.length; i++) {
+					var propName = aProps[i];
+					if (a[propName] !== b[propName]) {
+						return false;
+					}
+				}
+				return true;
+			}
+			function setProperties(a, b){
+				var bProps = Object.getOwnPropertyNames(b);
+				for (var i = 0; i < bProps.length; i++){
+					a[bProps[i]] = b[bProps[i]];
 				}
 			}
 			
@@ -703,7 +1118,7 @@
 					if(playerView == "game") playerView = "inventory";
 					else if(playerView == "inventory") playerView = "game";
 				}
-				if(e.key > 0 && e.key <= inventorySize.width) player.slot = e.key - 1;
+				if(playerView == "game" && player.itemCooldown == 0 && e.key > 0 && e.key <= inventorySize.width) player.slot = e.key - 1;
 			}
 			
 			
@@ -712,6 +1127,7 @@
 			
 			
 			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
+			setProperties(player.inventory[2][0], item[3])
 			
 			function draw() {
 				
@@ -738,6 +1154,18 @@
 						drawOverlay();
 					}
 					if(playerView == "inventory"){
+						drawMap();
+						drawEnemies();
+						drawPlayer();
+						drawWeapons();
+						drawProjectiles();
+						
+						ctx.beginPath();
+						ctx.globalAlpha = 0.9;
+						ctx.fillStyle = "Black";
+						ctx.fillRect(0, 0, canvas.width, canvas.height);
+						ctx.closePath();
+						
 						drawInventory();
 					}
 					if(playerView == "map"){
