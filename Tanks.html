@@ -393,12 +393,14 @@
 									projectile[index1][index2].Xspeed *= movementVector;
 									projectile[index1][index2].Yspeed *= movementVector;
 								}
-								projectile[index1][index2].Xpos += projectile[index1][index2].Xspeed;
-								projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed;
 								
-								
-								wallBounce(projectile[index1][index2]);
-								
+								for(var steps = projectile[index1][index2].speedVector;steps >= 0;steps--){
+									projectile[index1][index2].Xpos += projectile[index1][index2].Xspeed / projectile[index1][index2].speedVector * moveStep;
+									projectile[index1][index2].Ypos += projectile[index1][index2].Yspeed / projectile[index1][index2].speedVector * moveStep;
+									
+									
+									wallBounce(projectile[index1][index2]);
+								}
 							
 							}
 							else {
@@ -530,9 +532,7 @@
 									
 									var kill = false;
 									var killTanks = [];
-									var index4 = 0;
-									var index5 = 0;
-									var index6 = 0;
+									var index4, index5, index6 = 0;
 
 									for(index6 = 0;index6 < players;index6++){
 										if(!player[index6].dead && distance(projectile[index1][index2].front.x, projectile[index1][index2].front.y, player[index6].Xpos, player[index6].Ypos) <= tankScale*Math.sqrt(13) + projectile[index1][index2].size){
@@ -600,7 +600,7 @@
 					//target.Xspeed *= -1;
 					wallPush = inTile(target.Xpos)*tileSize + wallWidth + realTarget.size  - target.Xpos;
 					target.Xpos += wallPush;
-					target.Ypos += wallPush*target.Yspeed/target.Xspeed;
+					target.Ypos += wallPush*(target.Xspeed == 0 ? 0 : target.Yspeed/target.Xspeed);
 					target.Xspeed = Math.abs(target.Xspeed);
 					if(realTarget.type == 2) laserBounce = true;
 					if(realTarget.type == 9){
@@ -617,7 +617,7 @@
 					//target.Xspeed *= -1;
 					wallPush = (inTile(target.Xpos)+1)*tileSize - wallWidth - realTarget.size  - target.Xpos;
 					target.Xpos += wallPush;
-					target.Ypos += wallPush*target.Yspeed/target.Xspeed;
+					target.Ypos += wallPush*(target.Xspeed == 0 ? 0 : target.Yspeed/target.Xspeed);
 					target.Xspeed = -Math.abs(target.Xspeed);
 					if(realTarget.type == 2) laserBounce = true;
 					if(realTarget.type == 9){
@@ -634,7 +634,7 @@
 					//target.Yspeed *= -1;
 					wallPush = inTile(target.Ypos)*tileSize + wallWidth + realTarget.size  - target.Ypos;
 					target.Ypos += wallPush;
-					target.Xpos += wallPush*target.Xspeed/target.Yspeed;
+					target.Xpos += wallPush*(target.Yspeed == 0 ? 0 : target.Xspeed/target.Yspeed);
 					target.Yspeed = Math.abs(target.Yspeed);
 					if(realTarget.type == 2) laserBounce = true;
 					if(realTarget.type == 9){
@@ -651,7 +651,7 @@
 					//target.Yspeed *= -1;
 					wallPush = (inTile(target.Ypos)+1)*tileSize - wallWidth - realTarget.size  - target.Ypos;
 					target.Ypos += wallPush;
-					target.Xpos += wallPush*target.Xspeed/target.Yspeed;
+					target.Xpos += wallPush*(target.Yspeed == 0 ? 0 : target.Xspeed/target.Yspeed);
 					target.Yspeed = -Math.abs(target.Yspeed);
 					if(realTarget.type == 2) laserBounce = true;
 					if(realTarget.type == 9){
@@ -674,7 +674,7 @@
 						target.rotationSpeed = 0;
 					}
 					else{
-						target.Xspeed *= -1;
+						target.Xspeed = Math.abs(target.Xspeed);
 					}
 					if(realTarget.type == 6)target.rotation *= -1;
 				}
@@ -689,7 +689,7 @@
 					}
 					else{
 						target.Xpos = (inTile(target.Xpos)+1)*tileSize - wallWidth - realTarget.size;
-						target.Xspeed *= -1;
+						target.Xspeed = -Math.abs(target.Xspeed);
 					}
 					if(realTarget.type == 6)target.rotation *= -1;
 				}
@@ -704,7 +704,7 @@
 					}
 					else{
 						target.Ypos = inTile(target.Ypos)*tileSize + wallWidth + realTarget.size;
-						target.Yspeed *= -1;
+						target.Yspeed = Math.abs(target.Yspeed);
 					}
 					if(realTarget.type == 6)target.rotation = Math.PI - target.rotation;
 				}
@@ -719,7 +719,7 @@
 					}
 					else{
 						target.Ypos = (inTile(target.Ypos)+1)*tileSize - wallWidth - realTarget.size;
-						target.Yspeed *= -1;
+						target.Yspeed = -Math.abs(target.Yspeed);
 					}
 					if(realTarget.type == 6)target.rotation = Math.PI - target.rotation;
 				}
@@ -1471,7 +1471,35 @@
 			function distance(x1, y1, x2, y2){
 				return Math.sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
 			}
-			function mazePath(){}
+			function mazePath(x1, y1, x2, y2, output = "distance"){
+				var index4,index5;
+				var pathLength = [];
+				for(index4 = 0;index4 < maze.width;index4++){
+					pathLength[index4] = [];
+					for(index5 = 0;index5 < maze.height;index5++){
+						pathLength[index4][index5] = 99999;
+					}
+				}
+				pathLength[x1][y1] = 0;
+				var stop = false;
+				while(!stop){
+					stop = true;
+					for(index4 = 0;index4 < maze.width;index4++){
+						for(index5 = 0;index5 < maze.height;index5++){
+							if(pathLength[index4][index5] < 9999){
+								if(index4 > 0 && !maze[index4][index5].leftWall && pathLength[index4 - 1][index5] != Math.min(pathLength[index4][index5] + 1, pathLength[index4 - 1][index5])){
+									pathLength[index4 - 1][index5] = Math.min(pathLength[index4][index5] + 1, pathLength[index4 - 1][index5]);
+									stop = false;
+								}
+							}
+						}
+					}
+				}
+				if(output == "distance") return pathLength[x2][y2];
+				if(output == "directions"){
+					
+				}
+			}
 			
 			/*
 			addEventListener('mousemove', onMove, false);
