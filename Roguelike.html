@@ -335,6 +335,12 @@
 					rarity:2
 				}
 			];
+			var sprite = {item:[]};
+			for(index1 = 0;index1 < 2;index1++){
+				sprite.item[index1] = new Image();
+				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
+			}
+			
 			var startRoom = [
 				["w","w","w","d","w","w","w"],
 				["w"," "," "," "," "," ","w"],
@@ -367,7 +373,7 @@
 					}
 					if(gameState == "playing" && playerView == "inventory"){
 						var clicked = inSlot(mouse.x, mouse.y);
-						if(!(clicked == false || (typeof clicked == "string" && player.dragItem.subType != clicked))){
+						if(!(clicked == false || (typeof clicked == "string" && player.dragItem.subType != clicked && player.dragItem.name != ""))){
 							if(typeof clicked == "string") clicked = player.equipment[clicked];
 							else clicked = player.inventory[clicked.x][clicked.y];
 
@@ -917,24 +923,19 @@
 						ctx.closePath();
 					}
 					else if(player.inventory[player.slot][0].name != ""){
-						ctx.beginPath();
-						ctx.arc(canvas.width/2 + Math.sin(player.facing)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing)*tileSize*0.4, tileSize*0.1, 0, Math.PI*2);
-						ctx.fillStyle = "Red";
-						ctx.fill();
-						ctx.closePath();
 					}
 					
 					
 					if(player.inventory[player.slot][0].showHand.main){
 						ctx.beginPath();
-						ctx.arc(canvas.width/2 + Math.sin(player.facing + 0.65)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing + 0.65)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
+						ctx.arc(canvas.width/2 + Math.sin(player.facing - 0.75)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing - 0.75)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
 						ctx.fillStyle = "#6F1E00";
 						ctx.fill();
 						ctx.closePath();
 					}
 					if(player.inventory[player.slot][0].showHand.off){
 						ctx.beginPath();
-						ctx.arc(canvas.width/2 + Math.sin(player.facing - 0.65)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing - 0.65)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
+						ctx.arc(canvas.width/2 + Math.sin(player.facing + 0.75)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing + 0.75)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
 						ctx.fillStyle = "#6F1E00";
 						ctx.fill();
 						ctx.closePath();
@@ -954,7 +955,7 @@
 						ctx.globalAlpha = 1;
 						ctx.closePath();
 						
-						drawItem(player.inventory[index1][index2].name, index1*70 + 20, index2*70 + 20);
+						drawItem(player.inventory[index1][index2].name, index1*70 + 20 + 6, index2*70 + 20 + 6, 38);
 					}
 				}
 				
@@ -968,7 +969,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x, equipmentSlotLocation[index1].y);  //TODO: add textures for headEmpty, arm2Empty, ect
+					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + 6, equipmentSlotLocation[index1].y + 6, 38);  //TODO: add textures for headEmpty, arm2Empty, ect
 				}
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
@@ -1015,7 +1016,7 @@
 				ctx.closePath();
 				
 				
-				drawItem(player.dragItem.name, mouse.x - 25, mouse.y - 25);
+				drawItem(player.dragItem.name, mouse.x - 19, mouse.y - 19, 38);
 			}
 			function drawBigMap(){}
 			function drawOverlay(){
@@ -1029,7 +1030,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem(player.inventory[index1][0].name, index1*70 + 20, 20);
+					drawItem(player.inventory[index1][0].name, index1*70 + 20 + 6, 20 + 6, 38);
 				}
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
@@ -1069,11 +1070,9 @@
 			
 			function drawItem(name, x, y, scale = 50){
 				if(name != ""){
-					ctx.beginPath();
-					ctx.arc(x + scale/2, y + scale/2, scale/3, 0, Math.PI*2);
-					ctx.fillStyle = "Red";
-					ctx.fill();
-					ctx.closePath();
+					if(itemIndex(name) != false) name = itemIndex(name);
+					else name = 0;
+					ctx.drawImage(sprite.item[name], x, y, scale, scale);
 				}
 			}
 			
@@ -1082,6 +1081,7 @@
 				for(var index5 = 0;index5 < item.length;index5++){
 					if(item[index5].name == name) return index5;
 				}
+				return false;
 			}
 			
 			function distance(x,y){
@@ -1186,7 +1186,7 @@
 			
 			
 			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
-			setProperties(player.inventory[2][0], item[9]);
+			setProperties(player.inventory[2][0], item[1]);
 			
 			function draw() {
 				
@@ -1231,7 +1231,6 @@
 						drawBigMap();
 					}
 				}
-				
 				
 				setTimeout(draw, 20);
 			}
