@@ -46,24 +46,19 @@
 			var enemy = [{}];
 			var projectile = {player:[{}], enemy:[{}]};
 			var itemDrop = [{}];
+			var dust = [{}];
 			
-			var tried;
+			var mouse;
 			
 			var player = {
-				pos:{
-					x:1000.5,
-					y:1000.5
-				},
-				speed:{
-					x:0,
-					y:0
-				},
+				pos:{x:1000.5, y:1000.5 },
+				speed:{x:0, y:0},
 				size:0.8,
 				dead:false,
 				inventory:[[{}]],
 				specialSlots:{ammo:[{}]},
 				equipment:{},
-				dragItem:{},
+				dragItem:{name:""},
 				effects:[{name:"",duration:20}],
 				slot:0,
 				facing:0,
@@ -99,6 +94,7 @@
 			
 			
 			var enemyCap = 100;
+			var dustCap = 1000;
 			var projectileCap = 1000;
 			var projOwner = ["player","enemy"];
 			
@@ -118,18 +114,12 @@
 			
 			for(index1 = 0;index1 < enemyCap;index1++){
 				enemy[index1] = {
-					pos:{
-						x:0,
-						y:0
-					},
-					speed:{
-						x:0,
-						y:0
-					},
+					active:false,
+					pos:{x:0, y:0},
+					speed:{x:0, y:0},
 					type:"",
 					size:0.8,
 					target:null,
-					dead:true,
 					effects:[{name:"",duration:20}],
 					facing:0,
 					cooldown:0,
@@ -149,19 +139,23 @@
 			for(index1 = 0;index1 < 2;index1++){
 				for(index2 = 0;index2 < projectileCap;index2++){
 					projectile[projOwner[index1]][index2] = {
-						pos:{
-							x:0,
-							y:0
-						},
-						speed:{
-							x:0,
-							y:0
-						},
+						active:false,
+						pos:{x:0, y:0},
+						speed:{x:0, y:0},
 						type:"",
 						dead:0,
 						size:0,
 						damage:0
 					}
+				}
+			}
+			for(index1 = 0;index1 < dustCap;index1++){
+				dust[index1] = {
+					active:false,
+					type:"",
+					color:"#FFFFFF",
+					pos:{x:0, y:0},
+					speed:{x:0, y:0}
 				}
 			}
 			
@@ -365,17 +359,30 @@
 			document.addEventListener("mousemove", onMove, false);
 			function onClick(evt){
 				if(event.button == 0){
-					var mouse = getMousePos(canvas, evt);
+					mouse = getMousePos(canvas, evt);
 					if(gameState == "playing" && playerView == "game" && mouseControls){
 						player.facing = playerIsFacing(mouse.x, mouse.y);
 						
 						if(player.itemCooldown == 0) useItem(player, player.inventory[player.slot][0]);
 					}
-					
+					if(gameState == "playing" && playerView == "inventory"){
+						var clicked = inSlot(mouse.x, mouse.y);
+						if(!(clicked == false || (typeof clicked == "string" && player.dragItem.subType != clicked))){
+							if(typeof clicked == "string") clicked = player.equipment[clicked];
+							else clicked = player.inventory[clicked.x][clicked.y];
+
+							var swap = {};
+							setProperties(swap, player.dragItem);
+							player.dragItem = {};
+							setProperties(player.dragItem, clicked);
+							setProperties(clicked, {});
+							setProperties(clicked, swap);
+						}
+					}
 				}
 			}
 			function onMove(evt){
-				var mouse = getMousePos(canvas, evt);
+				mouse = getMousePos(canvas, evt);
 				if(gameState == "playing" && playerView == "game" && mouseControls){
 					player.facing = playerIsFacing(mouse.x, mouse.y);
 				}
@@ -387,7 +394,7 @@
 			}
 
 			window.oncontextmenu = function(evt){
-				var mouse = getMousePos(canvas, evt);
+				mouse = getMousePos(canvas, evt);
 				
 				return false;
 			}
@@ -806,6 +813,19 @@
 				}
 				return false;
 			}
+			function inSlot(x, y){
+				if(x >= 20 && x <= 70*inventorySize.width + 20 && y >= 20 && y <= 70*inventorySize.height + 20){
+					if((x - 20) % 70 <= 50 && (y - 20) % 70 <= 50){
+						return {x:Math.floor((x - 20)/70),y:Math.floor((y - 20)/70)};
+					}
+				}
+				for(index1 = 0;index1 < equipmentSlots.length;index1++){
+					if(x >= equipmentSlotLocation[index1].x && x <= equipmentSlotLocation[index1].x + 50 && y >= equipmentSlotLocation[index1].y && y <= equipmentSlotLocation[index1].y + 50){
+						return equipmentSlots[index1];
+					}
+				}
+				return false;
+			}
 			
 			
 			function drawMap(){
@@ -937,6 +957,7 @@
 						drawItem(player.inventory[index1][index2].name, index1*70 + 20, index2*70 + 20);
 					}
 				}
+				
 				for(index1 = 0;index1 < equipmentSlots.length;index1++){
 					ctx.beginPath();
 					ctx.rect(equipmentSlotLocation[index1].x, equipmentSlotLocation[index1].y, 50, 50);
@@ -992,6 +1013,9 @@
 				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, orbs), 10)*20 + 1000, 45);
 				ctx.fillText(Math.round(player.stat.manaRegen * 20) + "/s", Math.min(Math.max(hearts, orbs), 10)*20 + 1080, 45);
 				ctx.closePath();
+				
+				
+				drawItem(player.dragItem.name, mouse.x - 25, mouse.y - 25);
 			}
 			function drawBigMap(){}
 			function drawOverlay(){
@@ -1162,7 +1186,7 @@
 			
 			
 			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
-			setProperties(player.inventory[2][0], item[3])
+			setProperties(player.inventory[2][0], item[9]);
 			
 			function draw() {
 				
