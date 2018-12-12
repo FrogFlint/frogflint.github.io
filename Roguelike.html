@@ -48,7 +48,8 @@
 			var itemDrop = [{}];
 			var dust = [{}];
 			
-			var mouse;
+			var mouse = {x:0,y:0};
+			var crosshair = {x:canvas.width/2, y:canvas.height/2};
 			
 			var player = {
 				pos:{x:1000.5, y:1000.5 },
@@ -163,6 +164,7 @@
 			var controls = ["w","s","a","d","q","e","j"];
 			var direction = ["up","down","left","right"];
 			var edgeDirection = ["top","bottom","left","right"];
+			var stats = ["maxLife","maxMana","speed","acceleration","regen","manaRegen","armor","damageBonus"]
 			var item = [
 				{
 					name:"Base Item",
@@ -177,7 +179,9 @@
 					projectile:"",
 					velocity:0,
 					useMana:0,
-					armor:0,
+					bonus:{armor:0},
+					size:16,
+					itemSize:32,
 					tier:0,
 					rarity:0
 				},
@@ -190,6 +194,8 @@
 					speed:15,
 					autoUse:false,
 					showHand:{main:true, off:false},
+					size:16,
+					itemSize:36,
 					tier:1,
 					rarity:1
 				},
@@ -202,6 +208,8 @@
 					speed:7,
 					autoUse:true,
 					showHand:{main:true, off:false},
+					size:11,
+					itemSize:22,
 					tier:1,
 					rarity:1
 				},
@@ -217,6 +225,8 @@
 					ammoType:"Arrows",
 					projectile:"Arrow",
 					velocity:0.25,
+					size:16,
+					itemSize:32,
 					tier:1,
 					rarity:1
 				},
@@ -662,7 +672,21 @@
 			
 			
 			function updatePlayerStats(){
-				
+				setProperties(player.stat, {
+					maxLife:80,
+					maxMana:10,
+					speed:0.2,
+					acceleration:0.03,
+					regen:0.1,
+					manaRegen:0,
+					armor:0,
+					damageBonus:0
+				});
+				for(index1 = 0;index1 < equipmentSlots.length;index1++){
+					for(index2 = 0;index2 < stats.length;index2++){
+						if(player.equipment[equipmentSlots[index1]].bonus[stats[index2]] > -9999){}
+					}
+				}
 				
 				
 				player.stat.health = Math.min(player.stat.health + player.stat.regen, player.stat.maxLife);
@@ -955,7 +979,7 @@
 						ctx.globalAlpha = 1;
 						ctx.closePath();
 						
-						drawItem(player.inventory[index1][index2].name, index1*70 + 20 + 6, index2*70 + 20 + 6, 38);
+						drawItem(player.inventory[index1][index2].name, index1*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, index2*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, player.inventory[index1][index2].itemSize);
 					}
 				}
 				
@@ -969,7 +993,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + 6, equipmentSlotLocation[index1].y + 6, 38);  //TODO: add textures for headEmpty, arm2Empty, ect
+					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
 				}
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
@@ -1016,7 +1040,7 @@
 				ctx.closePath();
 				
 				
-				drawItem(player.dragItem.name, mouse.x - 19, mouse.y - 19, 38);
+				drawItem(player.dragItem.name, mouse.x - player.dragItem.itemSize/2, mouse.y - player.dragItem.itemSize/2, player.dragItem.itemSize);
 			}
 			function drawBigMap(){}
 			function drawOverlay(){
@@ -1030,7 +1054,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem(player.inventory[index1][0].name, index1*70 + 20 + 6, 20 + 6, 38);
+					drawItem(player.inventory[index1][0].name, index1*70 + 20 + (50 - player.inventory[index1][0].itemSize)/2, 20 + (50 - player.inventory[index1][0].itemSize)/2, player.inventory[index1][0].itemSize);
 				}
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
