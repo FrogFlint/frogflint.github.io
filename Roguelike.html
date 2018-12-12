@@ -195,13 +195,13 @@
 				},
 				{
 					name:"Knives",
-					tooltip:"A light, agile pair of knives",
+					tooltip:"When kept in your hotbar, this knife can be used in conjunction with any one-handed melee weapon",
 					type:"weapon",
 					subType:"stab",
 					damage:2,
 					speed:7,
 					autoUse:true,
-					showHand:{main:true, off:true},
+					showHand:{main:true, off:false},
 					tier:1,
 					rarity:1
 				},
@@ -336,7 +336,7 @@
 				}
 			];
 			var sprite = {item:[]};
-			for(index1 = 0;index1 < 2;index1++){
+			for(index1 = 0;index1 <= 3;index1++){
 				sprite.item[index1] = new Image();
 				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
 			}
@@ -1186,7 +1186,9 @@
 			
 			
 			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
-			setProperties(player.inventory[2][0], item[1]);
+			setProperties(player.inventory[0][0], item[1]);
+			setProperties(player.inventory[1][0], item[2]);
+			setProperties(player.inventory[2][0], item[3]);
 			
 			function draw() {
 				
