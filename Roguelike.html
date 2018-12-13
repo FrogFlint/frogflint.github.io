@@ -753,7 +753,23 @@
 				}
 			}
 			function moveEnemies(){}
-			function moveProjectiles(){}
+			function moveProjectiles(){
+				for(index1 = 0;index1 < 2;index1++){
+					for(index2 = 0;index2 < projectileCap;index2++){
+						projectile[projOwner[index1]][index2].pos.x += projectile[projOwner[index1]][index2].speed.x;
+						projectile[projOwner[index1]][index2].pos.y += projectile[projOwner[index1]][index2].speed.y;
+						
+						var bounce = wallCollisions(projectile[projOwner[index1]][index2].pos.x, projectile[projOwner[index1]][index2].pos.y, projectile[projOwner[index1]][index2].size/2);
+						
+						projectile[projOwner[index1]][index2].pos.x = bounce.x;
+						projectile[projOwner[index1]][index2].pos.y = bounce.y;
+						
+						if(bounce.left || bounce.right || bounce.up || bounce.down || bounce.upLeft || bounce.upRight || bounce.downLeft || bounce.downRight){
+							if(true){}
+						}
+					}
+				}
+			}
 			function meleeAttacks(){}
 			
 			function killStuff(){}
