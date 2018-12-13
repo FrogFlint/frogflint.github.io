@@ -76,6 +76,7 @@
 					armor:0,
 					damageBonus:0
 				},
+				clicking:false,
 				key:{up:false,down:false,left:false,right:false}
 			};
 			
@@ -84,13 +85,13 @@
 			for(index1 = 0;index1 < 7;index1++){
 				player.inventory[index1] = [];
 				for(index2 = 0;index2 < 6;index2++){
-					player.inventory[index1][index2] = {name:""};
+					player.inventory[index1][index2] = {name:"",itemSize:32};
 				}
 			}
 			var equipmentSlots = ["head","body","legs","feet","arm1","arm2","hands","neck","back"];
 			var equipmentSlotLocation = [{x:950,y:200},{x:950,y:270},{x:950,y:340},{x:950,y:410},{x:880,y:270},{x:1020,y:270},{x:1160,y:340},{x:1160,y:270},{x:1160,y:200}];
 			for(index1 = 0;index1 < equipmentSlots.length;index1++){
-				player.equipment[equipmentSlots[index1]] = {name:""};
+				player.equipment[equipmentSlots[index1]] = {name:"",itemSize:32};
 			}
 			
 			
@@ -164,7 +165,7 @@
 			var controls = ["w","s","a","d","q","e","j"];
 			var direction = ["up","down","left","right"];
 			var edgeDirection = ["top","bottom","left","right"];
-			var stats = ["maxLife","maxMana","speed","acceleration","regen","manaRegen","armor","damageBonus"]
+			//var stats = ["maxLife","maxMana","speed","acceleration","regen","manaRegen","armor","damageBonus"];
 			var item = [
 				{
 					name:"Base Item",
@@ -203,7 +204,7 @@
 					name:"Knives",
 					tooltip:"When kept in your hotbar, this knife can be used in conjunction with any one-handed melee weapon",
 					type:"weapon",
-					subType:"stab",
+					subType:"swing",
 					damage:2,
 					speed:7,
 					autoUse:true,
@@ -279,6 +280,7 @@
 					tooltip:"Increases bow firing speed\n20% chance to not consume arrows",
 					type:"equipment",
 					subType:"back",
+					bonus:{},
 					tier:2,
 					rarity:1
 				},
@@ -287,6 +289,7 @@
 					tooltip:"Increases inventory space",
 					type:"equipment",
 					subType:"back",
+					bonus:{},
 					tier:2,
 					rarity:1
 				},
@@ -295,7 +298,7 @@
 					tooltip:"Lets you enter stealth mode by holding shift, making you invisible and enabling sneak attacks",
 					type:"equipment",
 					subType:"head",
-					armor:2,
+					bonus:{armor:2},
 					tier:3,
 					rarity:1
 				},
@@ -304,7 +307,7 @@
 					tooltip:"Increases maximum mana and enables passive mana regeneration",
 					type:"equipment",
 					subType:"head",
-					armor:1,
+					bonus:{armor:1, maxMana:10, manaRegen:0.06},
 					tier:3,
 					rarity:1
 				},
@@ -313,7 +316,7 @@
 					tooltip:"A strong defensive helmet",
 					type:"equipment",
 					subType:"head",
-					armor:5,
+					bonus:{armor:5},
 					tier:3,
 					rarity:1
 				},
@@ -322,7 +325,7 @@
 					tooltip:"Increases health regeneration",
 					type:"equipment",
 					subType:"arms",
-					armor:1,
+					bonus:{armor:1, regen:0.1},
 					tier:4,
 					rarity:2
 				},
@@ -331,7 +334,7 @@
 					tooltip:"Increases melee damage and ",
 					type:"equipment",
 					subType:"hands",
-					armor:6,
+					bonus:{armor:6, damageBonus:0.1},
 					tier:4,
 					rarity:2
 				},
@@ -340,12 +343,34 @@
 					tooltip:"Lets the wearer run very fast",
 					type:"equipment",
 					subType:"feet",
-					armor:1,
+					bonus:{armor:1, speed:0, acceleration:0},
 					tier:4,
 					rarity:2
 				}
 			];
-			var sprite = {item:[]};
+			var baseProjectile = [
+				{
+					name:"Base Projctile",
+					pos:{x:0, y:0},
+					speed:{x:0, y:0},
+					damage:0,
+					size:10,
+					bounces:0,
+					pierces:0
+				},
+				{
+					name:"Arrow",
+					damage:4,
+					size:9
+				},
+				{
+					name:"Fireball"
+				},
+				{
+					name:"Flame"
+				}
+			];
+			var sprite = {item:[],projectile:[]};
 			for(index1 = 0;index1 <= 3;index1++){
 				sprite.item[index1] = new Image();
 				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
@@ -375,13 +400,17 @@
 			document.addEventListener("mousemove", onMove, false);
 			function onClick(evt){
 				if(event.button == 0){
-					mouse = getMousePos(canvas, evt);
-					if(gameState == "playing" && playerView == "game" && mouseControls){
-						player.facing = playerIsFacing(mouse.x, mouse.y);
+					
+					if(gameState == "playing" && playerView == "game"){
+						if(mouseControls) mouse = getMousePos(canvas, evt);
 						
-						if(player.itemCooldown == 0) useItem(player, player.inventory[player.slot][0]);
+						if(player.itemCooldown == 0){
+							player.facing = playerIsFacing(mouse.x, mouse.y);
+							useItem(player, player.inventory[player.slot][0]);
+						}
 					}
 					if(gameState == "playing" && playerView == "inventory"){
+						mouse = getMousePos(canvas, evt);
 						var clicked = inSlot(mouse.x, mouse.y);
 						if(!(clicked == false || (typeof clicked == "string" && player.dragItem.subType != clicked && player.dragItem.name != ""))){
 							if(typeof clicked == "string") clicked = player.equipment[clicked];
@@ -399,7 +428,7 @@
 			}
 			function onMove(evt){
 				mouse = getMousePos(canvas, evt);
-				if(gameState == "playing" && playerView == "game" && mouseControls){
+				if(gameState == "playing" && playerView == "game" && mouseControls && player.itemCooldown == 0){
 					player.facing = playerIsFacing(mouse.x, mouse.y);
 				}
 			}
@@ -418,7 +447,7 @@
 			
 			
 			
-			function buildRoom(x, y, doors = 13, chests = 0, enemies = []){  //random generation
+			function buildRoom(x, y, maxSize = 14, doors = 13, chests = 0, enemies = []){  //random generation
 				if(map[x][y].object != "door") return false;
 				
 				
@@ -436,7 +465,7 @@
 				
 				var index3, index4;
 				var noRoom = false;
-				for(var size = 7;size <= 14 && !noRoom;size++){
+				for(var size = 7;size <= maxSize && !noRoom;size++){
 					if(roomDirection == "left"){
 						for(index3 = x - size;index3 <= x;index3++){
 							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
@@ -683,8 +712,11 @@
 					damageBonus:0
 				});
 				for(index1 = 0;index1 < equipmentSlots.length;index1++){
-					for(index2 = 0;index2 < stats.length;index2++){
-						if(player.equipment[equipmentSlots[index1]].bonus[stats[index2]] > -9999){}
+					if(player.equipment[equipmentSlots[index1]].name != ""){
+						var changeStat = Object.getOwnPropertyNames(player.equipment[equipmentSlots[index1]].bonus);
+						for(index2 = 0;index2 < changeStat.length;index2++){
+							player.stat[changeStat[index2]] += player.equipment[equipmentSlots[index1]].bonus[changeStat[index2]];
+						}
 					}
 				}
 				
@@ -771,6 +803,7 @@
 				}
 			}
 			function meleeAttacks(){}
+			function moveDust(){}
 			
 			function killStuff(){}
 			
@@ -943,45 +976,56 @@
 			}
 			function drawPlayer(){
 				ctx.beginPath();
-				ctx.arc(canvas.width/2, canvas.height/2, tileSize * player.size/2, 0, Math.PI*2);
-				ctx.fillStyle = "#772600";
+				ctx.arc(canvas.width/2, canvas.height/2, tileSize * player.size/2 - 1, 0, Math.PI*2);
+				ctx.fillStyle = "#8a2c00";
 				ctx.fill();
+				ctx.lineWidth = 2;
+				ctx.strokeStyle = "#6e2300";
+				ctx.stroke();
 				ctx.closePath();
 			}
 			function drawEnemies(){}
 			function drawProjectiles(){}
 			function drawWeapons(){
 				if(player.itemCooldown > 0){
-					var swingAngle = 0;
+					var swingAngle = player.facing;
+					
+					if(player.inventory[player.slot][0].subType == "swing") swingAngle += 0.24 - 1.2*player.itemCooldown/player.inventory[player.slot][0].speed;
 					
 					if(player.inventory[player.slot][0].name == "Bow"){
 						ctx.beginPath();
-						ctx.arc(canvas.width/2 - Math.sin(player.facing)*tileSize*0.3, canvas.height/2 - Math.cos(player.facing)*tileSize*0.3, tileSize*0.9, Math.PI/2 - player.facing - 0.7, Math.PI/2 - player.facing + 0.7);
-						ctx.strokeStyle = "#772600";
+						ctx.arc(canvas.width/2 - Math.sin(swingAngle)*tileSize*0.3, canvas.height/2 - Math.cos(swingAngle)*tileSize*0.3, tileSize*0.9, Math.PI/2 - swingAngle - 0.7, Math.PI/2 - swingAngle + 0.7);
+						ctx.strokeStyle = "#6e2300";
 						ctx.lineWidth = 3;
 						ctx.stroke();
 						ctx.closePath();
 					}
-					else if(player.inventory[player.slot][0].name != ""){
-					}
+					else if(player.inventory[player.slot][0].name != ""){}
 					
 					
 					if(player.inventory[player.slot][0].showHand.main){
 						ctx.beginPath();
-						ctx.arc(canvas.width/2 + Math.sin(player.facing - 0.75)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing - 0.75)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
-						ctx.fillStyle = "#6F1E00";
+						ctx.arc(canvas.width/2 + Math.sin(swingAngle - 0.75)*tileSize*0.5, canvas.height/2 + Math.cos(swingAngle - 0.75)*tileSize*0.5, tileSize*0.13, 0, Math.PI*2);
+						ctx.fillStyle = "#8a2c00";
 						ctx.fill();
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = "#6e2300";
+						ctx.stroke();
 						ctx.closePath();
 					}
 					if(player.inventory[player.slot][0].showHand.off){
 						ctx.beginPath();
-						ctx.arc(canvas.width/2 + Math.sin(player.facing + 0.75)*tileSize*0.4, canvas.height/2 + Math.cos(player.facing + 0.75)*tileSize*0.4, tileSize*0.13, 0, Math.PI*2);
-						ctx.fillStyle = "#6F1E00";
+						ctx.arc(canvas.width/2 + Math.sin(swingAngle + 0.75)*tileSize*0.5, canvas.height/2 + Math.cos(swingAngle + 0.75)*tileSize*0.5, tileSize*0.13, 0, Math.PI*2);
+						ctx.fillStyle = "#8a2c00";
 						ctx.fill();
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = "#772600";
+						ctx.stroke();
 						ctx.closePath();
 					}
 				}
 			}
+			function drawDust(){}
 			
 			function drawInventory(){
 				for(index1 = 0;index1 < inventorySize.width;index1++){
@@ -995,7 +1039,7 @@
 						ctx.globalAlpha = 1;
 						ctx.closePath();
 						
-						drawItem(player.inventory[index1][index2].name, index1*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, index2*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, player.inventory[index1][index2].itemSize);
+						drawSprite("item", player.inventory[index1][index2].name, index1*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, index2*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, player.inventory[index1][index2].itemSize);
 					}
 				}
 				
@@ -1009,7 +1053,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem((player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
+					drawSprite("item", (player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
 				}
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
@@ -1037,7 +1081,7 @@
 					ctx.fill();
 					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
 						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
-						ctx.fillStyle = "Red";
+						ctx.fillStyle = "Blue";
 						ctx.fill();
 						ctx.globalAlpha = 1;
 					}
@@ -1056,7 +1100,7 @@
 				ctx.closePath();
 				
 				
-				drawItem(player.dragItem.name, mouse.x - player.dragItem.itemSize/2, mouse.y - player.dragItem.itemSize/2, player.dragItem.itemSize);
+				drawSprite("item", player.dragItem.name, mouse.x - player.dragItem.itemSize/2, mouse.y - player.dragItem.itemSize/2, player.dragItem.itemSize);
 			}
 			function drawBigMap(){}
 			function drawOverlay(){
@@ -1070,7 +1114,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawItem(player.inventory[index1][0].name, index1*70 + 20 + (50 - player.inventory[index1][0].itemSize)/2, 20 + (50 - player.inventory[index1][0].itemSize)/2, player.inventory[index1][0].itemSize);
+					drawSprite("item", player.inventory[index1][0].name, index1*70 + 20 + (50 - player.inventory[index1][0].itemSize)/2, 20 + (50 - player.inventory[index1][0].itemSize)/2, player.inventory[index1][0].itemSize);
 				}
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
@@ -1097,7 +1141,7 @@
 					ctx.fill();
 					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
 						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
-						ctx.fillStyle = "Red";
+						ctx.fillStyle = "Blue";
 						ctx.fill();
 						ctx.globalAlpha = 1;
 					}
@@ -1108,11 +1152,13 @@
 				}
 			}
 			
-			function drawItem(name, x, y, scale = 50){
+			function drawSprite(type, name, x, y, scale = 50){
 				if(name != ""){
-					if(itemIndex(name) != false) name = itemIndex(name);
-					else name = 0;
-					ctx.drawImage(sprite.item[name], x, y, scale, scale);
+					if(type == "item"){
+						if(itemIndex(name) == false || itemIndex(name) >= sprite.item.length) name = 0;
+						else name = itemIndex(name);
+						ctx.drawImage(sprite.item[name], x, y, scale, scale);
+					}
 				}
 			}
 			
@@ -1229,6 +1275,7 @@
 			setProperties(player.inventory[0][0], item[1]);
 			setProperties(player.inventory[1][0], item[2]);
 			setProperties(player.inventory[2][0], item[3]);
+			setProperties(player.inventory[3][0], item[11]);
 			
 			function draw() {
 				
@@ -1243,23 +1290,26 @@
 						movePlayer();
 						moveEnemies();
 						moveProjectiles();
+						moveDust();
 						
 						killStuff();
 						
 						drawMap();
+						drawProjectiles();
+						drawWeapons();
+						drawDust();
 						drawEnemies();
 						drawPlayer();
-						drawWeapons();
-						drawProjectiles();
 						
 						drawOverlay();
 					}
 					if(playerView == "inventory"){
 						drawMap();
+						drawProjectiles();
+						drawWeapons();
+						drawDust();
 						drawEnemies();
 						drawPlayer();
-						drawWeapons();
-						drawProjectiles();
 						
 						ctx.beginPath();
 						ctx.globalAlpha = 0.9;
