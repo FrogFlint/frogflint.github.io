@@ -371,7 +371,7 @@
 				}
 			];
 			var sprite = {item:[],projectile:[]};
-			for(index1 = 0;index1 <= 3;index1++){
+			for(index1 = 0;index1 <= 4;index1++){
 				sprite.item[index1] = new Image();
 				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
 			}
@@ -493,7 +493,7 @@
 								}
 							}
 						}
-						for(index3 = x + size - 3;index3 >= x + 3;index3--){
+						for(index3 = x + size + 3;index3 >= x - 3;index3--){
 							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2) + 6;index4++){
 								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
 							}
@@ -539,7 +539,7 @@
 				
 				var extend = {};
 				for(index3 = 0;index3 < 4;index3++){
-					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(*/randRange(size, 6)/*, 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
+					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(randRange(*/size/*, 6), 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
 				}
 				var boundaries = {};
 				for(index3 = 0;index3 < 4;index3++){
@@ -1275,7 +1275,8 @@
 			setProperties(player.inventory[0][0], item[1]);
 			setProperties(player.inventory[1][0], item[2]);
 			setProperties(player.inventory[2][0], item[3]);
-			setProperties(player.inventory[3][0], item[11]);
+			setProperties(player.inventory[3][0], item[4]);
+			setProperties(player.inventory[5][0], item[11]);
 			
 			function draw() {
 				
