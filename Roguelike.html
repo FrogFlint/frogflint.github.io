@@ -370,11 +370,19 @@
 					name:"Flame"
 				}
 			];
-			var sprite = {item:[],projectile:[]};
+			var sprite = {item:[],projectile:[],other:{}};
 			for(index1 = 0;index1 <= 4;index1++){
 				sprite.item[index1] = new Image();
 				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
 			}
+			sprite.other.heart      = new Image;
+			sprite.other.heartEmpty = new Image;
+			sprite.other.star       = new Image;
+			sprite.other.starEmpty  = new Image;
+			sprite.other.heart.src      = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Heart.png";
+			sprite.other.heartEmpty.src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/EmptyHeart.png";
+			sprite.other.star.src       = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Mana.png";
+			sprite.other.starEmpty.src  = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/EmptyMana.png";
 			
 			var startRoom = [
 				["w","w","w","d","w","w","w"],
@@ -1059,13 +1067,15 @@
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
 					ctx.beginPath();
-					ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
-					ctx.fill();
+					//ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
+					//ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
+					//ctx.fill();
+					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "heart": "heartEmpty", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
 					if(player.stat.health < (index1 + 1)*10 && player.stat.health >= index1*10){
 						ctx.globalAlpha = (player.stat.health - index1*10)/10;
-						ctx.fillStyle = "Red";
-						ctx.fill();
+						//ctx.fillStyle = "Red";
+						//ctx.fill();
+						drawSprite("other", "heart", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
 					ctx.strokeStyle = "White";
@@ -1073,16 +1083,18 @@
 					ctx.stroke();
 					ctx.closePath();
 				}
-				var orbs = Math.ceil(player.stat.maxMana/10);
-				for(index1 = 0;index1 < orbs;index1++){
+				var stars = Math.ceil(player.stat.maxMana/10);
+				for(index1 = 0;index1 < stars;index1++){
 					ctx.beginPath();
-					ctx.arc((index1 %10)*20 + 1000, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*20, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
-					ctx.fill();
+					//ctx.arc((index1 %10)*24 + 1000 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*24 - 12, 8, 0, Math.PI*2);
+					//ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
+					//ctx.fill();
+					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "star": "starEmpty", (index1 %10)*24 + 1000 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*24 - 12, 24);
 					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
 						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
-						ctx.fillStyle = "Blue";
-						ctx.fill();
+						//ctx.fillStyle = "Blue";
+						//ctx.fill();
+						drawSprite("other", "star", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
 					ctx.strokeStyle = "White";
@@ -1093,10 +1105,10 @@
 				ctx.beginPath();
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "White";
-				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, orbs), 10)*20 + 1000, 25);
-				ctx.fillText(Math.round(player.stat.regen * 20) + "/s", Math.min(Math.max(hearts, orbs), 10)*20 + 1080, 25);
-				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, orbs), 10)*20 + 1000, 45);
-				ctx.fillText(Math.round(player.stat.manaRegen * 20) + "/s", Math.min(Math.max(hearts, orbs), 10)*20 + 1080, 45);
+				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, stars), 10)*20 + 1000, 25);
+				ctx.fillText(Math.round(player.stat.regen * 20) + "/s", Math.min(Math.max(hearts, stars), 10)*20 + 1080, 25);
+				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, stars), 10)*20 + 1000, 45);
+				ctx.fillText(Math.round(player.stat.manaRegen * 20) + "/s", Math.min(Math.max(hearts, stars), 10)*20 + 1080, 45);
 				ctx.closePath();
 				
 				
@@ -1133,8 +1145,8 @@
 					ctx.stroke();
 					ctx.closePath();
 				}
-				var orbs = Math.ceil(player.stat.maxMana/10);
-				for(index1 = 0;index1 < orbs;index1++){
+				var stars = Math.ceil(player.stat.maxMana/10);
+				for(index1 = 0;index1 < stars;index1++){
 					ctx.beginPath();
 					ctx.arc((index1 %10)*20 + 1000, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*20, 8, 0, Math.PI*2);
 					ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
@@ -1158,6 +1170,10 @@
 						if(itemIndex(name) == false || itemIndex(name) >= sprite.item.length) name = 0;
 						else name = itemIndex(name);
 						ctx.drawImage(sprite.item[name], x, y, scale, scale);
+					}
+					
+					if(type == "other"){
+						ctx.drawImage(sprite.other[name], x, y, scale, scale);
 					}
 				}
 			}
