@@ -710,8 +710,8 @@
 			
 			function updatePlayerStats(){
 				setProperties(player.stat, {
-					maxLife:80,
-					maxMana:10,
+					maxLife:180,
+					maxMana:110,
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
@@ -729,8 +729,8 @@
 				}
 				
 				
-				player.stat.health = Math.min(player.stat.health + player.stat.regen, player.stat.maxLife);
-				player.stat.mana = Math.min(player.stat.mana + player.stat.manaRegen, player.stat.maxMana);
+				player.stat.health = Math.min(player.stat.health + (playerView == "game" ? player.stat.regen : 0), player.stat.maxLife);
+				player.stat.mana = Math.min(player.stat.mana + (playerView == "game" ? player.stat.manaRegen : 0), player.stat.maxMana);
 			}
 			function applyEffects(){}
 			
@@ -1066,49 +1066,29 @@
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
-					ctx.beginPath();
-					//ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
-					//ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
-					//ctx.fill();
-					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "heart": "heartEmpty", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
+					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "heart": "heartEmpty", (index1 % 10)*26 + 960 - 12, (Math.floor(index1/10) + 1)*26 - 12, 24);
 					if(player.stat.health < (index1 + 1)*10 && player.stat.health >= index1*10){
 						ctx.globalAlpha = (player.stat.health - index1*10)/10;
-						//ctx.fillStyle = "Red";
-						//ctx.fill();
-						drawSprite("other", "heart", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
+						drawSprite("other", "heart", (index1 % 10)*26 + 960 - 12, (Math.floor(index1/10) + 1)*26 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
-					ctx.strokeStyle = "White";
-					ctx.lineWidth = 1;
-					ctx.stroke();
-					ctx.closePath();
 				}
 				var stars = Math.ceil(player.stat.maxMana/10);
 				for(index1 = 0;index1 < stars;index1++){
-					ctx.beginPath();
-					//ctx.arc((index1 %10)*24 + 1000 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*24 - 12, 8, 0, Math.PI*2);
-					//ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
-					//ctx.fill();
-					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "star": "starEmpty", (index1 %10)*24 + 1000 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*24 - 12, 24);
+					drawSprite("other", player.stat.mana >= (index1 + 1)*10 ? "star": "starEmpty", (index1 %10)*26 + 960 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*26 - 12, 24);
 					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
 						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
-						//ctx.fillStyle = "Blue";
-						//ctx.fill();
-						drawSprite("other", "star", (index1 % 10)*24 + 1000 - 12, (Math.floor(index1/10) + 1)*24 - 12, 24);
+						drawSprite("other", "star", (index1 %10)*26 + 960 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*26 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
-					ctx.strokeStyle = "White";
-					ctx.lineWidth = 1;
-					ctx.stroke();
-					ctx.closePath();
 				}
 				ctx.beginPath();
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "White";
-				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, stars), 10)*20 + 1000, 25);
-				ctx.fillText(Math.round(player.stat.regen * 20) + "/s", Math.min(Math.max(hearts, stars), 10)*20 + 1080, 25);
-				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, stars), 10)*20 + 1000, 45);
-				ctx.fillText(Math.round(player.stat.manaRegen * 20) + "/s", Math.min(Math.max(hearts, stars), 10)*20 + 1080, 45);
+				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, stars), 10)*26 + 960, 32);
+				ctx.fillText(Math.round(player.stat.regen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, 26);
+				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, stars), 10)*26 + 960, (Math.floor(hearts/10) + 1)*26 + 32);
+				ctx.fillText(Math.round(player.stat.manaRegen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, (Math.floor(hearts/10) + 2)*26 + 4);
 				ctx.closePath();
 				
 				
@@ -1130,37 +1110,21 @@
 				}
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
-					ctx.beginPath();
-					ctx.arc((index1 % 10)*20 + 1000, (Math.floor(index1/10) + 1)*20, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.health >= (index1 + 1)*10 ? "Red": "Black";
-					ctx.fill();
+					drawSprite("other", player.stat.health >= (index1 + 1)*10 ? "heart": "heartEmpty", (index1 % 10)*26 + 960 - 12, (Math.floor(index1/10) + 1)*26 - 12, 24);
 					if(player.stat.health < (index1 + 1)*10 && player.stat.health >= index1*10){
 						ctx.globalAlpha = (player.stat.health - index1*10)/10;
-						ctx.fillStyle = "Red";
-						ctx.fill();
+						drawSprite("other", "heart", (index1 % 10)*26 + 960 - 12, (Math.floor(index1/10) + 1)*26 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
-					ctx.strokeStyle = "White";
-					ctx.lineWidth = 1;
-					ctx.stroke();
-					ctx.closePath();
 				}
 				var stars = Math.ceil(player.stat.maxMana/10);
 				for(index1 = 0;index1 < stars;index1++){
-					ctx.beginPath();
-					ctx.arc((index1 %10)*20 + 1000, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*20, 8, 0, Math.PI*2);
-					ctx.fillStyle = player.stat.mana >= (index1 + 1)*10 ? "Blue": "Black";
-					ctx.fill();
+					drawSprite("other", player.stat.mana >= (index1 + 1)*10 ? "star": "starEmpty", (index1 %10)*26 + 960 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*26 - 12, 24);
 					if(player.stat.mana < (index1 + 1)*10 && player.stat.mana >= index1*10){
 						ctx.globalAlpha = (player.stat.mana - index1*10)/10;
-						ctx.fillStyle = "Blue";
-						ctx.fill();
+						drawSprite("other", "star", (index1 %10)*26 + 960 - 12, (Math.floor(hearts/10) + Math.floor(index1/10) + 2)*26 - 12, 24);
 						ctx.globalAlpha = 1;
 					}
-					ctx.strokeStyle = "White";
-					ctx.lineWidth = 1;
-					ctx.stroke();
-					ctx.closePath();
 				}
 			}
 			
