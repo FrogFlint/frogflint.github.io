@@ -173,6 +173,7 @@
 					type:["weapon","equipment","ammo"],
 					subType:[["swing","stab","shoot"],["head","body","legs","feet","arm","hands","neck","back"]],
 					damage:0,
+					damageType:["melee","ranged","magic"],
 					speed:0,
 					autoUse:false,
 					showHand:{main:false, off:false},
@@ -192,6 +193,7 @@
 					type:"weapon",
 					subType:"swing",
 					damage:3,
+					damageType:"melee",
 					speed:15,
 					autoUse:false,
 					showHand:{main:true, off:false},
@@ -206,6 +208,7 @@
 					type:"weapon",
 					subType:"swing",
 					damage:2,
+					damageType:"melee",
 					speed:7,
 					autoUse:true,
 					showHand:{main:true, off:false},
@@ -220,6 +223,7 @@
 					type:"weapon",
 					subType:"shoot",
 					damage:10,
+					damageType:"ranged",
 					speed:9,
 					autoUse:false,
 					showHand:{main:true, off:true},
@@ -237,6 +241,7 @@
 					type:"weapon",
 					subType:"shoot",
 					damage:10,
+					damageType:"magic",
 					speed:10,
 					autoUse:true,
 					showHand:{main:true, off:false},
@@ -252,6 +257,7 @@
 					type:"weapon",
 					subType:"shoot",
 					damage:30,
+					damageType:"magic",
 					speed:30,
 					autoUse:false,
 					showHand:{main:true, off:false},
@@ -438,6 +444,12 @@
 				mouse = getMousePos(canvas, evt);
 				if(gameState == "playing" && playerView == "game" && mouseControls && player.itemCooldown == 0){
 					player.facing = playerIsFacing(mouse.x, mouse.y);
+				}
+				if(gameState == "playing" && playerView == "inventory" && player.dragItem.name == ""){
+					var slotInfo = inSlot(mouse.x, mouse.y);
+					if(slotInfo != false){
+						drawTooltip(typeof slotInfo == "string" ? player.equipment[slotInfo] : player.inventory[slotInfo.x][slotInfo.y], mouse.x, mouse.y);
+					}
 				}
 			}
 			function playerIsFacing(x, y){
@@ -710,8 +722,8 @@
 			
 			function updatePlayerStats(){
 				setProperties(player.stat, {
-					maxLife:180,
-					maxMana:110,
+					maxLife:80,
+					maxMana:10,
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
@@ -1086,9 +1098,9 @@
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "White";
 				ctx.fillText(Math.ceil(player.stat.health) + "/" + Math.ceil(player.stat.maxLife), Math.min(Math.max(hearts, stars), 10)*26 + 960, 32);
-				ctx.fillText(Math.round(player.stat.regen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, 26);
+				ctx.fillText(Math.round(player.stat.regen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, 32);
 				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, stars), 10)*26 + 960, (Math.floor(hearts/10) + 1)*26 + 32);
-				ctx.fillText(Math.round(player.stat.manaRegen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, (Math.floor(hearts/10) + 2)*26 + 4);
+				ctx.fillText(Math.round(player.stat.manaRegen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, (Math.floor(hearts/10) + 1)*26 + 32);
 				ctx.closePath();
 				
 				
@@ -1140,6 +1152,20 @@
 						ctx.drawImage(sprite.other[name], x, y, scale, scale);
 					}
 				}
+			}
+			function drawTooltip(itemRef, x, y){
+				var tooltipText = itemRef.name + "\n\n" + itemRef.tooltip;
+				if(itemRef.damage >= 0) tooltipText += "\n\n" + itemRef.damage + " " + itemRef.damageType + " damage";
+				
+				var lines = 0;
+				ctx.beginPath();
+				ctx.fillStyle = "Black";
+				ctx.fillRect(x,y,0,0);
+				ctx.font = "15px Arial";
+				ctx.fillStyle = "White";
+				ctx.fillText(itemRef.name, x, y + lines*22);
+				lines++;
+				ctx.closePath();
 			}
 			
 			
