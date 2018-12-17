@@ -34,7 +34,7 @@
 			var map = [[{}]];
 			var loadRadius = 500;
 			var mapEdge = {top:1000 - loadRadius, bottom:1000 + loadRadius, left:1000 - loadRadius, right:1000 + loadRadius};
-			var tileSize = 35;
+			var tileSize = 48;
 			
 			var GUIscale = 1;
 			
@@ -72,7 +72,7 @@
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
-					manaRegen:0,
+					manaRegen:0.06,
 					armor:0,
 					damageBonus:0
 				},
@@ -169,7 +169,7 @@
 			var item = [
 				{
 					name:"Base Item",
-					tooltip:"An item",
+					tooltip:["An item"],
 					type:["weapon","equipment","ammo"],
 					subType:[["swing","stab","shoot"],["head","body","legs","feet","arm","hands","neck","back"]],
 					damage:0,
@@ -189,7 +189,7 @@
 				},
 				{
 					name:"Wooden Sword",
-					tooltip:"A basic wood sword",
+					tooltip:["A basic wood sword"],
 					type:"weapon",
 					subType:"swing",
 					damage:3,
@@ -197,29 +197,29 @@
 					speed:15,
 					autoUse:false,
 					showHand:{main:true, off:false},
-					size:16,
-					itemSize:36,
+					size:26,
+					itemSize:32,
 					tier:1,
 					rarity:1
 				},
 				{
 					name:"Knives",
-					tooltip:"When kept in your hotbar, this knife can be used in conjunction with any one-handed melee weapon",
+					tooltip:["When kept in your hotbar, this knife can be used in conjunction with any one-handed melee weapon"],
 					type:"weapon",
-					subType:"swing",
+					subType:"stab",
 					damage:2,
 					damageType:"melee",
 					speed:7,
 					autoUse:true,
 					showHand:{main:true, off:false},
-					size:11,
+					size:18,
 					itemSize:22,
 					tier:1,
 					rarity:1
 				},
 				{
 					name:"Bow",
-					tooltip:"A basic wooden bow",
+					tooltip:["A basic wooden bow"],
 					type:"weapon",
 					subType:"shoot",
 					damage:10,
@@ -230,14 +230,14 @@
 					ammoType:"Arrows",
 					projectile:"Arrow",
 					velocity:0.25,
-					size:16,
+					size:42,
 					itemSize:32,
 					tier:1,
 					rarity:1
 				},
 				{
 					name:"Laser Gun",
-					tooltip:"A quick weapon which shoots bouncing lasers",
+					tooltip:["A quick weapon which shoots bouncing lasers"],
 					type:"weapon",
 					subType:"shoot",
 					damage:10,
@@ -248,12 +248,14 @@
 					useMana:3,
 					projectile:"Laser",
 					velocity:0.4,
+					size:16,
+					itemSize:32,
 					tier:2,
 					rarity:1
 				},
 				{
 					name:"Fire Staff",
-					tooltip:"A magical staff that shoots exploding fireballs",
+					tooltip:["A magical staff that shoots exploding fireballs"],
 					type:"weapon",
 					subType:"shoot",
 					damage:30,
@@ -263,36 +265,46 @@
 					showHand:{main:true, off:false},
 					useMana:12,
 					projectile:"Fireball",
-					velocity:0.15
+					velocity:0.15,
+					size:19,
+					itemSize:38,
+					tier:2,
+					rarity:1
 				},
 				{
 					name:"Arrows",
-					tooltip:"Ammo for use with a bow",
+					tooltip:["Ammo for use with a bow"],
 					type:"ammo",
 					damage:5,
+					size:15,
+					itemSize:30,
 					tier:1,
 					rarity:1
 				},
 				{
 					name:"Flaming Arrows",
-					tooltip:"Has a chance to set the target on fire",
+					tooltip:["Has a chance to set the target on fire"],
 					type:"ammo",
 					damage:6,
+					size:14,
+					itemSize:28,
 					tier:1,
 					rarity:1
 				},
 				{
 					name:"Quiver",
-					tooltip:"Increases bow firing speed\n20% chance to not consume arrows",
+					tooltip:["Increases bow firing speed","20% chance to not consume arrows"],
 					type:"equipment",
 					subType:"back",
 					bonus:{},
+					size:13,
+					itemSize:26,
 					tier:2,
 					rarity:1
 				},
 				{
 					name:"Backpack",
-					tooltip:"Increases inventory space",
+					tooltip:["Increases inventory space"],
 					type:"equipment",
 					subType:"back",
 					bonus:{},
@@ -300,17 +312,17 @@
 					rarity:1
 				},
 				{
-					name:"Sneaky Cloak",
-					tooltip:"Lets you enter stealth mode by holding shift, making you invisible and enabling sneak attacks",
+					name:"Boots of Hermes",
+					tooltip:["Lets the wearer run very fast"],
 					type:"equipment",
-					subType:"head",
-					bonus:{armor:2},
-					tier:3,
-					rarity:1
+					subType:"feet",
+					bonus:{armor:1, speed:0, acceleration:0},
+					tier:4,
+					rarity:2
 				},
 				{
 					name:"Wizard Hat",
-					tooltip:"Increases maximum mana and enables passive mana regeneration",
+					tooltip:["Increases maximum mana","Enables passive mana regeneration"],
 					type:"equipment",
 					subType:"head",
 					bonus:{armor:1, maxMana:10, manaRegen:0.06},
@@ -318,17 +330,17 @@
 					rarity:1
 				},
 				{
-					name:"Chainmail Helmet",
-					tooltip:"A strong defensive helmet",
+					name:"Wizard Robes",
+					tooltip:["Increases maximum mana","10% increased magic damage"],
 					type:"equipment",
-					subType:"head",
-					bonus:{armor:5},
+					subType:"body",
+					bonus:{armor:2, maxMana:10},
 					tier:3,
 					rarity:1
 				},
 				{
 					name:"Regeneration Band",
-					tooltip:"Increases health regeneration",
+					tooltip:["Increases health regeneration"],
 					type:"equipment",
 					subType:"arms",
 					bonus:{armor:1, regen:0.1},
@@ -337,7 +349,7 @@
 				},
 				{
 					name:"Gauntlets of Power",
-					tooltip:"Increases melee damage and ",
+					tooltip:["Increases melee damage",""],
 					type:"equipment",
 					subType:"hands",
 					bonus:{armor:6, damageBonus:0.1},
@@ -345,13 +357,32 @@
 					rarity:2
 				},
 				{
-					name:"Boots of Hermes",
-					tooltip:"Lets the wearer run very fast",
+					name:"Chainmail Helmet",
+					tooltip:["A strong defensive helmet"],
 					type:"equipment",
-					subType:"feet",
-					bonus:{armor:1, speed:0, acceleration:0},
-					tier:4,
-					rarity:2
+					subType:"head",
+					bonus:{armor:5},
+					tier:3,
+					rarity:1
+				},
+				{
+					name:"Sneaky Cloak",
+					tooltip:["Enter stealth mode by holding shift","Stealthy players are invisible and can make sneak attacks"],
+					type:"equipment",
+					subType:"head",
+					bonus:{armor:2},
+					tier:3,
+					rarity:1
+				}
+			];
+			var armorSet = [
+				{
+					piece:[""],
+					bonus:{}
+				},
+				{
+					piece:["Wizard Hat","Wizard Robes"],
+					bonus:{manaRegen:0.04}
 				}
 			];
 			var baseProjectile = [
@@ -376,19 +407,26 @@
 					name:"Flame"
 				}
 			];
-			var sprite = {item:[],projectile:[],other:{}};
-			for(index1 = 0;index1 <= 4;index1++){
+			var sprite = {item:[],projectile:[],empty:{},map:{},other:{}};
+			for(index1 = 0;index1 <= 8;index1++){
 				sprite.item[index1] = new Image();
 				sprite.item[index1].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_" + index1 + ".png";
 			}
-			sprite.other.heart      = new Image;
-			sprite.other.heartEmpty = new Image;
-			sprite.other.star       = new Image;
-			sprite.other.starEmpty  = new Image;
+			for(index1 = 0;index1 < equipmentSlots.length;index1++){
+				sprite.empty[equipmentSlots[index1]] = new Image();
+				sprite.empty[equipmentSlots[index1]].src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Item_0"/*Empty_" + equipmentSlots[index1]*/ + ".png";
+			}
+			sprite.other.heart      = new Image();
+			sprite.other.heartEmpty = new Image();
+			sprite.other.star       = new Image();
+			sprite.other.starEmpty  = new Image();
 			sprite.other.heart.src      = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Heart.png";
 			sprite.other.heartEmpty.src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/EmptyHeart.png";
 			sprite.other.star.src       = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Mana.png";
 			sprite.other.starEmpty.src  = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/EmptyMana.png";
+			
+			sprite.map.floor = new Image();
+			sprite.map.floor.src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Brick.png";
 			
 			var startRoom = [
 				["w","w","w","d","w","w","w"],
@@ -445,12 +483,6 @@
 				if(gameState == "playing" && playerView == "game" && mouseControls && player.itemCooldown == 0){
 					player.facing = playerIsFacing(mouse.x, mouse.y);
 				}
-				if(gameState == "playing" && playerView == "inventory" && player.dragItem.name == ""){
-					var slotInfo = inSlot(mouse.x, mouse.y);
-					if(slotInfo != false){
-						drawTooltip(typeof slotInfo == "string" ? player.equipment[slotInfo] : player.inventory[slotInfo.x][slotInfo.y], mouse.x, mouse.y);
-					}
-				}
 			}
 			function playerIsFacing(x, y){
 				x -= canvas.width/2;
@@ -489,9 +521,7 @@
 					if(roomDirection == "left"){
 						for(index3 = x - size;index3 <= x;index3++){
 							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
-									noRoom = true;
-								}
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
 							}
 						}
 						for(index3 = x - size - 3;index3 <= x + 3;index3++){
@@ -508,9 +538,7 @@
 					if(roomDirection == "right"){
 						for(index3 = x + size;index3 >= x;index3--){
 							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
-									noRoom = true;
-								}
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
 							}
 						}
 						for(index3 = x + size + 3;index3 >= x - 3;index3--){
@@ -527,9 +555,7 @@
 					if(roomDirection == "top"){
 						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
 							for(index4 = y - size;index4 <= y;index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
-									noRoom = true;
-								}
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
 							}
 						}
 						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
@@ -546,9 +572,17 @@
 					if(roomDirection == "bottom"){
 						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
 							for(index4 = y + size;index4 >= y;index4--){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall){
-									noRoom = true;
-								}
+								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
+							}
+						}
+						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
+							for(index4 = y + size + 6;index4 >= y - 6;index4--){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							}
+						}
+						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2) + 6;index3++){
+							for(index4 = y + size + 3;index4 >= y - 3;index4--){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
 							}
 						}
 					}
@@ -727,7 +761,7 @@
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
-					manaRegen:0,
+					manaRegen:0.06,
 					armor:0,
 					damageBonus:0
 				});
@@ -933,14 +967,15 @@
 						if(map[index1][index2].discovered){
 							var drawPos = {x:canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize)};
 							if(!map[index1][index2].wall){
-								ctx.beginPath();
+								/*ctx.beginPath();
 								ctx.fillStyle = "Gray";
 								ctx.fillRect(drawPos.x, drawPos.y, tileSize, tileSize);
-								ctx.closePath();
+								ctx.closePath();*/
+								drawSprite("map", "floor", drawPos.x, drawPos.y, tileSize);
 							}
 							if(map[index1][index2].object == "door"){
 								if(map[index1][index2].open){
-									if(map[index1][index2].rotation == 0){
+									if(map[index1][index2].rotation % 2 == 0){
 										ctx.beginPath();
 										ctx.fillStyle = "#772600";
 										ctx.fillRect(drawPos.x, drawPos.y, tileSize*1/5, tileSize*3/5);
@@ -948,7 +983,11 @@
 										ctx.closePath();
 									}
 									else{
-										
+										ctx.beginPath();
+										ctx.fillStyle = "#772600";
+										ctx.fillRect(drawPos.x, drawPos.y, tileSize*3/5, tileSize*1/5);
+										ctx.fillRect(drawPos.x, drawPos.y + tileSize*4/5, tileSize*3/5, tileSize*1/5);
+										ctx.closePath();
 									}
 								}
 								else{
@@ -1010,15 +1049,17 @@
 				if(player.itemCooldown > 0){
 					var swingAngle = player.facing;
 					
-					if(player.inventory[player.slot][0].subType == "swing") swingAngle += 0.24 - 1.2*player.itemCooldown/player.inventory[player.slot][0].speed;
+					if(player.inventory[player.slot][0].subType == "swing"){
+						swingAngle += 1 - 2.5*player.itemCooldown/player.inventory[player.slot][0].speed;
+						drawSprite("item", player.inventory[player.slot][0].name, canvas.width/2 + Math.sin(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.85, canvas.height/2 + Math.cos(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.15, player.inventory[player.slot][0].size*1.5, Math.PI*0.7 - swingAngle, player.inventory[player.slot][0].size*1.5*0.85, player.inventory[player.slot][0].size*1.5*0.15);
+					}
+					if(player.inventory[player.slot][0].subType == "stab"){
+						swingAngle += 0.3 - 2*player.itemCooldown/player.inventory[player.slot][0].speed;
+						drawSprite("item", player.inventory[player.slot][0].name, canvas.width/2 + Math.sin(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.85, canvas.height/2 + Math.cos(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.15, player.inventory[player.slot][0].size*1.5, Math.PI*0.2 - swingAngle/2, player.inventory[player.slot][0].size*1.5*0.85, player.inventory[player.slot][0].size*1.5*0.15);
+					}
 					
 					if(player.inventory[player.slot][0].name == "Bow"){
-						ctx.beginPath();
-						ctx.arc(canvas.width/2 - Math.sin(swingAngle)*tileSize*0.3, canvas.height/2 - Math.cos(swingAngle)*tileSize*0.3, tileSize*0.9, Math.PI/2 - swingAngle - 0.7, Math.PI/2 - swingAngle + 0.7);
-						ctx.strokeStyle = "#6e2300";
-						ctx.lineWidth = 3;
-						ctx.stroke();
-						ctx.closePath();
+						drawSprite("item", "Bow", canvas.width/2 + Math.sin(swingAngle)*tileSize*0.5 - player.inventory[player.slot][0].size/2, canvas.height/2 + Math.cos(swingAngle)*tileSize*0.5 - player.inventory[player.slot][0].size/2, player.inventory[player.slot][0].size, Math.PI*3/4 - swingAngle, player.inventory[player.slot][0].size/2, player.inventory[player.slot][0].size/2);
 					}
 					else if(player.inventory[player.slot][0].name != ""){}
 					
@@ -1073,7 +1114,7 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawSprite("item", (player.equipment[equipmentSlots[index1]].name == "") ? (equipmentSlots[index1] + "Empty") : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
+					drawSprite((player.equipment[equipmentSlots[index1]].name == "") ? "empty":"item", (player.equipment[equipmentSlots[index1]].name == "") ? equipmentSlots[index1] : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
 				}
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
@@ -1103,6 +1144,14 @@
 				ctx.fillText(Math.round(player.stat.manaRegen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, (Math.floor(hearts/10) + 1)*26 + 32);
 				ctx.closePath();
 				
+				
+				
+				if(gameState == "playing" && playerView == "inventory" && player.dragItem.name == ""){
+					var slotInfo = inSlot(mouse.x, mouse.y);
+					if(slotInfo != false){
+						drawTooltip(typeof slotInfo == "string" ? player.equipment[slotInfo] : player.inventory[slotInfo.x][slotInfo.y], mouse.x, mouse.y + 35);
+					}
+				}
 				
 				drawSprite("item", player.dragItem.name, mouse.x - player.dragItem.itemSize/2, mouse.y - player.dragItem.itemSize/2, player.dragItem.itemSize);
 			}
@@ -1140,32 +1189,47 @@
 				}
 			}
 			
-			function drawSprite(type, name, x, y, scale = 50){
+			function drawSprite(type, name, x, y, scale = 50, r = 0, rx = scale/2, ry = scale/2){
 				if(name != ""){
 					if(type == "item"){
 						if(itemIndex(name) == false || itemIndex(name) >= sprite.item.length) name = 0;
 						else name = itemIndex(name);
-						ctx.drawImage(sprite.item[name], x, y, scale, scale);
 					}
-					
-					if(type == "other"){
-						ctx.drawImage(sprite.other[name], x, y, scale, scale);
+					if(r == 0) ctx.drawImage(sprite[type][name], x, y, scale, scale);
+					else{
+						ctx.save();
+						ctx.translate(x + rx, y + ry);
+						ctx.rotate(r);
+						ctx.drawImage(sprite[type][name], rx - scale, ry - scale, scale, scale);
+						ctx.restore();
 					}
 				}
 			}
 			function drawTooltip(itemRef, x, y){
-				var tooltipText = itemRef.name + "\n\n" + itemRef.tooltip;
-				if(itemRef.damage >= 0) tooltipText += "\n\n" + itemRef.damage + " " + itemRef.damageType + " damage";
-				
-				var lines = 0;
-				ctx.beginPath();
-				ctx.fillStyle = "Black";
-				ctx.fillRect(x,y,0,0);
-				ctx.font = "15px Arial";
-				ctx.fillStyle = "White";
-				ctx.fillText(itemRef.name, x, y + lines*22);
-				lines++;
-				ctx.closePath();
+				if(itemRef.name != ""){
+					
+					var lines = 0;
+					ctx.beginPath();
+					ctx.fillStyle = "Black";
+					ctx.fillRect(x,y,0,0);
+					ctx.font = "15px Arial";
+					ctx.fillStyle = "White";
+					ctx.fillText(itemRef.name, x, y + lines*22);
+					lines++;
+					for(index3 = 0;index3 < itemRef.tooltip.length;index3++){
+						ctx.fillText(itemRef.tooltip[index3], x, y + lines*22);
+						lines++;
+					}
+					if(itemRef.damage >= 0){
+						ctx.fillText(itemRef.damage + (typeof itemRef.damageType == "string" ? " " + itemRef.damageType : "") + " damage", x, y + lines*22);
+						lines++;
+					}
+					if(itemRef.useMana > 0){
+						ctx.fillText("Uses " + itemRef.useMana + " mana", x, y + lines*22);
+						lines++;
+					}
+					ctx.closePath();
+				}
 			}
 			
 			
@@ -1282,7 +1346,10 @@
 			setProperties(player.inventory[1][0], item[2]);
 			setProperties(player.inventory[2][0], item[3]);
 			setProperties(player.inventory[3][0], item[4]);
-			setProperties(player.inventory[5][0], item[11]);
+			setProperties(player.inventory[4][0], item[5]);
+			setProperties(player.inventory[5][0], item[6]);
+			setProperties(player.inventory[6][0], item[8]);
+			setProperties(player.inventory[6][1], item[11]);
 			
 			function draw() {
 				
