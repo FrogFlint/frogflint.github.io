@@ -182,6 +182,8 @@
 					velocity:0,
 					useMana:0,
 					bonus:{armor:0},
+					stack:1,
+					maxStack:1,
 					size:16,
 					itemSize:32,
 					tier:0,
@@ -197,6 +199,7 @@
 					speed:15,
 					autoUse:false,
 					showHand:{main:true, off:false},
+					maxStack:1,
 					size:26,
 					itemSize:32,
 					tier:1,
@@ -212,6 +215,7 @@
 					speed:7,
 					autoUse:true,
 					showHand:{main:true, off:false},
+					maxStack:2,
 					size:18,
 					itemSize:22,
 					tier:1,
@@ -230,6 +234,7 @@
 					ammoType:"Arrows",
 					projectile:"Arrow",
 					velocity:0.25,
+					maxStack:1,
 					size:42,
 					itemSize:32,
 					tier:1,
@@ -248,6 +253,7 @@
 					useMana:3,
 					projectile:"Laser",
 					velocity:0.4,
+					maxStack:1,
 					size:16,
 					itemSize:32,
 					tier:2,
@@ -266,6 +272,7 @@
 					useMana:12,
 					projectile:"Fireball",
 					velocity:0.15,
+					maxStack:1,
 					size:19,
 					itemSize:38,
 					tier:2,
@@ -276,6 +283,7 @@
 					tooltip:["Ammo for use with a bow"],
 					type:"ammo",
 					damage:5,
+					maxStack:30,
 					size:15,
 					itemSize:30,
 					tier:1,
@@ -286,6 +294,7 @@
 					tooltip:["Has a chance to set the target on fire"],
 					type:"ammo",
 					damage:6,
+					maxStack:30,
 					size:14,
 					itemSize:28,
 					tier:1,
@@ -297,6 +306,7 @@
 					type:"equipment",
 					subType:"back",
 					bonus:{},
+					maxStack:1,
 					size:13,
 					itemSize:26,
 					tier:2,
@@ -308,6 +318,7 @@
 					type:"equipment",
 					subType:"back",
 					bonus:{},
+					maxStack:1,
 					tier:2,
 					rarity:1
 				},
@@ -317,6 +328,7 @@
 					type:"equipment",
 					subType:"feet",
 					bonus:{armor:1, speed:0, acceleration:0},
+					maxStack:1,
 					tier:4,
 					rarity:2
 				},
@@ -326,6 +338,7 @@
 					type:"equipment",
 					subType:"head",
 					bonus:{armor:1, maxMana:10, manaRegen:0.06},
+					maxStack:1,
 					tier:3,
 					rarity:1
 				},
@@ -335,6 +348,7 @@
 					type:"equipment",
 					subType:"body",
 					bonus:{armor:2, maxMana:10},
+					maxStack:1,
 					tier:3,
 					rarity:1
 				},
@@ -344,6 +358,7 @@
 					type:"equipment",
 					subType:"arms",
 					bonus:{armor:1, regen:0.1},
+					maxStack:1,
 					tier:4,
 					rarity:2
 				},
@@ -353,6 +368,7 @@
 					type:"equipment",
 					subType:"hands",
 					bonus:{armor:6, damageBonus:0.1},
+					maxStack:1,
 					tier:4,
 					rarity:2
 				},
@@ -362,6 +378,7 @@
 					type:"equipment",
 					subType:"head",
 					bonus:{armor:5},
+					maxStack:1,
 					tier:3,
 					rarity:1
 				},
@@ -371,6 +388,7 @@
 					type:"equipment",
 					subType:"head",
 					bonus:{armor:2},
+					maxStack:1,
 					tier:3,
 					rarity:1
 				}
@@ -469,11 +487,11 @@
 							else clicked = player.inventory[clicked.x][clicked.y];
 
 							var swap = {};
-							setProperties(swap, player.dragItem);
-							player.dragItem = {};
-							setProperties(player.dragItem, clicked);
-							setProperties(clicked, {});
-							setProperties(clicked, swap);
+							setProperties(swap, player.dragItem, true);
+							player.dragItem = {name:""};
+							setProperties(player.dragItem, clicked, true);
+							setProperties(clicked, {name:""}, true);
+							setProperties(clicked, swap, true);
 						}
 					}
 				}
@@ -491,7 +509,22 @@
 			}
 
 			window.oncontextmenu = function(evt){
-				mouse = getMousePos(canvas, evt);
+				//mouse = getMousePos(canvas, evt);
+				if(gameState == "playing" && playerView == "inventory"){
+					mouse = getMousePos(canvas, evt);
+					var clicked = inSlot(mouse.x, mouse.y);
+					if(typeof clicked == "object" && player.dragItem.name == ""){
+						clicked = player.inventory[clicked.x][clicked.y];
+						var equip = [player.equipment[clicked.subType]];
+						
+						var swap = {};
+						setProperties(swap, equip, true);
+						equip = {name:""};
+						setProperties(equip, clicked, true);
+						setProperties(clicked, {name:""}, true);
+						setProperties(clicked, swap, true);
+					}
+				}
 				
 				return false;
 			}
@@ -1055,7 +1088,7 @@
 					}
 					if(player.inventory[player.slot][0].subType == "stab"){
 						swingAngle += 0.3 - 2*player.itemCooldown/player.inventory[player.slot][0].speed;
-						drawSprite("item", player.inventory[player.slot][0].name, canvas.width/2 + Math.sin(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.85, canvas.height/2 + Math.cos(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.15, player.inventory[player.slot][0].size*1.5, Math.PI*0.2 - swingAngle/2, player.inventory[player.slot][0].size*1.5*0.85, player.inventory[player.slot][0].size*1.5*0.15);
+						drawSprite("item", player.inventory[player.slot][0].name, canvas.width/2 + Math.sin(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.85, canvas.height/2 + Math.cos(swingAngle - 0.75)*tileSize*0.5 - player.inventory[player.slot][0].size*1.5*0.15, player.inventory[player.slot][0].size*1.5, Math.PI*0.6 - swingAngle, player.inventory[player.slot][0].size*1.5*0.85, player.inventory[player.slot][0].size*1.5*0.15);
 					}
 					
 					if(player.inventory[player.slot][0].name == "Bow"){
@@ -1287,8 +1320,14 @@
 				}
 				return true;
 			}
-			function setProperties(a, b){
+			function setProperties(a, b, replace = false){
 				var bProps = Object.getOwnPropertyNames(b);
+				if(replace){
+					var aProps = Object.getOwnPropertyNames(a);
+					for (var i = 0; i < aProps.length; i++){
+						delete a[aProps[i]];
+					}
+				}
 				for (var i = 0; i < bProps.length; i++){
 					a[bProps[i]] = b[bProps[i]];
 				}
