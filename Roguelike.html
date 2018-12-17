@@ -486,11 +486,9 @@
 							if(typeof clicked == "string") clicked = player.equipment[clicked];
 							else clicked = player.inventory[clicked.x][clicked.y];
 
-							var swap = {};
+							var swap = {name:""};
 							setProperties(swap, player.dragItem, true);
-							player.dragItem = {name:""};
 							setProperties(player.dragItem, clicked, true);
-							setProperties(clicked, {name:""}, true);
 							setProperties(clicked, swap, true);
 						}
 					}
@@ -509,19 +507,23 @@
 			}
 
 			window.oncontextmenu = function(evt){
-				//mouse = getMousePos(canvas, evt);
 				if(gameState == "playing" && playerView == "inventory"){
 					mouse = getMousePos(canvas, evt);
 					var clicked = inSlot(mouse.x, mouse.y);
-					if(typeof clicked == "object" && player.dragItem.name == ""){
+					if(typeof clicked == "object"){
+						var equip;
+						if(clicked.subtype == "arms"){
+							if(player.equipment.arm1.name != "" && player.equipment.arm2.name == ""){
+								equip = player.equipment.arm2;
+							}
+							else equip = player.equipment.arm1;
+						}
+						else equip = player.equipment[clicked.subType];
 						clicked = player.inventory[clicked.x][clicked.y];
-						var equip = [player.equipment[clicked.subType]];
 						
-						var swap = {};
+						var swap = {name:""};
 						setProperties(swap, equip, true);
-						equip = {name:""};
 						setProperties(equip, clicked, true);
-						setProperties(clicked, {name:""}, true);
 						setProperties(clicked, swap, true);
 					}
 				}
@@ -1443,4 +1445,4 @@
         		
    		 </SCRIPT>
 	</body>
-</html>
+</html>	
