@@ -33,7 +33,7 @@
 			
 			var map = [[{}]];
 			var loadRadius = 500;
-			var mapEdge = {top:1000 - loadRadius, bottom:1000 + loadRadius, left:1000 - loadRadius, right:1000 + loadRadius};
+			var mapEdge = {top:100000 - loadRadius, bottom:100000 + loadRadius, left:100000 - loadRadius, right:100000 + loadRadius};
 			var tileSize = 48;
 			
 			var GUIscale = 1;
@@ -52,7 +52,7 @@
 			var crosshair = {x:canvas.width/2, y:canvas.height/2};
 			
 			var player = {
-				pos:{x:1000.5, y:1000.5 },
+				pos:{x:100000.5, y:100000.5 },
 				speed:{x:0, y:0},
 				size:0.8,
 				dead:false,
@@ -384,7 +384,7 @@
 				},
 				{
 					name:"Chainmail Shirt",
-					tooltip:[],
+					tooltip:[""],
 					type:"equipment",
 					subType:"body",
 					bonus:{armor:8},
@@ -394,7 +394,7 @@
 				},
 				{
 					name:"Chainmail Leggings",
-					tooltip:[],
+					tooltip:[""],
 					type:"equipment",
 					subType:"legs",
 					bonus:{armor:6},
@@ -436,7 +436,7 @@
 				},
 				{
 					piece:["Wizard Hat","Wizard Robes"],
-					bonus:{manaRegen:0.04}
+					bonus:{maxMana:10, manaRegen:0.04}
 				}
 			];
 			var baseProjectile = [
@@ -1484,4 +1484,4 @@
         		
    		 </SCRIPT>
 	</body>
-</html>	
+</html>
