@@ -383,12 +383,48 @@
 					rarity:1
 				},
 				{
+					name:"Chainmail Shirt",
+					tooltip:[],
+					type:"equipment",
+					subType:"body",
+					bonus:{armor:8},
+					maxStack:1,
+					tier:3,
+					rarity:1
+				},
+				{
+					name:"Chainmail Leggings",
+					tooltip:[],
+					type:"equipment",
+					subType:"legs",
+					bonus:{armor:6},
+					maxStack:1,
+					tier:3,
+					rarity:1
+				},
+				{
 					name:"Sneaky Cloak",
 					tooltip:["Enter stealth mode by holding shift","Stealthy players are invisible and can make sneak attacks"],
 					type:"equipment",
 					subType:"head",
-					bonus:{armor:2},
+					bonus:{armor:2, speed:0.1},
 					maxStack:1,
+					tier:3,
+					rarity:1
+				},
+				{
+					name:"Iron Broadsword",
+					tooltip:["A powerful, two-handed weapon"],
+					type:"weapon",
+					subType:"swing",
+					damage:3,
+					damageType:"melee",
+					speed:20,
+					autoUse:false,
+					showHand:{main:true, off:false},
+					maxStack:1,
+					size:26,
+					itemSize:32,
 					tier:3,
 					rarity:1
 				}
@@ -486,7 +522,7 @@
 							if(typeof clicked == "string") clicked = player.equipment[clicked];
 							else clicked = player.inventory[clicked.x][clicked.y];
 
-							var swap = {name:""};
+							var swap = {};
 							setProperties(swap, player.dragItem, true);
 							setProperties(player.dragItem, clicked, true);
 							setProperties(clicked, swap, true);
@@ -511,20 +547,22 @@
 					mouse = getMousePos(canvas, evt);
 					var clicked = inSlot(mouse.x, mouse.y);
 					if(typeof clicked == "object"){
-						var equip;
-						if(clicked.subtype == "arms"){
-							if(player.equipment.arm1.name != "" && player.equipment.arm2.name == ""){
-								equip = player.equipment.arm2;
-							}
-							else equip = player.equipment.arm1;
-						}
-						else equip = player.equipment[clicked.subType];
 						clicked = player.inventory[clicked.x][clicked.y];
-						
-						var swap = {name:""};
-						setProperties(swap, equip, true);
-						setProperties(equip, clicked, true);
-						setProperties(clicked, swap, true);
+						if(clicked.type == "equipment"){
+							var equip;
+							if(clicked.subtype == "arms"){
+								if(player.equipment.arm1.name != "" && player.equipment.arm2.name == ""){
+									equip = player.equipment.arm2;
+								}
+								else equip = player.equipment.arm1;
+							}
+							else equip = player.equipment[clicked.subType];
+							
+							var swap = {};
+							setProperties(swap, equip, true);
+							setProperties(equip, clicked, true);
+							setProperties(clicked, swap, true);
+						}
 					}
 				}
 				
@@ -982,7 +1020,7 @@
 				return false;
 			}
 			function inSlot(x, y){
-				if(x >= 20 && x <= 70*inventorySize.width + 20 && y >= 20 && y <= 70*inventorySize.height + 20){
+				if(x >= 20 && x <= 70*inventorySize.width && y >= 20 && y <= 70*inventorySize.height){
 					if((x - 20) % 70 <= 50 && (y - 20) % 70 <= 50){
 						return {x:Math.floor((x - 20)/70),y:Math.floor((y - 20)/70)};
 					}
@@ -1149,7 +1187,8 @@
 					ctx.globalAlpha = 1;
 					ctx.closePath();
 					
-					drawSprite((player.equipment[equipmentSlots[index1]].name == "") ? "empty":"item", (player.equipment[equipmentSlots[index1]].name == "") ? equipmentSlots[index1] : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for headEmpty, arm2Empty, ect
+					if(player.equipment[equipmentSlots[index1]].name == "") player.equipment[equipmentSlots[index1]].itemSize = 32;
+					drawSprite((player.equipment[equipmentSlots[index1]].name == "") ? "empty":"item", (player.equipment[equipmentSlots[index1]].name == "") ? equipmentSlots[index1] : player.equipment[equipmentSlots[index1]].name, equipmentSlotLocation[index1].x + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, equipmentSlotLocation[index1].y + (50 - player.equipment[equipmentSlots[index1]].itemSize)/2, player.equipment[equipmentSlots[index1]].itemSize);  //TODO: add textures for empty armor slots
 				}
 				
 				var hearts = Math.ceil(player.stat.maxLife/10);
