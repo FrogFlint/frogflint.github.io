@@ -481,6 +481,8 @@
 			
 			sprite.map.floor = new Image();
 			sprite.map.floor.src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Brick.png";
+			sprite.map.walls = new Image();
+			sprite.map.walls.src = "https://raw.githubusercontent.com/FrogFlint/Roguelike_Resources/master/Walls.png";
 			
 			var startRoom = [
 				["w","w","w","d","w","w","w"],
@@ -811,7 +813,6 @@
 					for(var index3 = 0;index3 < plan[index4].length;index3++){
 						if(!(plan[index4][index3] == "w" || plan[index4][index3] == "i")){
 							map[x + index3][y + index4].wall = false;
-							map[x + index3][y + index4].discovered = true;
 						}
 						if(plan[index4][index3] == "d"){
 							map[x + index3][y + index4].object = "door";
@@ -822,6 +823,7 @@
 							map[x + index3][y + index4].object = "chest";
 							map[x + index3][y + index4].open = false;
 						}
+						map[x + index3][y + index4].discovered = true;
 					}
 				}
 			}
@@ -1040,11 +1042,11 @@
 						if(map[index1][index2].discovered){
 							var drawPos = {x:canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize)};
 							if(!map[index1][index2].wall){
-								/*ctx.beginPath();
-								ctx.fillStyle = "Gray";
-								ctx.fillRect(drawPos.x, drawPos.y, tileSize, tileSize);
-								ctx.closePath();*/
 								drawSprite("map", "floor", drawPos.x, drawPos.y, tileSize);
+							}
+							else{
+								var selectedSprite = wallSprite(!map[index1-1][index2-1].wall, !map[index1][index2-1].wall, !map[index1+1][index2-1].wall, !map[index1-1][index2].wall, !map[index1+1][index2].wall, !map[index1-1][index2+1].wall, !map[index1][index2+1].wall, !map[index1+1][index2+1].wall);
+								drawSprite("map", "wall", drawPos.x, drawPos.y, tileSize, selectedSprite.x, selectedSprite.y);
 							}
 							if(map[index1][index2].object == "door"){
 								if(map[index1][index2].open){
@@ -1266,7 +1268,7 @@
 			function drawSprite(type, name, x, y, scale = 50, r = 0, rx = scale/2, ry = scale/2){
 				if(name != ""){
 					if(type == "map" && name == "wall"){
-						
+						ctx.drawImage(sprite[type].walls, scale*r, scale*rx, scale, scale, x, y, scale, scale);
 					}
 					else{
 						if(type == "item"){
@@ -1325,6 +1327,12 @@
 			function randRange(a, b = 0){
 				if(a > b) return randRange(b, a);
 				return Math.random()*(b - a) + a;
+			}
+			
+			function wallSprite(UL, U, UR, L, R, DL, D, DR){
+				
+				
+				return(x:0,y:0);
 			}
 			
 			function adjustMapEdge(){
