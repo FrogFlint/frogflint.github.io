@@ -600,13 +600,23 @@
 							}
 						}
 						for(index3 = x - size - 3;index3 <= x + 3;index3++){
-							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2) + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2) + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
 							}
 						}
-						for(index3 = x - size - 6;index3 <= x + 6;index3++){
+						for(index3 = x - size - 3;index3 <= x + 3;index3++){
+							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2);index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x - size;index3 <= x + 6;index3++){
 							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x - size - 6;index3 <= x;index3++){
+							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
 							}
 						}
 					}
@@ -617,13 +627,23 @@
 							}
 						}
 						for(index3 = x + size + 3;index3 >= x - 3;index3--){
-							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2) + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2) + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
 							}
 						}
-						for(index3 = x + size + 6;index3 >= x - 6;index3--){
+						for(index3 = x + size + 3;index3 >= x - 3;index3--){
+							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2);index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x + size + 6;index3 >= x;index3--){
 							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x + size;index3 >= x - 6;index3--){
+							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
 							}
 						}
 					}
@@ -634,13 +654,23 @@
 							}
 						}
 						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
-							for(index4 = y - size - 6;index4 <= y + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
+							for(index4 = y - size;index4 <= y + 6;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
 							}
 						}
-						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2) + 6;index3++){
+						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
+							for(index4 = y - size - 6;index4 <= y;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2) + 6;index3++){
 							for(index4 = y - size - 3;index4 <= y + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
+							}
+						}
+						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2);index3++){
+							for(index4 = y - size - 3;index4 <= y + 3;index4++){
+								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
 							}
 						}
 					}
@@ -668,7 +698,7 @@
 				
 				var extend = {};
 				for(index3 = 0;index3 < 4;index3++){
-					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(randRange(*/size/*, 6), 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
+					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(randRange(*/(size - 1)/*, 6), 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
 				}
 				var boundaries = {};
 				for(index3 = 0;index3 < 4;index3++){
