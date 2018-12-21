@@ -106,7 +106,7 @@
 					map[index1][index2] = {
 						discovered:false,
 						wall:true,
-						object:"", //door, chest
+						object:"", //door, chest, forge
 						open:false,
 						disabled:false,
 						rotation:0
@@ -463,10 +463,11 @@
 			];
 			var baseEnemy = [
 				{
-					name:goblin,
+					name:"goblin",
 					health:7,
 					damage:3,
-					weapon:"Rusty Knife"
+					weapon:"Rusty Knife",
+					size:0.4
 				}
 			];
 			var sprite = {item:[],projectile:[],empty:{},map:{},other:{}};
