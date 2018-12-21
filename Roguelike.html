@@ -52,7 +52,7 @@
 			var crosshair = {x:canvas.width/2, y:canvas.height/2};
 			
 			var player = {
-				pos:{x:100000.5, y:100000.5 },
+				pos:{x:100000.5, y:100000.5},
 				speed:{x:0, y:0},
 				size:0.8,
 				dead:false,
@@ -72,7 +72,7 @@
 					speed:0.2,
 					acceleration:0.03,
 					regen:0.1,
-					manaRegen:0.06,
+					manaRegen:0.03,
 					armor:0,
 					damageBonus:0
 				},
@@ -95,7 +95,7 @@
 			}
 			
 			
-			var enemyCap = 100;
+			var enemyCap = 250;
 			var dustCap = 1000;
 			var projectileCap = 1000;
 			var projOwner = ["player","enemy"];
@@ -462,12 +462,23 @@
 				}
 			];
 			var baseEnemy = [
+				{name:""},
 				{
 					name:"goblin",
-					health:7,
 					damage:3,
 					weapon:"Rusty Knife",
-					size:0.4
+					size:0.5,
+					stat:{
+						health:7,
+						maxLife:7,
+						speed:0.4,
+						acceleration:0.02,
+						armor:0
+					},
+					color:{
+						body:"#207c1f",
+						border:"#124f11"
+					}
 				}
 			];
 			var sprite = {item:[],projectile:[],empty:{},map:{},other:{}};
@@ -583,7 +594,7 @@
 			
 			
 			
-			function buildRoom(x, y, maxSize = 14, doors = 13, chests = 0, enemies = []){  //random generation
+			function buildRoom(x, y, maxSize = 14, doors = 13, chests = 0, enemies = 2){  //random generation
 				if(map[x][y].object != "door") return false;
 				
 				
@@ -845,6 +856,18 @@
 						/*if(!map[index3][index4].wall) */map[index3][index4].discovered = true;
 					}
 				}
+				
+				while(enemies > 0){
+					var rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top) + boundaries.top)};
+					if(!map[rand.x][rand.y].wall && map[rand.x][rand.y].object == ""){
+						var type = 1; //generate randomly
+						var newEnemy = enemy[getNext(enemy)];
+						setProperties(newEnemy, baseEnemy[type], true);
+						setProperties(newEnemy, {pos:{x:rand.x + 0.5, y:rand.y + 0.5},speed:{x:0,y:0},active:true, maxHealth:newEnemy.health});
+						
+						enemies--;
+					}
+				}
 			}
 			
 			function makeRoom(plan, x, y){  //plan is a 2D array
@@ -874,8 +897,8 @@
 					maxMana:10,
 					speed:0.2,
 					acceleration:0.03,
-					regen:0.1,
-					manaRegen:0.06,
+					regen:0.06,
+					manaRegen:0.03,
 					armor:0,
 					damageBonus:0
 				});
@@ -1083,7 +1106,7 @@
 				for(index1 = Math.max(mapEdge.left, Math.floor(player.pos.x - (canvas.width/2)/tileSize));index1 <= Math.min(mapEdge.right, Math.ceil(player.pos.x + (canvas.width/2)/tileSize));index1++){
 					for(index2 = Math.max(mapEdge.top, Math.floor(player.pos.y - (canvas.height/2)/tileSize));index2 <= Math.min(mapEdge.bottom, Math.ceil(player.pos.y + (canvas.height/2)/tileSize));index2++){
 						if(map[index1][index2].discovered){
-							var drawPos = {x:canvas.width/2 + Math.floor((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.floor((index2 - player.pos.y)*tileSize)};
+							var drawPos = {x:canvas.width/2 + Math.round((index1 - player.pos.x)*tileSize), y:canvas.height/2 + Math.round((index2 - player.pos.y)*tileSize)};
 							if(!map[index1][index2].wall){
 								drawSprite("map", "floor", drawPos.x, drawPos.y, tileSize);
 							}
@@ -1161,7 +1184,24 @@
 				ctx.stroke();
 				ctx.closePath();
 			}
-			function drawEnemies(){}
+			function drawEnemies(){
+				for(index1 = 0;index1 < enemyCap;index1++){
+					if(enemy[index1].active){
+						ctx.beginPath();
+						ctx.arc(canvas.width/2 + (enemy[index1].pos.x - player.pos.x)*tileSize, canvas.height/2 + (enemy[index1].pos.y - player.pos.y)*tileSize, tileSize*enemy[index1].size/2, 0, Math.PI*2);
+						ctx.fillStyle = enemy[index1].color.body;
+						ctx.fill();
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = enemy[index1].color.border;
+						ctx.stroke();
+						ctx.closePath();
+						
+						//ctx.beginPath();
+						//ctx.rect(canvas.width/2 + (enemy[index1].pos.x - player.pos.x - enemy[index1].size)*tileSize, );
+						//health bar
+					}
+				}
+			}
 			function drawProjectiles(){}
 			function drawWeapons(){
 				if(player.itemCooldown > 0){
