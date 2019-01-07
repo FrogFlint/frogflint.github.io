@@ -36,18 +36,21 @@
 			var index1, index2;
 			
 			
-			var mapSize = {x:100,y:60};
-			var tileSize = 10;
-			var slope = 1;  //maximum land slope
-			var maxHeight = 20;
+			//var seed = 0;
 			
-			var tilesLeft = 6000;
+			var tileSize = 10;
+			var mapSize = {x:Math.floor(1000/tileSize),y:Math.floor(600/tileSize)};
+			var slope = 2;  //maximum land slope
+			var maxHeight = 30;
+			var waterHeight = 15;
+			
+			var tilesLeft = mapSize.x * mapSize.y;
 			var count = 0;
 			
 			for(index1 = 0;index1 < mapSize.x;index1++){
 				tile[index1] = [];
 				for(index2 = 0;index2 < mapSize.y;index2++){
-					tile[index1][index2] = Math.floor(Math.random()*maxHeight);
+					tile[index1][index2] = 0;
 				}
 			}
 			
@@ -56,8 +59,15 @@
 			
 			
 			
-			function dist(x1,y1,x2,y2){
+			function distance(x1,y1,x2,y2){
 				return Math.sqrt((x1-x2)**2 + (y1-y2)**2);
+			}
+			function gridDistance(x1,y1,x2,y2){
+				return Math.abs(x1-x2) + Math.abs(y1-y2);
+			}
+			
+			function randIntBetween(a,b){
+				return a > b ? randIntBetween(b,a) : Math.floor(Math.random()*(b - a + 1)) + a;
 			}
 			
 			
@@ -65,48 +75,43 @@
 			
 			function draw() {
 				
-				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
 				
 				if(tilesLeft > 0){
-					count = Math.random()*tilesLeft;
-					for(index1 = 0;index1 < mapSize.x;index1++){
-						for(index2 = 0;index2 < mapSize.y;index2++){
-							if(tile[index1][index2] == 0){
-								count--;
-								if(count <= 0){
-									var rand = {x:index1,y:index2};
-									break;
-									break;
+					for(var i = 0;i<100;i++){
+						count = Math.random()*tilesLeft;
+						for(index1 = 0;index1 < mapSize.x && count > 0;index1++){
+							for(index2 = 0;index2 < mapSize.y && count > 0;index2++){
+								if(tile[index1][index2] == 0){
+									count--;
+									if(count <= 0) var rand = {x:index1,y:index2};
 								}
 							}
 						}
-					}
-					var bounds = {top:maxHeight,bottom:1};
-					for(index1 = 0;index1 < mapSize.x;index1++){
-						for(index2 = 0;index2 < mapSize.y;index2++){
-							//dist(index1, index2, rand.x, rand.y) * slope
-							//change bounds
+						var bounds = {top:maxHeight,bottom:1};
+						for(index1 = Math.max(0, Math.floor(rand.x - maxHeight/slope));index1 < Math.min(mapSize.x, Math.floor(rand.x + maxHeight/slope));index1++){
+							for(index2 = 0;index2 < mapSize.y;index2++){
+								if(tile[index1][index2] != 0){
+									bounds.bottom = Math.max(bounds.bottom, tile[index1][index2] - distance(index1, index2, rand.x, rand.y) * slope);
+									bounds.top    = Math.min(bounds.top   , tile[index1][index2] + distance(index1, index2, rand.x, rand.y) * slope);
+								}
+							}
 						}
+						tile[rand.x][rand.y] = randIntBetween(bounds.bottom, bounds.top);
+						tilesLeft--;
 					}
-					//set to random within bounds
-					tilesLeft--;
 				}
 				
 				
-				
-				
-				
-				
+				ctx.clearRect(0,0,canvas.width,canvas.height);
 				for(index1 = 0;index1 < mapSize.x;index1++){
 					for(index2 = 0;index2 < mapSize.y;index2++){
 						ctx.beginPath();
-						ctx.fillStyle = tile[index1][index2] == 0 ? "black" : "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + ",0)";
-						ctx.fillRect(index1*tileSize, index2*tileSize, tileSize, tileSize);
+						ctx.fillStyle = tile[index1][index2] == 0 ? "black" : "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + "," + (tile[index1][index2] <= waterHeight ? Math.floor(tile[index1][index2]*(155/maxHeight) + 100) : 0) + ")";
+						ctx.fillRect(index1*tileSize - camera.x, index2*tileSize - camera.y, tileSize, tileSize);
 						ctx.closePath();
 					}
 				}
-				
 				
 				
 				
