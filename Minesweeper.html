@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -38,7 +37,7 @@
 			
 			var dificulty = 1;
 			var mineChance = 0.2; //0.2
-			var boardSize = {x:100,y:100};
+			var boardSize = {x:200,y:100};
 			
 			var border = {x:20, y:20};
 			var tileSize = 20;
@@ -103,9 +102,9 @@
 						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
 						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
 					}
-					if(state == "setup" && (mouse.x - (canvas.width/5 - 50)) % (canvas.width/5) <= 100 && mouse.y >= canvas.height/2 - 50 && mouse.y <= canvas.height/2 + 50){
-						var sizes = [20,40,60,80];
-						tileSize = sizes[Math.floor((mouse.x - (canvas.width/5 - 50)) / (canvas.width/5))];
+					if(state == "setup" && (mouse.x - canvas.width/5 + 50) % (canvas.width/5) <= 100 && mouse.y >= canvas.height/2 - 50 && mouse.y <= canvas.height/2 + 50){
+						var sizes = [60,40,20,10];
+						tileSize = sizes[Math.floor((mouse.x - canvas.width/5 + 50) / (canvas.width/5))];
 						boardSize.x = Math.floor((canvas.width  - border.x*2)/tileSize);
 						boardSize.y = Math.floor((canvas.height - border.y*2)/tileSize);
 						state = "playing";
@@ -288,7 +287,7 @@
 							var tileNumber = minesIn("box", index1, index2);
 							if(tileNumber > 0){
 								ctx.beginPath();
-								ctx.font = "15px Arial";
+								ctx.font = 15 * tileSize/20 + "px Arial";
 								ctx.fillStyle = numberColor[tileNumber];
 								ctx.textAlign = "center";
 								ctx.fillText(tileNumber, border.x + index1*tileSize + tileSize/2, border.y + index2*tileSize + tileSize*4/5);
@@ -320,9 +319,9 @@
 					for(index1 = 1;index1 <= 4;index1++){
 						ctx.beginPath();
 						ctx.fillStyle = "LightGray";
-						ctx.fillRect(canvas.width * index1/5, canvas.height/2 - 50, 100, 100);
+						ctx.fillRect(canvas.width * index1/5 - 50, canvas.height/2 - 50, 100, 100);
 						ctx.fillStyle = "Black";
-						ctx.fillText(sizeName[index1 - 1], canvas.width * index1/5 + 50, canvas.height/2 + 7);
+						ctx.fillText(sizeName[index1 - 1], canvas.width * index1/5, canvas.height/2 + 7);
 						ctx.closePath();
 					}
 					ctx.beginPath();
