@@ -38,7 +38,7 @@
 			
 			var dificulty = 1;
 			var mineChance = 0.2; //0.2
-			var boardSize = {x:50,y:30};
+			var boardSize = {x:100,y:100};
 			
 			var border = {x:20, y:20};
 			var tileSize = 20;
@@ -47,7 +47,7 @@
 			var index1 = 0;
 			var index2 = 0;
 			
-			var state = "playing"; //setup, playing, won, lost
+			var state = "setup"; //setup, playing, won, lost
 			
 			var mineCount = 0;
 			var complete = false;
@@ -103,9 +103,16 @@
 						mouse.y = Math.floor((mouse.y - border.y)/tileSize);
 						if(mouse.x >= 0 && mouse.y >= 0 && mouse.x < boardSize.x && mouse.y < boardSize.y) openTile(mouse.x, mouse.y);
 					}
+					if(state == "setup" && (mouse.x - (canvas.width/5 - 50)) % (canvas.width/5) <= 100 && mouse.y >= canvas.height/2 - 50 && mouse.y <= canvas.height/2 + 50){
+						var sizes = [20,40,60,80];
+						tileSize = sizes[Math.floor((mouse.x - (canvas.width/5 - 50)) / (canvas.width/5))];
+						boardSize.x = Math.floor((canvas.width  - border.x*2)/tileSize);
+						boardSize.y = Math.floor((canvas.height - border.y*2)/tileSize);
+						state = "playing";
+					}
 				}
 			}
-
+			
 			window.oncontextmenu = function(evt){
 				var mouse = getMousePos(canvas, evt);
 				if(state == "playing"){
@@ -260,10 +267,12 @@
 						if(state == "playing" && !tile[index1][index2].mine && !tile[index1][index2].open) complete = false;
 						if(tile[index1][index2].open) tile[index1][index2].flag = false;
 						
-						ctx.beginPath();
-						ctx.fillStyle = tile[index1][index2].mine && (tile[index1][index2].open || state == "lost") ? "Red":(tile[index1][index2].open ? "#AAAAAA" : "#CCCCCC");
-						ctx.fillRect(border.x + index1*tileSize + tileSize*(tileBorder), border.y + index2*tileSize + tileSize*(tileBorder), tileSize*(1 - 2*tileBorder), tileSize*(1 - 2*tileBorder));
-						ctx.closePath();
+						if(state != "setup"){
+							ctx.beginPath();
+							ctx.fillStyle = tile[index1][index2].mine && (tile[index1][index2].open || state == "lost") ? "Red":(tile[index1][index2].open ? "#AAAAAA" : "#CCCCCC");
+							ctx.fillRect(border.x + index1*tileSize + tileSize*(tileBorder), border.y + index2*tileSize + tileSize*(tileBorder), tileSize*(1 - 2*tileBorder), tileSize*(1 - 2*tileBorder));
+							ctx.closePath();
+						}
 						
 						if(tile[index1][index2].flag && !tile[index1][index2].open){
 							ctx.beginPath();
@@ -304,7 +313,23 @@
 					ctx.fillText("Board complete!", border.x + boardSize.x*tileSize/2, border.y + boardSize.y*tileSize/2);
 					ctx.closePath();
 				}
-				
+				if(state == "setup"){
+					var sizeName = ["small","medium","large","huge"];
+					ctx.font = "20px Arial";
+					ctx.textAlign = "center";
+					for(index1 = 1;index1 <= 4;index1++){
+						ctx.beginPath();
+						ctx.fillStyle = "LightGray";
+						ctx.fillRect(canvas.width * index1/5, canvas.height/2 - 50, 100, 100);
+						ctx.fillStyle = "Black";
+						ctx.fillText(sizeName[index1 - 1], canvas.width * index1/5 + 50, canvas.height/2 + 7);
+						ctx.closePath();
+					}
+					ctx.beginPath();
+					ctx.font = "100px Arial";
+					ctx.fillText("Choose board Size", canvas.width/2, 150);
+					ctx.closePath();
+				}
 				
 				
 				
