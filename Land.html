@@ -108,7 +108,7 @@
 					for(index2 = 0;index2 < mapSize.y;index2++){
 						ctx.beginPath();
 						ctx.fillStyle = tile[index1][index2] == 0 ? "black" : "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + "," + (tile[index1][index2] <= waterHeight ? Math.floor(tile[index1][index2]*(155/maxHeight) + 100) : 0) + ")";
-						ctx.fillRect(index1*tileSize - camera.x, index2*tileSize - camera.y, tileSize, tileSize);
+						ctx.fillRect(index1*tileSize, index2*tileSize, tileSize, tileSize);
 						ctx.closePath();
 					}
 				}
