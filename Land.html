@@ -38,7 +38,7 @@
 			
 			
 			//var seed = 0;
-			var camera = {x:0,y:0};
+			var camera = {x:1000,y:1000};
 			
 			var tileSize = 10;
 			var mapSize = {x:Math.floor(1000/tileSize),y:Math.floor(600/tileSize)};
@@ -46,15 +46,9 @@
 			var maxHeight = 30;
 			var waterHeight = 15;
 			
-			var tilesLeft = 0;//mapSize.x * mapSize.y;
+			var tilesLeft = 0;
 			var count = 0;
 			
-			for(index1 = 0;index1 < mapSize.x;index1++){
-				tile[index1] = [];
-				for(index2 = 0;index2 < mapSize.y;index2++){
-					tile[index1][index2] = 0;
-				}
-			}
 			
 			
 			
@@ -77,13 +71,15 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			//document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
+				if(e.key == "w") waterHeight = Math.min(waterHeight + 1, maxHeight + 1);
+				if(e.key == "s") waterHeight = Math.max(waterHeight - 1, 0);
 				if(tilesLeft == 0){
 					if(e.key == "ArrowUp"   ) camera.y -= mapSize.y/2;
 					if(e.key == "ArrowDown" ) camera.y += mapSize.y/2;
 					if(e.key == "ArrowLeft" ) camera.x -= mapSize.x/2;
 					if(e.key == "ArrowRight") camera.x += mapSize.x/2;
 					if(e.key == "g"){
-						var c = {x:Math.max(-camera.x, 0),y:Math.max(-camera.y, 0)};
+						//var c = {x:Math.max(-camera.x, 0),y:Math.max(-camera.y, 0)};
 						/*if(!(c.x == 0 && c.y == 0)){
 							var t = tile;
 							for(;;){
@@ -110,41 +106,41 @@
 				
 				
 				
-				if(tilesLeft > 0){
-					for(var i = 0;i<100;i++){
-						count = Math.random()*tilesLeft;
-						for(index1 = camera.x;index1 < camera.x + mapSize.x && count > 0;index1++){
-							for(index2 = camera.y;index2 < camera.y + mapSize.y && count > 0;index2++){
-								if(tile[index1][index2] == 0){
-									count--;
-									if(count <= 0) var rand = {x:index1,y:index2};
-								}
+				for(var i = 0;i < 100 && tilesLeft > 0;i++){
+					count = Math.random()*tilesLeft;
+					for(index1 = camera.x;index1 < camera.x + mapSize.x && count > 0;index1++){
+						for(index2 = camera.y;index2 < camera.y + mapSize.y && count > 0;index2++){
+							if(tile[index1][index2] == 0){
+								count--;
+								if(count <= 0) var rand = {x:index1,y:index2};
 							}
 						}
-						var bounds = {top:maxHeight,bottom:1};
-						for(index1 = Math.floor(rand.x - maxHeight/slope);index1 < Math.ceil(rand.x + maxHeight/slope);index1++){
-							if(index1 in tile){
-								for(index2 = Math.floor(rand.y - maxHeight/slope);index2 < Math.ceil(rand.y + maxHeight/slope);index2++){
-									if(index2 in tile[index1] && tile[index1][index2] != 0){
-										bounds.bottom = Math.max(bounds.bottom, tile[index1][index2] - distance(index1, index2, rand.x, rand.y) * slope);
-										bounds.top    = Math.min(bounds.top   , tile[index1][index2] + distance(index1, index2, rand.x, rand.y) * slope);
-									}
-								}
-							}
-						}
-						tile[rand.x][rand.y] = randIntBetween(bounds.bottom, bounds.top);
-						tilesLeft--;
 					}
+					var bounds = {top:maxHeight,bottom:1};
+					for(index1 = Math.floor(rand.x - maxHeight/slope);index1 < Math.ceil(rand.x + maxHeight/slope);index1++){
+						if(index1 in tile){
+							for(index2 = Math.floor(rand.y - maxHeight/slope);index2 < Math.ceil(rand.y + maxHeight/slope);index2++){
+								if(index2 in tile[index1] && tile[index1][index2] != 0){
+									bounds.bottom = Math.max(bounds.bottom, tile[index1][index2] - distance(index1, index2, rand.x, rand.y) * slope);
+									bounds.top    = Math.min(bounds.top   , tile[index1][index2] + distance(index1, index2, rand.x, rand.y) * slope);
+								}
+							}
+						}
+					}
+					tile[rand.x][rand.y] = randIntBetween(bounds.bottom, bounds.top);
+					tilesLeft--;
 				}
 				
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				for(index1 in tile){
 					for(index2 in tile[index1]){
-						ctx.beginPath();
-						ctx.fillStyle = tile[index1][index2] == 0 ? "black" : "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + "," + (tile[index1][index2] <= waterHeight ? Math.floor(tile[index1][index2]*(155/maxHeight) + 100) : 0) + ")";
-						ctx.fillRect((index1 - camera.x)*tileSize, (index2 - camera.y)*tileSize, tileSize, tileSize);
-						ctx.closePath();
+						if((index1 - camera.x)*tileSize + 100 >= 0 && (index1 - camera.x)*tileSize <= canvas.width && (index2 - camera.y)*tileSize + 100 >= 0 && (index2 - camera.y)*tileSize < canvas.height && tile[index1][index2] > 0){
+							ctx.beginPath();
+							ctx.fillStyle = "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + "," + (tile[index1][index2] <= waterHeight ? Math.floor(tile[index1][index2]*(155/maxHeight) + 100) : 0) + ")";
+							ctx.fillRect((index1 - camera.x)*tileSize, (index2 - camera.y)*tileSize, tileSize, tileSize);
+							ctx.closePath();
+						}
 					}
 				}
 				
