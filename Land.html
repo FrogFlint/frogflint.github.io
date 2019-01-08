@@ -101,7 +101,6 @@
 								if(tile[index1][index2] == 0) tilesLeft++;
 							}
 						}
-						//tilesLeft = 1000; //temp
 					}
 				}
 			}
@@ -123,11 +122,13 @@
 							}
 						}
 						var bounds = {top:maxHeight,bottom:1};
-						for(index1 = Math.max(0, Math.floor(rand.x - maxHeight/slope));index1 < Math.min(mapSize.x, Math.floor(rand.x + maxHeight/slope));index1++){
-							for(index2 = 0;index2 < mapSize.y;index2++){
-								if(tile[index1][index2] != 0){
-									bounds.bottom = Math.max(bounds.bottom, tile[index1][index2] - distance(index1, index2, rand.x, rand.y) * slope);
-									bounds.top    = Math.min(bounds.top   , tile[index1][index2] + distance(index1, index2, rand.x, rand.y) * slope);
+						for(index1 = Math.floor(rand.x - maxHeight/slope);index1 < Math.ceil(rand.x + maxHeight/slope);index1++){
+							if(index1 in tile){
+								for(index2 = Math.floor(rand.y - maxHeight/slope);index2 < Math.ceil(rand.y + maxHeight/slope);index2++){
+									if(index2 in tile[index1] && tile[index1][index2] != 0){
+										bounds.bottom = Math.max(bounds.bottom, tile[index1][index2] - distance(index1, index2, rand.x, rand.y) * slope);
+										bounds.top    = Math.min(bounds.top   , tile[index1][index2] + distance(index1, index2, rand.x, rand.y) * slope);
+									}
 								}
 							}
 						}
