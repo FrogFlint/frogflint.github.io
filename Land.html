@@ -33,25 +33,18 @@
 			var ctx = canvas.getContext("2d");
 			
 			var tile = [[]];
-			
 			var index1, index2;
 			
-			
-			//var seed = 0;
 			var camera = {x:1000,y:1000};
 			
 			var tileSize = 10;
 			var mapSize = {x:Math.floor(1000/tileSize),y:Math.floor(600/tileSize)};
 			var slope = 2;  //maximum land slope
-			var maxHeight = 30;
-			var waterHeight = 15;
+			var maxHeight = 34;
+			var waterHeight = 17;
 			
 			var tilesLeft = 0;
 			var count = 0;
-			
-			
-			
-			
 			
 			
 			
@@ -66,30 +59,17 @@
 				return a > b ? randIntBetween(b,a) : Math.floor(Math.random()*(b - a + 1)) + a;
 			}
 			
-			
-			
 			document.addEventListener("keydown", keyDownHandler, false);
-			//document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
 				if(e.key == "w") waterHeight = Math.min(waterHeight + 1, maxHeight + 1);
 				if(e.key == "s") waterHeight = Math.max(waterHeight - 1, 0);
+				if(e.key == "r") waterHeight = Math.round(maxHeight/2);
 				if(tilesLeft == 0){
 					if(e.key == "ArrowUp"   ) camera.y -= mapSize.y/2;
 					if(e.key == "ArrowDown" ) camera.y += mapSize.y/2;
 					if(e.key == "ArrowLeft" ) camera.x -= mapSize.x/2;
 					if(e.key == "ArrowRight") camera.x += mapSize.x/2;
 					if(e.key == "g"){
-						//var c = {x:Math.max(-camera.x, 0),y:Math.max(-camera.y, 0)};
-						/*if(!(c.x == 0 && c.y == 0)){
-							var t = tile;
-							for(;;){
-								
-							}
-						}*/
-						
-						
-						
-						
 						for(index1 = camera.x;index1 < camera.x + mapSize.x;index1++){
 							if(typeof tile[index1] == "undefined") tile[index1] = [];
 							for(index2 = camera.y;index2 < camera.y + mapSize.y;index2++){
@@ -103,8 +83,6 @@
 			
 			
 			function draw() {
-				
-				
 				
 				for(var i = 0;i < 100 && tilesLeft > 0;i++){
 					count = Math.random()*tilesLeft;
@@ -135,13 +113,30 @@
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				for(index1 in tile){
 					for(index2 in tile[index1]){
-						if((index1 - camera.x)*tileSize + 100 >= 0 && (index1 - camera.x)*tileSize <= canvas.width && (index2 - camera.y)*tileSize + 100 >= 0 && (index2 - camera.y)*tileSize < canvas.height && tile[index1][index2] > 0){
+						if((index1 - camera.x)*tileSize + (canvas.width - mapSize.x*tileSize)/2 + tileSize >= 0 && (index1 - camera.x)*tileSize + (canvas.width - mapSize.x*tileSize)/2 <= canvas.width && (index2 - camera.y)*tileSize + (canvas.height - mapSize.y*tileSize)/2 + tileSize >= 0 && (index2 - camera.y)*tileSize + (canvas.height - mapSize.y*tileSize)/2 < canvas.height && tile[index1][index2] > 0){
 							ctx.beginPath();
 							ctx.fillStyle = "rgb(0," + Math.floor(tile[index1][index2]*(155/maxHeight) + 100) + "," + (tile[index1][index2] <= waterHeight ? Math.floor(tile[index1][index2]*(155/maxHeight) + 100) : 0) + ")";
-							ctx.fillRect((index1 - camera.x)*tileSize, (index2 - camera.y)*tileSize, tileSize, tileSize);
+							ctx.fillRect((index1 - camera.x)*tileSize + (canvas.width - mapSize.x*tileSize)/2, (index2 - camera.y)*tileSize + (canvas.height - mapSize.y*tileSize)/2, tileSize, tileSize);
 							ctx.closePath();
 						}
 					}
+				}
+				
+				if(tile.length == 1){
+					ctx.beginPath();
+					ctx.fillStyle = "White";
+					ctx.textAlign = "left";
+					ctx.font = "40px Arial";
+					ctx.fillText("Realistic terrain generator", 450, 150);
+					ctx.font = "30px Arial";
+					ctx.fillText("Water level", 970, 325);
+					ctx.font = "17px Arial";
+					ctx.fillText("Press G to generate a map chunk", 150, 320);
+					ctx.fillText("Use the arrow keys to move around", 150, 410);
+					ctx.fillText("W to increase", 990, 370);
+					ctx.fillText("S to decrease", 990, 400);
+					ctx.fillText("R to reset", 990, 430);
+					ctx.closePath();
 				}
 				
 				
