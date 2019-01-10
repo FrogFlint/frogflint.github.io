@@ -1494,6 +1494,8 @@
 				ctx.fillText(Math.round(player.stat.regen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, 32);
 				ctx.fillText(Math.ceil(player.stat.mana) + "/" + Math.ceil(player.stat.maxMana), Math.min(Math.max(hearts, stars), 10)*26 + 960, (Math.floor(hearts/10) + 1)*26 + 32);
 				ctx.fillText(Math.round(player.stat.manaRegen * 26) + "/s", Math.min(Math.max(hearts, stars), 10)*26 + 1040, (Math.floor(hearts/10) + 1)*26 + 32);
+				if(player.stat.armor > 0) ctx.fillText("Armor: " + player.stat.armor, 950, 510);
+				//armor sets
 				ctx.closePath();
 				
 				
