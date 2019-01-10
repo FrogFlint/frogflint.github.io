@@ -1020,6 +1020,66 @@
 				}
 			}
 			
+			function roomShape(x, y, maxSize){
+				var extend = {up:0,down:0,left:0,right:0};
+				var size = Math.floor(Math.random()*(maxSize - 6)) + 6;
+				var noRoom = false;
+				var stop = false;
+				
+				while(!stop){
+					stop = true;
+					
+					if(extend.left + extend.right < maxSize){
+						noRoom = false;
+						for(var index3 = y - extend.up;index3 <= y + extend.down;index3++){
+							if(!(map[x - extend.left - 1][index3].wall || map[x - extend.left - 1][index3].object == "door")) noRoom = true;
+						}
+						if(!noRoom){
+							extend.left++;
+							stop = false;
+						}
+						noRoom = false;
+						for(var index3 = y - extend.up;index3 <= y + extend.down;index3++){
+							if(!(map[x + extend.right + 1][index3].wall || map[x + extend.right + 1][index3].object == "door")) noRoom = true;
+						}
+						if(!noRoom){
+							extend.right++;
+							stop = false;
+						}
+					}
+					if(extend.up + extend.down < maxSize){
+						noRoom = false;
+						for(var index3 = x - extend.left;index3 <= x + extend.right;index3++){
+							if(!(map[index3][y - extend.up - 1].wall || map[index3][y - extend.up - 1].object == "door")) noRoom = true;
+						}
+						if(!noRoom){
+							extend.up++;
+							stop = false;
+						}
+						noRoom = false;
+						for(var index3 = x - extend.left;index3 <= x + extend.right;index3++){
+							if(!(map[index3][y + extend.down + 1].wall || map[index3][y + extend.down + 1].object == "door")) noRoom = true;
+						}
+						if(!noRoom){
+							extend.down++;
+							stop = false;
+						}
+					}
+				}
+				
+				extend.up = Math.floor(Math.random()*(extend.up - Math.min(Math.max(extend.down - 6, 0), extend.up))) + Math.min(Math.max(extend.down - 6, 0), extend.up);
+				extend.down = Math.floor(Math.random()*(extend.down - Math.min(Math.max(extend.up - 6, 0), extend.down))) + Math.min(Math.max(extend.up - 6, 0), extend.down);
+				extend.left = Math.floor(Math.random()*(extend.left - Math.min(Math.max(extend.right - 6, 0), extend.left))) + Math.min(Math.max(extend.right - 6, 0), extend.left);
+				extend.right = Math.floor(Math.random()*(extend.right - Math.min(Math.max(extend.left - 6, 0), extend.right))) + Math.min(Math.max(extend.left - 6, 0), extend.right);
+				
+				for(var index3 = x - extend.left;index3 <= x + extend.right;index3++){
+					for(var index4 = y - extend.up;index4 <= y + extend.down;index4++){
+						map[index3][index4].wall = map[index3][index4].object != "door" && (index3 == x - extend.left || index3 == x + extend.right || index4 == y - extend.up || index4 == y + extend.down);
+						map[index3][index4].discovered = true; //temp
+					}
+				}
+			}
+			
 			function addDoors(x, y){}
 			
 			function makeRoom(plan, x, y){  //plan is a 2D array
@@ -1769,6 +1829,7 @@
 			
 			
 			makeRoom(startRoom, Math.floor(player.pos.x) - 3, Math.floor(player.pos.y) - 5);
+			roomShape(Math.floor(player.pos.x), Math.floor(player.pos.y) - 6, 14);
 			setProperties(player.inventory[0][0], item[1]);
 			setProperties(player.inventory[1][0], item[2]);
 			setProperties(player.inventory[2][0], item[3]);
