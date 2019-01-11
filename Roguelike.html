@@ -750,18 +750,18 @@
 				
 				var entrance = "";
 				var roomDirection = "";
-				if(!map[x - 1][y].wall){entrance = "left"; roomDirection = "right";}
-				if(!map[x + 1][y].wall){entrance = "right"; roomDirection = "left";}
-				if(!map[x][y - 1].wall){entrance = "top"; roomDirection = "bottom";}
-				if(!map[x][y + 1].wall){entrance = "bottom"; roomDirection = "top";}
-				if(roomDirection == "") return false;
+				     if(!map[x + 1][y].discovered) x++;
+				else if(!map[x - 1][y].discovered) x--;
+				else if(!map[x][y + 1].discovered) y++;
+				else if(!map[x][y - 1].discovered) y--;
+				//if(roomDirection == "") return false;
 				
 				var doorSide = {top:false,bottom:false,left:false,right:false};
 				doorSide[roomDirection] = true;
 				
 				
 				var index3, index4;
-				var noRoom = false;
+				var noRoom = false;/*
 				for(var size = 7;size <= maxSize && !noRoom;size++){
 					if(roomDirection == "left"){
 						for(index3 = x - size;index3 <= x;index3++){
@@ -863,22 +863,50 @@
 					}
 					
 					if(noRoom) size--;
-				}
-				
+				}*/
 				
 				var extend = {};
-				for(index3 = 0;index3 < 4;index3++){
-					extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(randRange(*/(size - 1)/*, 6), 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
-				}
-				var boundaries = {};
-				for(index3 = 0;index3 < 4;index3++){
-					boundaries[edgeDirection[index3]] = (index3 < 2 ? y:x) + extend[edgeDirection[index3]]*(index3 % 2 == 0 ? -1:1);
-				}
-				for(index3 = boundaries.left + 1;index3 < boundaries.right;index3++){
-					for(index4 = boundaries.top + 1;index4 < boundaries.bottom;index4++){
-						map[index3][index4].wall = false;
+				for(index3 = 0;!(map[x + index3][y].wall || map[x + index3][y].object == "door");index3++) extend.right = index3;
+				for(index3 = 0;!(map[x - index3][y].wall || map[x - index3][y].object == "door");index3++) extend.left = index3;
+				for(index3 = 0;!(map[x][y + index3].wall || map[x][y + index3].object == "door");index3++) extend.bottom = index3;
+				for(index3 = 0;!(map[x][y - index3].wall || map[x][y - index3].object == "door");index3++) extend.top = index3;
+				
+				
+				//for(index3 = 0;index3 < 4;index3++){
+				//	extend[edgeDirection[index3]] = entrance == edgeDirection[index3] ? 0 : Math.floor(/*randRange(randRange(*/(size - 1)/*, 6), 6)*//(roomDirection == edgeDirection[index3] ? 1 : 2));
+				//}
+				var boundaries = {left:x - extend.left - 1, right:x + extend.right + 1, top:y - extend.top - 1, bottom:y + extend.bottom + 1};
+				//for(index3 = 0;index3 < 4;index3++){
+				//	boundaries[edgeDirection[index3]] = (index3 < 2 ? y:x) + extend[edgeDirection[index3]]*(index3 % 2 == 0 ? -1:1);
+				//}
+				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
+					for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
+						map[index3][index4].discovered = true;
 					}
 				}
+				
+				var done = false;
+				while(!done){
+					done = true;
+					
+					for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3 += boundaries.right - boundaries.left + 2){
+						for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4++){
+							if(!map[index3][index4].discovered && map[index3][index4].wall && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
+								roomShape(index3, index4);
+								done = false;
+							}
+						}
+					}
+					for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4 += boundaries.bottom - boundaries.top + 2){
+						for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3++){
+							if(!map[index3][index4].discovered && map[index3][index4].wall && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
+								roomShape(index3, index4);
+								done = false;
+							}
+						}
+					}
+				}
+				
 				
 				var doorCount = 1;
 				var giveUp = false;
@@ -890,7 +918,7 @@
 					}
 				}
 				var rand = {x:boundaries.left, y:boundaries.top};
-				while(doorCount < doors && !giveUp){
+				/*while(doorCount < doors && !giveUp){
 					while(tried[rand.x - boundaries.left][rand.y - boundaries.top]){
 						rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top)};
 					}
@@ -999,7 +1027,7 @@
 							if(!tried[index3][index4]) giveUp = false;
 						}
 					}
-				}
+				}*/
 				
 				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
 					for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
@@ -1020,7 +1048,7 @@
 				}
 			}
 			
-			function roomShape(x, y, maxSize){
+			function roomShape(x, y, maxSize = 14){
 				var extend = {up:0,down:0,left:0,right:0};
 				var size = Math.floor(Math.random()*(maxSize - 6)) + 6;
 				var noRoom = false;
@@ -1067,15 +1095,15 @@
 					}
 				}
 				
-				extend.up = Math.floor(Math.random()*(extend.up - Math.min(Math.max(extend.down - 6, 0), extend.up))) + Math.min(Math.max(extend.down - 6, 0), extend.up);
-				extend.down = Math.floor(Math.random()*(extend.down - Math.min(Math.max(extend.up - 6, 0), extend.down))) + Math.min(Math.max(extend.up - 6, 0), extend.down);
-				extend.left = Math.floor(Math.random()*(extend.left - Math.min(Math.max(extend.right - 6, 0), extend.left))) + Math.min(Math.max(extend.right - 6, 0), extend.left);
-				extend.right = Math.floor(Math.random()*(extend.right - Math.min(Math.max(extend.left - 6, 0), extend.right))) + Math.min(Math.max(extend.left - 6, 0), extend.right);
+				extend.up = Math.floor(Math.random()*(extend.up - Math.min(Math.max(6 - extend.down, 1), extend.up))) + Math.min(Math.max(6 - extend.down, 1), extend.up);
+				extend.down = Math.floor(Math.random()*(extend.down - Math.min(Math.max(6 - extend.up, 1), extend.down))) + Math.min(Math.max(6 - extend.up, 1), extend.down);
+				extend.left = Math.floor(Math.random()*(extend.left - Math.min(Math.max(6 - extend.right, 1), extend.left))) + Math.min(Math.max(6 - extend.right, 1), extend.left);
+				extend.right = Math.floor(Math.random()*(extend.right - Math.min(Math.max(6 - extend.left, 1), extend.right))) + Math.min(Math.max(6 - extend.left, 1), extend.right);
 				
 				for(var index3 = x - extend.left;index3 <= x + extend.right;index3++){
 					for(var index4 = y - extend.up;index4 <= y + extend.down;index4++){
 						map[index3][index4].wall = map[index3][index4].object != "door" && (index3 == x - extend.left || index3 == x + extend.right || index4 == y - extend.up || index4 == y + extend.down);
-						map[index3][index4].discovered = true; //temp
+						//map[index3][index4].discovered = true; //temp
 					}
 				}
 			}
@@ -1320,10 +1348,6 @@
 					}
 				}
 				return false;
-			}
-			function shootAt(owner, type, x, y, dx, dy, v){
-				var shot = projectile[owner][getNext(projectile[owner])];
-				setProperties(shot, baseProjectile[type], true);
 			}
 			
 			
@@ -1806,7 +1830,7 @@
 						x = Math.floor(player.pos.x + (index1 < 2 ? player.size/2 : 0)*(index1 == 0 ? -1 : 1));
 						y = Math.floor(player.pos.y + (index1 > 1 ? player.size/2 : 0)*(index1 == 2 ? -1 : 1));
 						if(map[x][y].object == "door"){
-							if(!map[x][y].open && map[x - 1][y].wall + map[x + 1][y].wall + map[x][y - 1].wall + map[x][y + 1].wall == 3){ //change to 1 later
+							if(!map[x][y].open && map[x - 1][y].discovered + map[x + 1][y].discovered + map[x][y - 1].discovered + map[x][y + 1].discovered == 3){ //change to 1 later
 								buildRoom(x, y);
 							}
 							if(!opened){
