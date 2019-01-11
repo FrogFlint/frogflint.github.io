@@ -389,7 +389,7 @@
 					},
 					{
 						name:"Chainmail Shirt",
-						tooltip:[""],
+						tooltip:["A sturdy metal chestplate"],
 						type:"equipment",
 						subType:"body",
 						bonus:{armor:8},
@@ -399,7 +399,7 @@
 					},
 					{
 						name:"Chainmail Leggings",
-						tooltip:[""],
+						tooltip:["Metal pants"],
 						type:"equipment",
 						subType:"legs",
 						bonus:{armor:6},
@@ -487,7 +487,13 @@
 				armorSet = [
 					{
 						piece:["Wizard Hat","Wizard Robes"],
-						bonus:{maxMana:10, manaRegen:0.04}
+						bonus:{maxMana:10, damageBonus:1/*TODO*/},
+						tooltip:["Increased maximum mana and magic damage"]
+					},
+					{
+						piece:["Chainmail Helmet","Chainmail Shirt","Chainmail Leggings"],
+						bonus:{damageBonus:1/*TODO*/, speed:-0.1, acceleration:-0.01/*make fraction*/},
+						tooltip:["Increased meele damage and speed","decreased movement speed"]
 					}
 				];
 				craftingRecipe = [
@@ -886,22 +892,23 @@
 				}
 				
 				var done = false;
+				var r;
 				while(!done){
 					done = true;
 					
 					for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3 += boundaries.right - boundaries.left + 2){
 						for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4++){
-							if(!map[index3][index4].discovered && map[index3][index4].wall && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
-								roomShape(index3, index4);
-								done = false;
+							if(!map[index3][index4].discovered && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
+								r = roomShape(index3, index4);
+								if(r) done = false;
 							}
 						}
 					}
 					for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4 += boundaries.bottom - boundaries.top + 2){
 						for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3++){
 							if(!map[index3][index4].discovered && map[index3][index4].wall && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
-								roomShape(index3, index4);
-								done = false;
+								r = roomShape(index3, index4);
+								if(r) done = false;
 							}
 						}
 					}
@@ -909,12 +916,17 @@
 				
 				
 				var doorCount = 1;
-				var giveUp = false;
+				//var giveUp = false;
 				tried = [];
-				for(index3 = 0;index3 <= boundaries.right - boundaries.left;index3++){
-					tried[index3] = [];
-					for(index4 = 0;index4 <= boundaries.bottom - boundaries.top;index4++){
-						tried[index3][index4] = false;
+				for(var giveUp = 0;giveUp < 100 && doors > 0;giveUp++){
+					for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
+						//tried[index3 - boundaries.left] = [];
+						for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
+							//tried[index3 - boundaries.left][index4 - boundaries.right] = false;
+							if(doors > 0 && map[index3+1][index4].wall && map[index3-1][index4].wall && !map[index3][index4+1].wall && !map[index3][index4-1].wall && Math.random() < 0.1) setProperties(map[index3][index4], {object:"door", wall:false, rotation:0});
+							if(doors > 0 && !map[index3+1][index4].wall && !map[index3-1][index4].wall && map[index3][index4+1].wall && map[index3][index4-1].wall && Math.random() < 0.1) setProperties(map[index3][index4], {object:"door", wall:false, rotation:1});
+							if(map[index3][index4].object == "door") doors--;
+						}
 					}
 				}
 				var rand = {x:boundaries.left, y:boundaries.top};
@@ -1049,6 +1061,7 @@
 			}
 			
 			function roomShape(x, y, maxSize = 14){
+				if(!map[x][y].wall) return false;
 				var extend = {up:0,down:0,left:0,right:0};
 				var size = Math.floor(Math.random()*(maxSize - 6)) + 6;
 				var noRoom = false;
@@ -1094,7 +1107,7 @@
 						}
 					}
 				}
-				
+				if(Math.min(extend.up + extend.down, extend.left + extend.right) < 6) return false;
 				extend.up = Math.floor(Math.random()*(extend.up - Math.min(Math.max(6 - extend.down, 1), extend.up))) + Math.min(Math.max(6 - extend.down, 1), extend.up);
 				extend.down = Math.floor(Math.random()*(extend.down - Math.min(Math.max(6 - extend.up, 1), extend.down))) + Math.min(Math.max(6 - extend.up, 1), extend.down);
 				extend.left = Math.floor(Math.random()*(extend.left - Math.min(Math.max(6 - extend.right, 1), extend.left))) + Math.min(Math.max(6 - extend.right, 1), extend.left);
@@ -1106,6 +1119,8 @@
 						//map[index3][index4].discovered = true; //temp
 					}
 				}
+				
+				return true;
 			}
 			
 			function addDoors(x, y){}
@@ -1140,7 +1155,7 @@
 					regen:0.06,
 					manaRegen:0.03,
 					armor:0,
-					damageBonus:0
+					damageBonus:0  //add types
 				});
 				for(index1 = 0;index1 < equipmentSlots.length;index1++){
 					if(player.equipment[equipmentSlots[index1]].name != ""){
