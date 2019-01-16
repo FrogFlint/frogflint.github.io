@@ -36,6 +36,7 @@
 			var height = Math.floor(canvas.height/tileSize);
 			
 			var speed = 1;
+			var maxBounces = 2;
 			
 			var index1 = 0;
 			var index2 = 0;
@@ -86,7 +87,7 @@
 				}
 				
 				for(index3 = 0;index3 < ring.length;index3++){
-					if(ring[index3].reflected == false && ring[index3].layer < 2){
+					if(ring[index3].reflected == false && ring[index3].layer < maxBounces){
 						if(ring[index3].x > 0 && !(ring[index3].x > width && !(ring[index3].y > 0 && ring[index3].y < height))) createRing(-ring[index3].x, ring[index3].y, ring[index3].layer + 1);
 						if(ring[index3].y > 0)                                                                                  createRing(ring[index3].x, -ring[index3].y, ring[index3].layer + 1);
 						if(ring[index3].x < width && !(ring[index3].x < 0 && !(ring[index3].y > 0 && ring[index3].y < height))) createRing(2*(width - 1) - ring[index3].x,  ring[index3].y, ring[index3].layer + 1);
