@@ -60,11 +60,10 @@
 			document.addEventListener("click", onClick);
 			function onClick(evt){
 				var rect = canvas.getBoundingClientRect();
-				createRing(Math.floor((evt.clientX - rect.left)/tileSize), Math.floor((evt.clientY - rect.top)/tileSize));
+				createRing((evt.clientX - rect.left)/tileSize, (evt.clientY - rect.top)/tileSize);
 				if(ring[ring.length - 1].x < 0 || ring[ring.length - 1].x >= width || ring[ring.length - 1].y < 0 || ring[ring.length - 1].y >= height) ring[ring.length - 1].age = 100000;
 			}
 			
-			//createRing(0,0);
 			
 			function draw(event) {     //=========================================================================================================================================================================================================
 				
