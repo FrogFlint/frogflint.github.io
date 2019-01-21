@@ -34,6 +34,7 @@
 			var tileSize = 8;
 			var width  = Math.floor(canvas.width /tileSize);
 			var height = Math.floor(canvas.height/tileSize);
+			var slope = 1;
 			
 			var speed = 1;
 			var maxBounces = 2;
@@ -69,11 +70,14 @@
 				
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
+				width  = Math.floor(canvas.width /tileSize);
+				height = Math.floor(canvas.height/tileSize);
+				
 				for(index1 = 0;index1 < width;index1++){
 					for(index2 = 0;index2 < height;index2++){
 						color = 0;
 						for(index3 = 0;index3 < ring.length;index3++){
-							color += Math.max(Math.min(360 - wierdDistance(index1 - ring[index3].x, index2 - ring[index3].y, 2, 2)*30 + ring[index3].age*20,360),0);
+							color += Math.max(Math.min(360 - distance(index1 - ring[index3].x, index2 - ring[index3].y)*30 + ring[index3].age*20,360),0);
 						}
 						
 							//if((color + 36000) % 360 != 0)color = (Math.sin(distance(index1,index2)/5)+1)*180;
