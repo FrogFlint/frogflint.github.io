@@ -45,7 +45,7 @@
 			var color;
 			var addColor;
 			
-			var mergeStyle = "add"; //add, max, min
+			var mergeStyle = "sub"; //add, sub, max, min
 			
 			var ring = [];
 			
@@ -82,6 +82,7 @@
 						for(index3 = 0;index3 < ring.length;index3++){
 							addColor = Math.max(Math.min(360 - distance(index1 - ring[index3].x, index2 - ring[index3].y)*30*slope + ring[index3].age*20*slope,360),0);
 							if(mergeStyle == "add") color += addColor;
+							if(mergeStyle == "sub") color = addColor - color;
 							if(mergeStyle == "max") color = Math.max(color, addColor);
 							if(mergeStyle == "min") color = Math.min(color, addColor);
 						}
