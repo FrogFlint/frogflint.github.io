@@ -101,6 +101,11 @@
 					ring[index3].age += speed;
 					if(ring[index3].age > 200*(ring[index3].layer + 1)) ring.splice(index3, 1);
 				}
+				for(index1 = 0;index1 < ring.length;index1++){
+					for(index2 = index1 + 1; index2 < ring.length;index2++){
+						if(ring[index1].x == ring[index2].x && ring[index1].y == ring[index2].y && ring[index1].age == ring[index2].age]) ring.splice(index2, 1);
+					}
+				}
 				
 				
 				
