@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: lime;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Recursive Flag</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1082" height="625">   </canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+    
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			
+			var mod = 2;
+			
+			var colors = [[],[],["lime","black"],["red","green","blue"]];
+			
+			
+			
+			
+			
+			function draw() {
+				
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				
+				
+				
+				
+				
+				setTimeout(draw, 10);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
