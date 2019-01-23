@@ -16,7 +16,7 @@
 		}
 	</style>
 
-<title>Recursive Flag</title>
+<title>Pascal's Triangle</title>
 </head>
 
 <body>
@@ -36,7 +36,7 @@
 			var mod = 2;
 			
 			var shape = "square";  //square, triangle
-			var step = 1;
+			var step = 64;
 			
 			
 			var table = [[1]];
@@ -51,8 +51,12 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
-				
+				index1 = table.length;
 				table[index1] = [];
+				for(index2 = 0;index2 <= index1;index2++){
+					if(index2 % index1 == 0) table[index1][index2] = 1;
+					else table[index1][index2] = (table[index1 - 1][index2] + table[index1 - 1][index2 - 1]) % mod;
+				}
 				
 				
 				
