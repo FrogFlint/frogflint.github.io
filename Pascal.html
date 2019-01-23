@@ -37,6 +37,7 @@
 			
 			var shape = "square";  //square, triangle
 			var step = 64;
+			var size = Math.floor(canvas.height/step);
 			
 			
 			var table = [[1]];
@@ -52,12 +53,23 @@
 				
 				
 				index1 = table.length;
-				table[index1] = [];
-				for(index2 = 0;index2 <= index1;index2++){
-					if(index2 % index1 == 0) table[index1][index2] = 1;
-					else table[index1][index2] = (table[index1 - 1][index2] + table[index1 - 1][index2 - 1]) % mod;
+				if(index1 < step){
+					table[index1] = [];
+					for(index2 = 0;index2 <= index1;index2++){
+						if(index2 % index1 == 0) table[index1][index2] = 1;
+						else table[index1][index2] = (table[index1 - 1][index2] + table[index1 - 1][index2 - 1]) % mod;
+					}
 				}
 				
+				for(index1 = 0;index1 < step;index1++){
+					for(index2 = 0;index2 <= index1;index2++){
+						ctx.beginPath();
+						if(shape == "square") ctx.rect((index2 - (index1 + 1)/2)*size, index1*size, size size);
+						ctx.fillStyle = colors[mod][table[index1][index2]];
+						ctx.fill();
+						ctx.closePath();
+					}
+				}
 				
 				
 				
