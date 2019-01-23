@@ -64,7 +64,7 @@
 				for(index1 = 0;index1 < step;index1++){
 					for(index2 = 0;index2 <= index1;index2++){
 						ctx.beginPath();
-						if(shape == "square") ctx.rect((index2 - (index1 + 1)/2)*size, index1*size, size size);
+						if(shape == "square") ctx.rect((index2 - (index1 + 1)/2)*size, index1*size, size, size);
 						ctx.fillStyle = colors[mod][table[index1][index2]];
 						ctx.fill();
 						ctx.closePath();
