@@ -31,13 +31,13 @@
 			var ctx = canvas.getContext("2d");
 			
 			
-			var colors = [[],[],["lime","black"],["red","green","blue"],["red","yellow","blue","purple"]];
+			var colors = [[],[],["black","lime"],["blue","red","lime"],["blue","red","yellow","lime"],["purple","red","yellow","lime","blue"],["purple","red","orange","yellow","lime","blue"]];
 			
 			var mod = 2;
 			
 			var shape = "square";  //square, triangle
-			var step = 64;
-			var size = Math.floor(canvas.height/step);
+			var step = mod;
+			var size = canvas.height/step;
 			
 			
 			var table = [[1]];
@@ -52,6 +52,15 @@
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
+				if(table.length >= step) setTimeout(function(){
+					if(table.length >= step){
+						table = [[1]];
+						step *= mod;
+						size = canvas.height/step;
+					}
+				}, 500);
+				
+				
 				index1 = table.length;
 				if(index1 < step){
 					table[index1] = [];
@@ -64,8 +73,8 @@
 				for(index1 in table){
 					for(index2 in table[index1]){
 						ctx.beginPath();
-						if(shape == "square") ctx.rect((index2 - (index1 + 1)/2)*size, index1*size, size, size);
-						ctx.fillStyle = colors[mod][table[index1][index2]];
+						if(shape == "square") ctx.rect(Math.floor(canvas.width/2 + (index2 - (index1 + 9)/20)*size), Math.floor(index1*size), Math.ceil(size), Math.ceil(size));
+						ctx.fillStyle = mod in colors ? colors[mod][table[index1][index2]] : "hsl(" + 360*((table[index1][index2] + mod - 1) % mod)/mod + ", 100%, 50%)";
 						ctx.fill();
 						ctx.closePath();
 					}
@@ -74,8 +83,8 @@
 				
 				
 				
-				setTimeout(draw, 10);
-			}    
+				setTimeout(draw, 20);
+			}
 			draw();
         		
    		 </SCRIPT>
