@@ -90,6 +90,34 @@
 			};*/
 			
 			
+			document.addEventListener("keydown", keyDownHandler, false);
+			//document.addEventListener("keyup", keyUpHandler, false);
+			function keyDownHandler(e) {
+				
+				if(e.keyCode == 87){countScore();}
+				
+				if(e.keyCode == 85 && undid == 0){
+					for(index1 = 0; index1 < boardSize; index1++){
+						for(index2 = 0; index2 < boardSize; index2++){
+							tile[index1][index2].stone = lastTile[index1][index2].stone;
+						}
+					}
+					turn = 3 - turn;
+					undid = 1;
+				}
+				if(e.keyCode == 80 && sizeSelect == 0){
+					turn = 3 - turn;
+				}
+				
+				
+			}
+			
+			
+			
+			document.addEventListener("click", addStone);
+			
+			window.oncontextmenu = function(){return false;}
+			
 			
 			function createBoard(){
 				for(index1 = 0; index1 < boardSize; index1++){
@@ -453,46 +481,6 @@
 			function draw(evt) {
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
-				
-				
-				
-				
-				
-				
-				document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
-				function keyDownHandler(e) {
-					
-					if(e.keyCode == 87){countScore();}
-					
-					if(e.keyCode == 85 && undid == 0){
-						for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
-								tile[index1][index2].stone = lastTile[index1][index2].stone;
-							}
-						}
-						turn = 3 - turn;
-						undid = 1;
-					}
-					if(e.keyCode == 80 && sizeSelect == 0){
-						turn = 3 - turn;
-					}
-					
-					
-				}
-				
-				
-				
-				document.addEventListener("click", addStone);
-				
-				//window.oncontextmenu = function(){return false;}  //temporary for debugging
-				
-				
-				
-				
-				
-				
-				
 				
 				
 				if(sizeSelect == 0){
