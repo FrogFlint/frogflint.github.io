@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -77,7 +78,8 @@
 					armor:0,
 					damageBonus:0
 				},
-				key:{up:false,down:false,left:false,right:false,click:false}
+				key:{up:false,down:false,left:false,right:false,click:false},
+				weaponHitBox:[{x:0,y:0},{x:0,y:0}]
 			};
 			
 			var index1, index2;
@@ -99,6 +101,7 @@
 			var dustCap = 1000;
 			var projectileCap = 1000;
 			var projOwner = ["player","enemy"];
+			var movementStep = 0.05;
 			
 			for(index1 = mapEdge.left;index1 <= mapEdge.right;index1++){
 				map[index1] = [];
@@ -230,11 +233,11 @@
 						subType:"shoot",
 						damage:10,
 						damageType:"ranged",
-						speed:9,
+						speed:14,
 						autoUse:false,
 						showHand:{main:true, off:true},
-						ammoType:"Arrows",
-						projectile:"Arrow",
+						ammoType:["Arrows"],
+						//projectile:"Arrow",
 						velocity:0.25,
 						maxStack:1,
 						size:42,
@@ -284,6 +287,7 @@
 						name:"Arrows",
 						tooltip:["Ammo for use with a bow"],
 						type:"ammo",
+						projectile:"Arrow",
 						damage:5,
 						maxStack:30,
 						size:15,
@@ -384,6 +388,7 @@
 						subType:"head",
 						bonus:{armor:5},
 						maxStack:1,
+						itemSize:22,
 						tier:3,
 						rarity:1
 					},
@@ -394,6 +399,7 @@
 						subType:"body",
 						bonus:{armor:8},
 						maxStack:1,
+						itemSize:30,
 						tier:3,
 						rarity:1
 					},
@@ -404,6 +410,7 @@
 						subType:"legs",
 						bonus:{armor:6},
 						maxStack:1,
+						itemSize:22,
 						tier:3,
 						rarity:1
 					},
@@ -442,6 +449,7 @@
 						damageType:"magic",
 						speed:2,
 						autoUse:true,
+						useMana:1,
 						showHand:{main:true, off:false},
 						projectile:"Arrow", //temporary
 						velocity:0.25,
@@ -460,6 +468,7 @@
 						damageType:"magic",
 						speed:1,
 						autoUse:true,
+						useMana:1,
 						showHand:{main:true, off:false},
 						maxStack:1,
 						size:26,
@@ -576,8 +585,8 @@
 						weapon:"Rusty Knife",
 						size:0.5,
 						stat:{
-							health:7,
-							maxLife:7,
+							health:70,
+							maxLife:70,
 							speed:0.4,
 							acceleration:0.02,
 							armor:0
@@ -767,109 +776,7 @@
 				
 				
 				var index3, index4;
-				var noRoom = false;/*
-				for(var size = 7;size <= maxSize && !noRoom;size++){
-					if(roomDirection == "left"){
-						for(index3 = x - size;index3 <= x;index3++){
-							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
-							}
-						}
-						for(index3 = x - size - 3;index3 <= x + 3;index3++){
-							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2) + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - size - 3;index3 <= x + 3;index3++){
-							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - size;index3 <= x + 6;index3++){
-							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - size - 6;index3 <= x;index3++){
-							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
-							}
-						}
-					}
-					if(roomDirection == "right"){
-						for(index3 = x + size;index3 >= x;index3--){
-							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
-							}
-						}
-						for(index3 = x + size + 3;index3 >= x - 3;index3--){
-							for(index4 = y - Math.floor(size/2);index4 <= y + Math.floor(size/2) + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x + size + 3;index3 >= x - 3;index3--){
-							for(index4 = y - Math.floor(size/2) - 6;index4 <= y + Math.floor(size/2);index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x + size + 6;index3 >= x;index3--){
-							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x + size;index3 >= x - 6;index3--){
-							for(index4 = y - Math.floor(size/2) - 3;index4 <= y + Math.floor(size/2) + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
-							}
-						}
-					}
-					if(roomDirection == "top"){
-						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
-							for(index4 = y - size;index4 <= y;index4++){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
-							for(index4 = y - size;index4 <= y + 6;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 - 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
-							for(index4 = y - size - 6;index4 <= y;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0 && !map[index3][index4 + 1].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2) + 6;index3++){
-							for(index4 = y - size - 3;index4 <= y + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 - 1][index4].discovered) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2);index3++){
-							for(index4 = y - size - 3;index4 <= y + 3;index4++){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1 && !map[index3 + 1][index4].discovered) noRoom = true;
-							}
-						}
-					}
-					if(roomDirection == "bottom"){
-						for(index3 = x - Math.floor(size/2);index3 <= x + Math.floor(size/2);index3++){
-							for(index4 = y + size;index4 >= y;index4--){
-								if(!(index3 == x && index4 == y) && !map[index3][index4].wall) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2) - 3;index3 <= x + Math.floor(size/2) + 3;index3++){
-							for(index4 = y + size + 6;index4 >= y - 6;index4--){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
-							}
-						}
-						for(index3 = x - Math.floor(size/2) - 6;index3 <= x + Math.floor(size/2) + 6;index3++){
-							for(index4 = y + size + 3;index4 >= y - 3;index4--){
-								if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
-							}
-						}
-					}
-					
-					if(noRoom) size--;
-				}*/
+				var noRoom = false;
 				
 				var extend = {};
 				for(index3 = 0;!(map[x + index3][y].wall || map[x + index3][y].object == "door");index3++) extend.right = index3;
@@ -885,11 +792,6 @@
 				//for(index3 = 0;index3 < 4;index3++){
 				//	boundaries[edgeDirection[index3]] = (index3 < 2 ? y:x) + extend[edgeDirection[index3]]*(index3 % 2 == 0 ? -1:1);
 				//}
-				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
-					for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
-						map[index3][index4].discovered = true;
-					}
-				}
 				
 				var done = false;
 				var r;
@@ -898,15 +800,23 @@
 					
 					for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3 += boundaries.right - boundaries.left + 2){
 						for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4++){
-							if(!map[index3][index4].discovered && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
+							if(!map[index3][index4].discovered && 
+							(map[index3 + 2][index4 - 1].wall && map[index3 + 2][index4].wall && map[index3 + 2][index4 + 1].wall) + 
+							(map[index3 - 2][index4 - 1].wall && map[index3 - 2][index4].wall && map[index3 - 2][index4 + 1].wall) + 
+							(map[index3 - 1][index4 + 2].wall && map[index3][index4 + 2].wall && map[index3 + 1][index4 + 2].wall) + 
+							(map[index3 - 1][index4 - 2].wall && map[index3][index4 - 2].wall && map[index3 + 1][index4 - 2].wall) <= 2){
 								r = roomShape(index3, index4);
 								if(r) done = false;
 							}
 						}
 					}
-					for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4 += boundaries.bottom - boundaries.top + 2){
-						for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3++){
-							if(!map[index3][index4].discovered && map[index3][index4].wall && map[index3 + 2][index4].wall + map[index3 - 2][index4].wall + map[index3][index4 + 2].wall + map[index3][index4 - 2].wall <= 2){
+					for(index3 = boundaries.left - 1;index3 <= boundaries.right + 1;index3++){
+						for(index4 = boundaries.top - 1;index4 <= boundaries.bottom + 1;index4 += boundaries.bottom - boundaries.top + 2){
+							if(!map[index3][index4].discovered && 
+							(map[index3 + 2][index4 - 1].wall && map[index3 + 2][index4].wall && map[index3 + 2][index4 + 1].wall) + 
+							(map[index3 - 2][index4 - 1].wall && map[index3 - 2][index4].wall && map[index3 - 2][index4 + 1].wall) + 
+							(map[index3 - 1][index4 + 2].wall && map[index3][index4 + 2].wall && map[index3 + 1][index4 + 2].wall) + 
+							(map[index3 - 1][index4 - 2].wall && map[index3][index4 - 2].wall && map[index3 + 1][index4 - 2].wall) <= 2){
 								r = roomShape(index3, index4);
 								if(r) done = false;
 							}
@@ -923,127 +833,19 @@
 						//tried[index3 - boundaries.left] = [];
 						for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
 							//tried[index3 - boundaries.left][index4 - boundaries.right] = false;
-							if(doors > 0 && map[index3+1][index4].wall && map[index3-1][index4].wall && !map[index3][index4+1].wall && !map[index3][index4-1].wall && Math.random() < 0.1) setProperties(map[index3][index4], {object:"door", wall:false, rotation:0});
-							if(doors > 0 && !map[index3+1][index4].wall && !map[index3-1][index4].wall && map[index3][index4+1].wall && map[index3][index4-1].wall && Math.random() < 0.1) setProperties(map[index3][index4], {object:"door", wall:false, rotation:1});
+							if(doors > 0 && !map[index3][index4].discovered && map[index3+1][index4].object + map[index3-1][index4].object + map[index3][index4+1].object + map[index3][index4-1].object == "" && Math.random() < 0.1){ //remove randomness later
+								if(map[index3+1][index4].wall && map[index3-1][index4].wall && !map[index3][index4+1].wall && !map[index3][index4-1].wall) setProperties(map[index3][index4], {object:"door", wall:false, rotation:0});
+								if(!map[index3+1][index4].wall && !map[index3-1][index4].wall && map[index3][index4+1].wall && map[index3][index4-1].wall) setProperties(map[index3][index4], {object:"door", wall:false, rotation:1});
+							}
 							if(map[index3][index4].object == "door") doors--;
 						}
 					}
 				}
-				var rand = {x:boundaries.left, y:boundaries.top};
-				/*while(doorCount < doors && !giveUp){
-					while(tried[rand.x - boundaries.left][rand.y - boundaries.top]){
-						rand = {x:Math.floor(Math.random()*(boundaries.right - boundaries.left + 1) + boundaries.left), y:Math.floor(Math.random()*(boundaries.bottom - boundaries.top + 1) + boundaries.top)};
-					}
-					if(map[rand.x][rand.y].wall && map[rand.x - 1][rand.y].wall + map[rand.x + 1][rand.y].wall + map[rand.x][rand.y - 1].wall + map[rand.x][rand.y + 1].wall == 3){
-						if(!(map[rand.x - 1][rand.y].wall || doorSide.left)){
-							noRoom = false;
-							for(index3 = rand.x + 6;index3 >= rand.x;index3--){
-								for(index4 = rand.y - 3;index4 <= rand.y + 3;index4++){
-									if(!map[index3][index4].wall) noRoom = true;
-								}
-							}
-							for(index3 = rand.x + 6 + 3;index3 >= rand.x - 3;index3--){
-								for(index4 = rand.y - 3 - 6;index4 <= rand.y + 3 + 6;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
-								}
-							}
-							for(index3 = rand.x + 6 + 6;index3 >= rand.x - 6;index3--){
-								for(index4 = rand.y - 3 - 3;index4 <= rand.y + 3 + 3;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
-								}
-							}
-							if(!noRoom){
-								map[rand.x][rand.y].wall = false;
-								map[rand.x][rand.y].object = "door";
-								map[rand.x][rand.y].rotation = 1;
-								doorCount++;
-							}
-						}
-						if(!(map[rand.x + 1][rand.y].wall || doorSide.right)){
-							noRoom = false;
-							for(index3 = rand.x - 6;index3 <= rand.x;index3++){
-								for(index4 = rand.y - 3;index4 <= rand.y + 3;index4++){
-									if(!map[index3][index4].wall) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 6 - 3;index3 <= rand.x + 3;index3++){
-								for(index4 = rand.y - 3 - 6;index4 <= rand.y + 3 + 6;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 6 - 6;index3 <= rand.x + 6;index3++){
-								for(index4 = rand.y - 3 - 3;index4 <= rand.y + 3 + 3;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
-								}
-							}
-							if(!noRoom){
-								map[rand.x][rand.y].wall = false;
-								map[rand.x][rand.y].object = "door";
-								map[rand.x][rand.y].rotation = 1;
-								doorCount++;
-							}
-						}
-						if(!(map[rand.x][rand.y - 1].wall || doorSide.top)){
-							noRoom = false;
-							for(index3 = rand.x - 3;index3 <= rand.x + 3;index3++){
-								for(index4 = rand.y + 6;index4 >= rand.y;index4--){
-									if(!map[index3][index4].wall) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 3 - 3;index3 <= rand.x + 3 + 3;index3++){
-								for(index4 = rand.y + 6 + 6;index4 >= rand.y - 6;index4--){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 3 - 6;index3 <= rand.x + 3 + 6;index3++){
-								for(index4 = rand.y + 6 + 3;index4 >= rand.y - 3;index4--){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
-								}
-							}
-							if(!noRoom){
-								map[rand.x][rand.y].wall = false;
-								map[rand.x][rand.y].object = "door";
-								map[rand.x][rand.y].rotation = 0;
-								doorCount++;
-							}
-						}
-						if(!(map[rand.x][rand.y + 1].wall || doorSide.bottom)){
-							noRoom = false;
-							for(index3 = rand.x - 3;index3 <= rand.x + 3;index3++){
-								for(index4 = rand.y - 6;index4 <= rand.y;index4++){
-									if(!map[index3][index4].wall) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 3 - 3;index3 <= rand.x + 3 + 3;index3++){
-								for(index4 = rand.y - 6 - 6;index4 <= rand.y + 6;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 0) noRoom = true;
-								}
-							}
-							for(index3 = rand.x - 3 - 6;index3 <= rand.x + 3 + 6;index3++){
-								for(index4 = rand.y - 6 - 3;index4 <= rand.y + 3;index4++){
-									if(!(index3 == x && index4 == y) && map[index3][index4].object == "door" && map[index3][index4].rotation == 1) noRoom = true;
-								}
-							}
-							if(!noRoom){
-								map[rand.x][rand.y].wall = false;
-								map[rand.x][rand.y].object = "door";
-								map[rand.x][rand.y].rotation = 0;
-								doorCount++;
-							}
-						}
-					}
-					tried[rand.x - boundaries.left][rand.y - boundaries.top] = true;
-					giveUp = true;
-					for(index3 = 0;index3 < tried.length;index3++){
-						for(index4 = 0;index4 < tried[index3].length;index4++){
-							if(!tried[index3][index4]) giveUp = false;
-						}
-					}
-				}*/
+				//var rand = {x:boundaries.left, y:boundaries.top};
 				
 				for(index3 = boundaries.left;index3 <= boundaries.right;index3++){
 					for(index4 = boundaries.top;index4 <= boundaries.bottom;index4++){
-						/*if(!map[index3][index4].wall) */map[index3][index4].discovered = true;
+						map[index3][index4].discovered = true;
 					}
 				}
 				
@@ -1053,13 +855,12 @@
 						var type = 1; //generate randomly
 						var newEnemy = enemy[getNext(enemy)];
 						setProperties(newEnemy, baseEnemy[type], true);
-						setProperties(newEnemy, {pos:{x:rand.x + 0.5, y:rand.y + 0.5},speed:{x:0,y:0},active:true, maxHealth:newEnemy.health});
+						setProperties(newEnemy, {pos:{x:rand.x + 0.5, y:rand.y + 0.5}, speed:{x:0,y:0}, active:true});
 						
 						enemies--;
 					}
 				}
 			}
-			
 			function roomShape(x, y, maxSize = 14){
 				if(!map[x][y].wall) return false;
 				var extend = {up:0,down:0,left:0,right:0};
@@ -1123,7 +924,6 @@
 				return true;
 			}
 			
-			function addDoors(x, y){}
 			
 			function makeRoom(plan, x, y){  //plan is a 2D array
 				for(var index4 = 0;index4 < plan.length;index4++){
@@ -1209,30 +1009,6 @@
 					if(bounce.left || bounce.right) player.speed.x = 0;
 					if(bounce.up   || bounce.down ) player.speed.y = 0;
 					//door
-					if(map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].object == "door" &&
-					  !map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].open &&
-					   map[Math.floor(player.pos.x - player.size/2)][Math.floor(player.pos.y)].rotation % 2 == 1 &&
-					  (player.pos.x - player.size/2) % 1 < 3/5){
-						player.pos.x = Math.floor(player.pos.x - player.size/2) + 3/5 + player.size/2;
-					}
-					if(map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].object == "door" &&
-					  !map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].open &&
-					   map[Math.floor(player.pos.x + player.size/2)][Math.floor(player.pos.y)].rotation % 2 == 1 &&
-					  (player.pos.x + player.size/2) % 1 > 2/5){
-						player.pos.x = Math.floor(player.pos.x + player.size/2) + 2/5 - player.size/2 - 0.0001;
-					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].object == "door" &&
-					  !map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].open &&
-					   map[Math.floor(player.pos.x)][Math.floor(player.pos.y - player.size/2)].rotation % 2 == 0 &&
-					  (player.pos.y - player.size/2) % 1 < 3/5){
-						player.pos.y = Math.floor(player.pos.y - player.size/2) + 3/5 + player.size/2;
-					}
-					if(map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].object == "door" &&
-					  !map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].open &&
-					   map[Math.floor(player.pos.x)][Math.floor(player.pos.y + player.size/2)].rotation % 2 == 0 &&
-					  (player.pos.y + player.size/2) % 1 > 2/5){
-						player.pos.y = Math.floor(player.pos.y + player.size/2) + 2/5 - player.size/2 - 0.0001;
-					}
 				}
 			}
 			function moveEnemies(){}
@@ -1252,6 +1028,15 @@
 							if(bounce.left || bounce.right || bounce.up || bounce.down || bounce.upLeft || bounce.upRight || bounce.downLeft || bounce.downRight){
 								if(true){
 									proj.active = false;
+								}
+							}
+							
+							for(var index3 = 0;index3 < enemyCap;index3++){
+								if(enemy[index3].active && true){
+									if(distance(enemy[index3].pos.x - proj.pos.x, enemy[index3].pos.y - proj.pos.y) < enemy[index3].size + proj.size/2/tileSize){
+										doDamage(enemy[index3], proj.damage);
+										proj.active = false;
+									}
 								}
 							}
 						}
@@ -1315,6 +1100,35 @@
 						}
 					}
 					
+					if(map[Math.floor(x - size)][Math.floor(y)].object == "door" &&
+					  !map[Math.floor(x - size)][Math.floor(y)].open &&
+					   map[Math.floor(x - size)][Math.floor(y)].rotation % 2 == 1 &&
+					  (x - size) % 1 < 3/5){
+						x = Math.floor(x - size) + 3/5 + size;
+						collisions.left = true;
+					}
+					if(map[Math.floor(x + size)][Math.floor(y)].object == "door" &&
+					  !map[Math.floor(x + size)][Math.floor(y)].open &&
+					   map[Math.floor(x + size)][Math.floor(y)].rotation % 2 == 1 &&
+					  (x + size) % 1 > 2/5){
+						x = Math.floor(x + size) + 2/5 - size - 0.0001;
+						collisions.right = true;
+					}
+					if(map[Math.floor(x)][Math.floor(y - size)].object == "door" &&
+					  !map[Math.floor(x)][Math.floor(y - size)].open &&
+					   map[Math.floor(x)][Math.floor(y - size)].rotation % 2 == 0 &&
+					  (y - size) % 1 < 3/5){
+						y = Math.floor(y - size) + 3/5 + size;
+						collisions.up = true;
+					}
+					if(map[Math.floor(x)][Math.floor(y + size)].object == "door" &&
+					  !map[Math.floor(x)][Math.floor(y + size)].open &&
+					   map[Math.floor(x)][Math.floor(y + size)].rotation % 2 == 0 &&
+					  (y + size) % 1 > 2/5){
+						y = Math.floor(y + size) + 2/5 - size - 0.0001;
+						collisions.down = true;
+					}
+					
 					collisions.x = x;
 					collisions.y = y;
 				}
@@ -1323,6 +1137,19 @@
 			}
 			
 			function useItem(user, usedItem){
+				if("useMana" in usedItem){
+					if(player.stat.mana >= usedItem.useMana) player.stat.mana -= usedItem.useMana;
+					else return false;
+				}
+				if("ammoType" in usedItem){
+					if(countAmmo(usedItem.ammoType) > 0){
+						var usedAmmo = nextAmmo(usedItem.ammoType);
+						usedItem.projectile = player.inventory[usedAmmo.x][usedAmmo.y].projectile;
+						player.inventory[usedAmmo.x][usedAmmo.y].stack--;
+						if(player.inventory[usedAmmo.x][usedAmmo.y].stack <= 0) player.inventory[usedAmmo.x][usedAmmo.y] = {name:""};
+					}
+					else return false;
+				}
 				if(usedItem.type == "weapon"){
 					user.itemCooldown = usedItem.speed;
 					if(usedItem.subType == "shoot"){
@@ -1344,6 +1171,10 @@
 					}
 					
 				}
+			}
+			function doDamage(target, amount, types){
+				target.stat.health -= amount; //add armor, type bonus/weakness
+				if(target.stat.health <= 0) target.active = false; //add special things like death animations, boss stages
 			}
 			function getNext(list){
 				for(var index5 = 0;index5 < list.length;index5++){
@@ -1551,6 +1382,14 @@
 						ctx.closePath();
 						
 						drawSprite("item", player.inventory[index1][index2].name, index1*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, index2*70 + 20 + (50 - player.inventory[index1][index2].itemSize)/2, player.inventory[index1][index2].itemSize);
+						
+						if(player.inventory[index1][index2].stack > 1){
+							ctx.beginPath();
+							ctx.font = "15px Arial";
+							ctx.fillStyle = "White";
+							ctx.fillText(player.inventory[index1][index2].stack, index1*70 + 20 + 33, index2*70 + 20 + 43);
+							ctx.closePath();
+						}
 					}
 				}
 				
@@ -1607,6 +1446,14 @@
 				}
 				
 				drawSprite("item", player.dragItem.name, mouse.x - player.dragItem.itemSize/2, mouse.y - player.dragItem.itemSize/2, player.dragItem.itemSize);
+				
+				if(player.dragItem.stack > 1){
+					ctx.beginPath();
+					ctx.font = "15px Arial";
+					ctx.fillStyle = "White";
+					ctx.fillText(player.dragItem.stack, mouse.x - 25 + 33, mouse.y - 25 + 43);
+					ctx.closePath();
+				}
 			}
 			function drawBigMap(){}
 			function drawOverlay(){
@@ -1621,6 +1468,15 @@
 					ctx.closePath();
 					
 					drawSprite("item", player.inventory[index1][0].name, index1*70 + 20 + (50 - player.inventory[index1][0].itemSize)/2, 20 + (50 - player.inventory[index1][0].itemSize)/2, player.inventory[index1][0].itemSize);
+					
+					
+					ctx.beginPath();
+					ctx.font = "15px Arial";
+					ctx.fillStyle = "White";
+					if(player.inventory[index1][0].stack > 1) ctx.fillText(player.inventory[index1][0].stack, index1*70 + 20 + 33, 20 + 43);
+					if("ammoType" in player.inventory[index1][0] && countAmmo(player.inventory[index1][0].ammoType) > 0) ctx.fillText(countAmmo(player.inventory[index1][0].ammoType), index1*70 + 20 + 9, 20 + 43);
+					ctx.closePath();
+					
 				}
 				var hearts = Math.ceil(player.stat.maxLife/10);
 				for(index1 = 0;index1 < hearts;index1++){
@@ -1698,13 +1554,29 @@
 				if(a > b) return randRange(b, a);
 				return Math.random()*(b - a) + a;
 			}
+			function nextAmmo(types){
+				for(var index4 = 0;index4 < inventorySize.height;index4++){
+					for(var index3 = 0;index3 < inventorySize.width;index3++){
+						if(types.includes(player.inventory[index3][index4].name)) return {x:index3, y:index4};
+					}
+				}
+			}
+			function countAmmo(types){
+				var count = 0;
+				for(var index4 = 0;index4 < inventorySize.height;index4++){
+					for(var index3 = 0;index3 < inventorySize.width;index3++){
+						if(types.includes(player.inventory[index3][index4].name)) count += player.inventory[index3][index4].stack;
+					}
+				}
+				return count;
+			}
 			
 			function wallSprite(UL, U, UR, L, R, DL, D, DR){
 				var x = 0;
 				var y = 0;
 				var d = [UL,U,UR,L,R,DL,D,DR];
 				var checkAdj = [[" ","1"," ","1","1"," ","1"," "],[" ","1"," ","1","0"," ","1"," "],[" ","1"," ","0","0"," ","1"," "],[" ","1"," ","0","1"," ","1"," "],[" ","1"," ","1","0"," ","0","1"],[" ","1"," ","0","1","1","0"," "],[" ","0","1","1","0"," ","0","1"],[" ","1"," ","0","0","1","0","1"],["1","0","0","0","0","1","0","1"],["1","0","1","0","0","1","0","0"],["0","0","1","0","0","0","0","1"],["0","0","0","0","0","1","0","1"],
-						[" ","1"," ","1","1"," ","0"," "],[" ","1"," ","1","0"," ","0"," "],[" ","1"," ","0","0","0","0","0"],[" ","1"," ","0","1","0","0"," "],[" ","0","1","1","0"," ","1"," "],["1","0"," ","0","1"," ","1"," "],["1","0","1","0","0"," ","1"," "],["1","0"," ","0","1","1","0"," "],["0","0","1","0","0","1","0","1"],["1","0","1","0","0","0","0","1"],["1","0","1","0","0","0","0","0"],["1","0","0","0","0","1","0","0"],
+						[" ","1"," ","1","1"," ","0"," "],[" ","1"," ","1","0"," ","0","0"],[" ","1"," ","0","0","0","0","0"],[" ","1"," ","0","1","0","0"," "],[" ","0","1","1","0"," ","1"," "],["1","0"," ","0","1"," ","1"," "],["1","0","1","0","0"," ","1"," "],["1","0"," ","0","1","1","0"," "],["0","0","1","0","0","1","0","1"],["1","0","1","0","0","0","0","1"],["1","0","1","0","0","0","0","0"],["1","0","0","0","0","1","0","0"],
 						[" ","0"," ","1","1"," ","0"," "],[" ","0","0","1","0"," ","0","0"],["0","0","0","0","0","0","0","0"],["0","0"," ","0","1","0","0"," "],[" ","0","1","1","0"," ","0","0"],[" ","1"," ","0","0","0","0","1"],[" ","0","0","1","0"," ","0","1"],[" ","1"," ","0","0","1","0","0"],["0","0","0","0","0","0","0","1"],["0","0","0","0","0","1","0","0"],["1","0","0","0","0","0","0","1"],["0","0","1","0","0","1","0","0"],
 						[" ","0"," ","1","1"," ","1"," "],[" ","0","0","1","0"," ","1"," "],["0","0","0","0","0"," ","1"," "],["0","0"," ","0","1"," ","1"," "],["1","0","0","0","0"," ","1"," "],["0","0"," ","0","1","1","0"," "],["0","0","1","0","0"," ","1"," "],["1","0"," ","0","1","0","0"," "],["0","0","1","0","0","0","0","0"],["1","0","0","0","0","0","0","0"],["1","0","1","0","0","1","0","1"]];
 				for(var index3 = 0;index3 < checkAdj.length;index3++){
@@ -1816,7 +1688,11 @@
 					}
 				}
 				for (var i = 0; i < bProps.length; i++){
-					a[bProps[i]] = b[bProps[i]];
+					if(typeof b[bProps[i]] == "object" && !("length" in b[bProps[i]])){
+						a[bProps[i]] = {};
+						setProperties(a[bProps[i]], b[bProps[i]]);
+					}
+					else a[bProps[i]] = b[bProps[i]];
 				}
 			}
 			
@@ -1875,17 +1751,22 @@
 			setProperties(player.inventory[3][0], item[4]);
 			setProperties(player.inventory[4][0], item[5]);
 			setProperties(player.inventory[5][0], item[6]);
+			setProperties(player.inventory[5][0], {stack:5});
 			setProperties(player.inventory[6][0], item[20]);
 			setProperties(player.inventory[0][1], item[10]);
 			setProperties(player.inventory[1][1], item[11]);
 			setProperties(player.inventory[2][1], item[13]);
-			setProperties(player.inventory[3][1], item[8]);
+			setProperties(player.inventory[3][1], item[13]);
+			setProperties(player.inventory[4][1], item[8]);
+			setProperties(player.inventory[0][3], item[15]);
+			setProperties(player.inventory[1][3], item[16]);
+			setProperties(player.inventory[2][3], item[17]);
 			
 			function draw() {
 				
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				
-				
+				//TODO: Split and combine item stacks, magic weapons use mana, door regulation with map.discovered, generate rooms off of partial corners flat walls,   art: make fade corners more round 
 				
 				if(gameState == "playing"){
 					adjustMapEdge();
