@@ -23,6 +23,11 @@
 	<canvas id="myCanvas" width="1300" height="630"></canvas>
 	
 	<body style="background-color:#CCCCCC;">
+		<div id="mapCodeBox" width="50" style="position:fixed; margin-top:-300px; margin-left:1150px; display:none; -webkit-user-select:none;">
+			<button onclick="importMap()">Import</button>
+			<button onclick="exportMap()">Export</button>
+			<input type="text" id="mapCode" value="">
+		</div>
 		
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -1679,6 +1684,34 @@
 			function mazePath(){}
 			
 			
+			function importMap(){
+				var code = document.getElementById('mapCode').value;
+				
+				code = code.split(" ");
+				mazeSize = {width:parseInt(code[0]), height:parseInt(code[1])};
+				code = code[2].split("");
+				
+				for(index1 in code){
+					maze[Math.floor(index1/(mazeSize.height-2))+1][(index1 % (mazeSize.height - 2))+1] = {
+						tile:1 -(code[index1] > 3),
+						topWall:(code[index1] % 4 > 1) + 0,
+						leftWall:(code[index1] % 2 > 0) + 0
+					}
+				}
+			}
+			function exportMap(){
+				var code = "";
+				code = mazeSize.width + " " + mazeSize.height + " ";
+				
+				for(index1 = 1;index1 < mazeSize.width - 1;index1++){
+					for(index2 = 1;index2 < mazeSize.height - 1;index2++){
+						code += 4*!maze[index1][index2].tile + 2*maze[index1][index2].topWall + maze[index1][index2].leftWall;
+					}
+				}
+				
+				document.getElementById('mapCode').value = code;
+			}
+			
 			document.addEventListener('mousemove', onMove, false);
 			document.addEventListener("click", onClick);
 			function onMove(evt){
@@ -1793,34 +1826,44 @@
 			document.addEventListener("keydown", keyDownHandler, false);
 			document.addEventListener("keyup", keyUpHandler, false);
 			function keyDownHandler(e) {
-				for(index1 = 0;index1 < players && index1 < controls.length;index1++){
-					for(index2 = 0;index2 < 4;index2++){
-						if(e.key == controls[index1][index2]){
-							player[index1][directionCode[index2]] = true;
-							event.preventDefault();
+				if(screen == "game"){
+					for(index1 = 0;index1 < players && index1 < controls.length;index1++){
+						for(index2 = 0;index2 < 4;index2++){
+							if(e.key == controls[index1][index2]){
+								player[index1][directionCode[index2]] = true;
+								event.preventDefault();
+							}
 						}
-					}
-					if(e.key == controls[index1][4]){
-						if(player[index1].shooting == 0){
-							player[index1].shooting = 2;
+						if(e.key == controls[index1][4]){
+							if(player[index1].shooting == 0){
+								player[index1].shooting = 2;
+							}
 						}
 					}
 				}
 				if(e.keyCode == 32){
-					if(screen == "editor") screen = "game";
-					else if(screen == "game") screen = "editor";
+					if(screen == "editor"){
+						screen = "game";
+						document.getElementById('mapCodeBox').style.display = 'none';
+					}
+					else if(screen == "game"){
+						screen = "editor";
+						document.getElementById('mapCodeBox').style.display = '';
+					}
 				}
 			}
 			function keyUpHandler(e) {
-				for(index1 = 0;index1 < players && index1 < controls.length;index1++){
-					for(index2 = 0;index2 < 4;index2++){
-						if(e.key == controls[index1][index2]){
-							player[index1][directionCode[index2]] = false;
-							event.preventDefault();
+				if(screen == "game"){
+					for(index1 = 0;index1 < players && index1 < controls.length;index1++){
+						for(index2 = 0;index2 < 4;index2++){
+							if(e.key == controls[index1][index2]){
+								player[index1][directionCode[index2]] = false;
+								event.preventDefault();
+							}
 						}
-					}
-					if(e.key == controls[index1][4]){
-						player[index1].shooting = 0;
+						if(e.key == controls[index1][4]){
+							player[index1].shooting = 0;
+						}
 					}
 				}
 			}
