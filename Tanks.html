@@ -106,7 +106,7 @@
 			var pickupBorder = 0.75;
 			
 			var laserUpdates = 80;
-			var laserSpeed = 7;
+			var laserSpeed = 10;
 			var laserbounce = false;
 			
 			var gattlingAmmo = 20;
@@ -137,7 +137,7 @@
 						rotation:0,
 						shooting:0,
 						reload:0,
-						powerUp:0,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
+						powerUp:2,   //bullet, frag, laser, gattling, mine, missile, RC missile, death ray, magnet sphere thing, shrapnel
 						modifier:0,  //nothing, swift, phase, triplet, colliding, frag
 						dead:false,
 						score:0,
@@ -1447,9 +1447,11 @@
 				while(!noIslands){
 					mazeSize.width = Math.floor(Math.random()*10)+6;
 					mazeSize.height = Math.floor(Math.random()*(mazeSize.width - 6))+6;
-					scale = Math.min((canvas.width - 2*border.x)/((mazeSize.width+2) * tileSize),(canvas.height - 2*border.y - 2*scoreArea)/((mazeSize.height+2) * tileSize));
+					rescale();
 					mazeBorder.x = Math.round((canvas.width - 2*border.x - (mazeSize.width+2) * tileSize * scale)/2);
 					mazeBorder.y = Math.round((canvas.height - 2*border.y - 2*scoreArea - (mazeSize.height+2) * tileSize * scale)/2);
+					
+					clearMap();
 					
 					for(index1 = 0;index1 < mazeSize.width + 2;index1++){
 						maze[index1] = [];
@@ -1641,7 +1643,7 @@
 				
 				powerUpCountdown = Math.floor(Math.random()*10 + 5)*50;
 			}
-			
+			function resetObjects(){}
 			
 			function inTile(x,y){
 				if(y == null){
@@ -1684,6 +1686,19 @@
 			function mazePath(){}
 			
 			
+			function rescale(){
+				scale = Math.min((canvas.width - 2*(border.x + mazeBorder.x))/((mazeSize.width+2) * tileSize),(canvas.height - 2*border.y - 2*scoreArea)/((mazeSize.height+2) * tileSize));
+			}
+			function clearMap(){
+				maze = [];
+				for(index1 = 0;index1 < mazeSize.width + 2;index1++){
+					maze[index1] = [];
+					for(index2 = 0;index2 < mazeSize.height + 2;index2++){
+						maze[index1][index2] = {tile:1, leftWall:0, topWall:0};
+					}
+				}
+			}
+			
 			function importMap(){
 				var code = document.getElementById('mapCode').value;
 				
@@ -1691,11 +1706,30 @@
 				mazeSize = {width:parseInt(code[0]), height:parseInt(code[1])};
 				code = code[2].split("");
 				
+				rescale();
+				clearMap();
+				
 				for(index1 in code){
-					maze[Math.floor(index1/(mazeSize.height-2))+1][(index1 % (mazeSize.height - 2))+1] = {
+					maze[Math.floor(index1/(mazeSize.height))+1][(index1 % (mazeSize.height))+1] = {
 						tile:1 -(code[index1] > 3),
 						topWall:(code[index1] % 4 > 1) + 0,
 						leftWall:(code[index1] % 2 > 0) + 0
+					}
+				}
+				
+				for(index1 = 1;index1 < mazeSize.width + 1;index1++){
+					for(index2 = 1;index2 < mazeSize.height + 1;index2++){
+						if(maze[index1][index2].tile != maze[index1 - 1][index2].tile) maze[index1][index2].leftWall = 1;
+						else if(maze[index1][index2].tile == 1) maze[index1][index2].leftWall = 0;
+						
+						if(maze[index1][index2].tile != maze[index1][index2 - 1].tile) maze[index1][index2].topWall = 1;
+						else if(maze[index1][index2].tile == 1) maze[index1][index2].topWall = 0;
+						
+						if(maze[index1][index2].tile != maze[index1 + 1][index2].tile) maze[index1 + 1][index2].leftWall = 1;
+						else if(maze[index1][index2].tile == 1) maze[index1 + 1][index2].leftWall = 0;
+						
+						if(maze[index1][index2].tile != maze[index1][index2 + 1].tile) maze[index1][index2 + 1].topWall = 1;
+						else if(maze[index1][index2].tile == 1) maze[index1][index2 + 1].topWall = 0;
 					}
 				}
 			}
@@ -1703,8 +1737,8 @@
 				var code = "";
 				code = mazeSize.width + " " + mazeSize.height + " ";
 				
-				for(index1 = 1;index1 < mazeSize.width - 1;index1++){
-					for(index2 = 1;index2 < mazeSize.height - 1;index2++){
+				for(index1 = 1;index1 < mazeSize.width + 1;index1++){
+					for(index2 = 1;index2 < mazeSize.height + 1;index2++){
 						code += 4*!maze[index1][index2].tile + 2*maze[index1][index2].topWall + maze[index1][index2].leftWall;
 					}
 				}
@@ -1778,7 +1812,7 @@
 						if(maze[editFocus.x][editFocus.y].tile != maze[editFocus.x][editFocus.y + 1].tile) maze[editFocus.x][editFocus.y + 1].topWall = 1;
 						else if(editFocus.type == "tile" || maze[editFocus.x][editFocus.y].tile == 1) maze[editFocus.x][editFocus.y + 1].topWall = 0;
 						
-						scale = Math.min((canvas.width - 2*(border.x + mazeBorder.x))/((mazeSize.width+2) * tileSize),(canvas.height - 2*border.y - 2*scoreArea)/((mazeSize.height+2) * tileSize));
+						rescale();
 					}
 				}
 			}
