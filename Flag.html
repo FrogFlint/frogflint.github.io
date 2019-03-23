@@ -34,6 +34,8 @@
 			var zooming = false;
 			var zoomSpeed = 150;
 			
+			var lines = true;
+			
 			var index1 = 0;
 			var index2 = 0;
 			
@@ -71,7 +73,7 @@
 						ctx.closePath();
 					}
 				}
-				for(index1 = 0;index1 < 16;index1++){
+				for(index1 = 0;index1 < 16 && lines;index1++){
 					ctx.beginPath();
 					ctx.moveTo(canvas.width/2 + (directions[0               ][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[0               ][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
 					ctx.lineTo(canvas.width/2 + (directions[3 - (index1%2)*2][0]*canvas[axis[index1 % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)), canvas.height/2 + (directions[3 - (index1%2)*2][1]*canvas[axis[(index1 + 1) % 2]]/2) / Math.pow(3, index1/2 - (zoom/zoomSpeed)));
@@ -88,6 +90,9 @@
 				function keyDownHandler(e) {
 					if(e.keyCode == 32 || e.key == "p"){
 						zooming = !zooming;
+					}
+					if(e.key == "l"){
+						lines = !lines;
 					}
 				}
 				
