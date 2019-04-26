@@ -73,7 +73,7 @@
 					}
 				//}
 				
-				for(index1 in table){
+				//for(index1 in table){
 					for(index2 in table[index1]){
 						ctx.beginPath();
 						if(shape == "square") ctx.rect(Math.floor(canvas.width/2 + (index2 - (index1 + 9)/20)*size), Math.floor(index1*size), Math.ceil(size), Math.ceil(size));
@@ -83,7 +83,7 @@
 					}
 				}
 				
-				}
+				
 				
 				
 				setTimeout(draw, 20);
