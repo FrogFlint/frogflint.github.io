@@ -49,16 +49,19 @@
 			
 			function draw() {
 				
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				
 				
-				if(table.length >= step) setTimeout(function(){
-					if(table.length >= step){
-						table = [[1]];
-						step *= mod;
-						size = canvas.height/step;
-					}
-				}, 500);
+				if(table.length >= step) setTimeout(
+					function(){
+						if(table.length >= step){
+							table = [[1]];
+							step *= mod;
+							size = canvas.height/step;
+							
+							ctx.clearRect(0, 0, canvas.width, canvas.height);
+						}
+					},
+				500);
 				
 				
 				index1 = table.length;
@@ -70,7 +73,7 @@
 					}
 				}
 				
-				for(index1 in table){
+				//for(index1 in table){
 					for(index2 in table[index1]){
 						ctx.beginPath();
 						if(shape == "square") ctx.rect(Math.floor(canvas.width/2 + (index2 - (index1 + 9)/20)*size), Math.floor(index1*size), Math.ceil(size), Math.ceil(size));
@@ -78,7 +81,7 @@
 						ctx.fill();
 						ctx.closePath();
 					}
-				}
+				//}
 				
 				
 				
