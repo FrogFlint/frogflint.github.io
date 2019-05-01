@@ -77,7 +77,7 @@
 				//for(index1 in table){
 					for(index2 in table[index1]){
 						ctx.beginPath();
-						if(shape == "square") ctx.rect(Math.floor(canvas.width/2 + (index2 - (index1 + 9)/20)*size), Math.floor(index1*size), Math.ceil(size), Math.ceil(size));
+						if(shape == "square") ctx.rect(Math.floor(canvas.width/2 + (index2 - index1/2)*size), Math.floor(index1*size), Math.ceil(size), Math.ceil(size));
 						ctx.fillStyle = mod in colors ? colors[mod][table[index1][index2]] : "hsl(" + 360*((table[index1][index2] + mod - 1) % mod)/mod + ", 100%, 50%)";
 						ctx.fill();
 						ctx.closePath();
