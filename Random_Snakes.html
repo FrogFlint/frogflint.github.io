@@ -67,7 +67,14 @@
 			function mod(a,b){
 				return a - Math.floor(a/b)*b;
 			}
-
+			
+			document.addEventListener("keydown", keyDownHandler, false);
+			//document.addEventListener("keyup", keyUpHandler, false);
+			
+			function keyDownHandler(e) {
+				if(e.key == "t") fade = !fade;
+			}
+			
 
 			function draw() {
 
@@ -104,17 +111,6 @@
 					if(ball[index].Ymove < -maxSpeed){ball[index].Ymove = -maxSpeed;}
         
 				}
-
-
-
-
-				document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
-				
-				function keyDownHandler(e) {
-					if(e.key == "t") fade = !fade;
-				}
-
 			}
 
 
