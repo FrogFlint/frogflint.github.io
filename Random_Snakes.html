@@ -32,163 +32,88 @@
 
 
 
-			var screenToDisplay;
-			//ballSize 42
-			var ballSize =42;
+			var ballSize = 42;
 			var ballSpeedFactor = 1;
-			var arraySize = 10;
 			var gameSpeed = 10;
 			
 			var maxSpeed = 10;
-
+			
+			var fade = false;
+			
 			var index = 0;
 			var ball = [];
-
-
+			
+			var ballColor = ["red","lime","blue","yellow","orange","green","aqua","purple","deeppink","saddlebrown"];
 			
 
 
 			
 			
 			//==============================================================================================================================
-			ball[0] = {
-				size: ballSize,
-				color: "red",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
+			for(index in ball){
+				ball[index] = {
+					size: ballSize,
+					color: ballColor[index],
+					Xpos: Math.random() * canvas.width,
+					Ypos: Math.random() * canvas.height,
+					Xmove: 0,
+					Ymove: 0,
+				}
 			}
-			ball[1] = {
-				size: ballSize,
-				color: "lime",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[2] = {
-				size: ballSize,
-				color: "blue",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[3] = {
-				size: ballSize,
-				color: "yellow",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[4] = {
-				size: ballSize,
-				color: "orange",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[5] = {
-				size: ballSize,
-				color: "green",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[6] = {
-				size: ballSize,
-				color: "aqua",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[7] = {
-				size: ballSize,
-				color: "purple",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[8] = {
-				size: ballSize,
-				color: "deeppink",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
-			ball[9] = {
-				size: ballSize,
-				color: "saddlebrown",
-				Xpos: Math.random() * canvas.width,
-				Ypos: Math.random() * canvas.height,
-				Xmove: 0,
-				Ymove: 0,
-			}
+			
 		
 			//==============================================================================================================================
 
-
+			function mod(a,b){
+				return a - Math.floor(a/b)*b;
+			}
 
 
 			function draw() {
 
-				//if (Math.random() * 1000 <= 1){
-					//ctx.clearRect(0, 0, canvas.width, canvas.height);
-				//}
+				if(fade){
+					ctx.beginPath();
+					ctx.fillStyle = "#00000004";
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.closePath();
+				}
 
 
-				index = 0;
-				for (; index < arraySize; ) {
+				for (index in ball) {
 				
-					if (ball[index].Ypos > canvas.height) {
-						ball[index].Ypos = 0;
-					}
-					else if (ball[index].Ypos < 0) {
-						ball[index].Ypos = canvas.height;
-					}
-					else if (ball[index].Xpos > canvas.width) {
-						ball[index].Xpos = 0;
-					}
-					else if (ball[index].Xpos < 0) {
-						ball[index].Xpos = canvas.width;
-					}
-				
-
-				//ball
-				ctx.beginPath();
-				ctx.arc(ball[index].Xpos, ball[index].Ypos, ball[index].size / 2, 0, Math.PI * 2);
-				ctx.fillStyle = ball[index].color;
-				ctx.fill();
-				ctx.closePath();
+					ball[index].Xpos = mod(ball[index].Xpos, canvas.width);
+					ball[index].Ypos = mod(ball[index].Ypos, canvas.height);
+					
+					
+					//ball
+					ctx.beginPath();
+					ctx.arc(ball[index].Xpos, ball[index].Ypos, ball[index].size / 2, 0, Math.PI * 2);
+					ctx.fillStyle = ball[index].color;
+					ctx.fill();
+					ctx.closePath();
 
 
-				ball[index].Xmove += (Math.random() * 2 - 1) * ballSpeedFactor;
-				ball[index].Ymove += (Math.random() * 2 - 1) * ballSpeedFactor;
-				ball[index].Xpos += ball[index].Xmove;
-				ball[index].Ypos += ball[index].Ymove;
-				
-				if(ball[index].Xmove > maxSpeed){ball[index].Xmove = maxSpeed;}
-				if(ball[index].Xmove < -maxSpeed){ball[index].Xmove = -maxSpeed;}
-				if(ball[index].Ymove > maxSpeed){ball[index].Ymove = maxSpeed;}
-				if(ball[index].Ymove < -maxSpeed){ball[index].Ymove = -maxSpeed;}
+					ball[index].Xmove += (Math.random() * 2 - 1) * ballSpeedFactor;
+					ball[index].Ymove += (Math.random() * 2 - 1) * ballSpeedFactor;
+					ball[index].Xpos += ball[index].Xmove;
+					ball[index].Ypos += ball[index].Ymove;
+
+					if(ball[index].Xmove > maxSpeed){ball[index].Xmove = maxSpeed;}
+					if(ball[index].Xmove < -maxSpeed){ball[index].Xmove = -maxSpeed;}
+					if(ball[index].Ymove > maxSpeed){ball[index].Ymove = maxSpeed;}
+					if(ball[index].Ymove < -maxSpeed){ball[index].Ymove = -maxSpeed;}
         
-					index += 1;
 				}
 
 
 
 
-				//document.addEventListener("keydown", keyDownHandler, false);
+				document.addEventListener("keydown", keyDownHandler, false);
 				//document.addEventListener("keyup", keyUpHandler, false);
 				
-				//function keyDownHandler(e) {}
+				function keyDownHandler(e) {
+					if(e.key == "t") fade = !fade;
+				}
 
 			}
 
