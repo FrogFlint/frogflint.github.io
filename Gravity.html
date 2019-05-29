@@ -83,7 +83,7 @@
 			function keyDownHandler(e) {
 				if(e.keyCode == 84) trail = !trail;
 				if(e.keyCode == 187) trailLength = Math.min(trailLength--, 1);
-				if(e.keyCode == 189) trailLength = Math.max(trailLength++, 10);
+				if(e.keyCode == 189) trailLength = Math.max(trailLength++, 15);
 			}
 			
 			
@@ -93,7 +93,7 @@
 				
 				if(trail){
 					ctx.beginPath();
-					ctx.fillStyle = "#000000" + trailLength.toString(16);
+					ctx.fillStyle = "#0000000" + trailLength.toString(16);
 					ctx.fillRect(0, 0, canvas.width, canvas.height);
 					ctx.closePath();
 				}
