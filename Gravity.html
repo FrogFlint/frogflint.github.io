@@ -50,6 +50,9 @@
 			var center2 = 0;
 			var binaryRatio = 2;
 			
+			var trail = false;
+			var trailLength = 10;
+			
 			var avg = {sum:0,denominator:0,dist:0};
 			var rand = [0,0];
 			
@@ -74,20 +77,27 @@
 			
 			
 			
+			document.addEventListener("keydown", keyDownHandler, false);
+			//document.addEventListener("keyup", keyUpHandler, false);
 			
-			
-			
-			
-			
-			
-			
+			function keyDownHandler(e) {
+				if(e.keyCode == 84) trail = !trail;
+				if(e.keyCode == 187) trailLength = Math.min(trailLength - 10, 10);
+				if(e.keyCode == 189) trailLength = Math.max(trailLength + 10, 70);
+			}
 			
 			
 			
 			
 			function draw(evt) {
 				
-				ctx.clearRect(0,0,canvas.width,canvas.height);
+				if(trail){
+					ctx.beginPath();
+					ctx.fillStyle = "#000000" + trailLength;
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.closePath();
+				}
+				else ctx.clearRect(0,0,canvas.width,canvas.height);
 				
 				
 				
@@ -169,7 +179,7 @@
 				
 				//move the camera
 				if(planet[center].size >= 30){
-					if(camera.slide == true){
+					if(camera.slide){
 						if(planet[center].mass / planet[center2].mass <= binaryRatio){
 							camera.x += (((planet[center].Xpos + planet[center2].Xpos)/2 - canvas.width /2) - camera.x) * camera.speed;
 							camera.y += (((planet[center].Ypos + planet[center2].Ypos)/2 - canvas.height/2) - camera.y) * camera.speed;
@@ -198,11 +208,10 @@
 					
 					if(planet[center].mass / planet[center2].mass <= binaryRatio){camera.slide = true;}
 				}
-				camera.zoom = Math.min(camera.zoom, 1);
+				if(!trail) camera.zoom = Math.min(camera.zoom, 1);
 				
 				
 				
-				//camera.zoom = 0.2; //temporary
 				
 				//draw
 				for(index = 0;index < maxPlanets;index++){
