@@ -43,7 +43,7 @@
 			var speed = 0;
 			
 			var G = 1;
-			
+			var fps = 100;
 			
 			var camera = {x:0,y:0,slide:false,speed:0.05,zoom:1,zoomRange:2000};
 			var center = 0;
@@ -77,13 +77,14 @@
 			
 			
 			
-			document.addEventListener("keydown", keyDownHandler, false);
-			//document.addEventListener("keyup", keyUpHandler, false);
+			document.addEventListener("keypress", keyPressHandler, false);
 			
-			function keyDownHandler(e) {
+			function keyPressHandler(e) {
 				if(e.keyCode == 84) trail = !trail;
 				if(e.keyCode == 187) trailLength = Math.min(trailLength--, 1);
 				if(e.keyCode == 189) trailLength = Math.max(trailLength++, 15);
+				if(e.keyCode == 221) fps *= 1.3;
+				if(e.keyCode == 219) fps /= 1.3;
 			}
 			
 			
@@ -232,7 +233,7 @@
 				
 				
 				
-				setTimeout(draw, 10);
+				setTimeout(draw, 1000/fps);
 			}    
 			draw();
         		
