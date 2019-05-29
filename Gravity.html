@@ -187,18 +187,18 @@
 							camera.x += ((planet[center].Xpos - canvas.width /2) - camera.x) * camera.speed;
 							camera.y += ((planet[center].Ypos - canvas.height/2) - camera.y) * camera.speed;
 						}
-						if(avg.dist > 0){
-							if(planet[center].mass / planet[center2].mass <= binaryRatio){
-								camera.zoom += Math.min((((canvas.width/8) / avg.dist - camera.zoom) * camera.speed/2), 
-											(Math.sqrt(Math.pow(planet[center].Xpos + planet[center2].Xpos,2) + Math.pow(planet[center].Ypos + planet[center2].Ypos,2)) - camera.zoom) * camera.speed/3);
+						if(!trail){
+							if(avg.dist > 0){
+								if(planet[center].mass / planet[center2].mass <= binaryRatio){
+									camera.zoom += Math.min(
+										(((canvas.width/8) / avg.dist - camera.zoom) * camera.speed/2), 
+										(Math.sqrt(Math.pow(planet[center].Xpos + planet[center2].Xpos,2) + Math.pow(planet[center].Ypos + planet[center2].Ypos,2)) - camera.zoom) * camera.speed/3
+									);
+								}
+								else camera.zoom += ((canvas.width/4) / avg.dist - camera.zoom) * camera.speed/3;
+								
 							}
-							else{
-								camera.zoom += ((canvas.width/4) / avg.dist - camera.zoom) * camera.speed/3;
-							}
-							
-						}
-						else{
-							camera.zoom += (1 - camera.zoom) * camera.speed/2;
+							else camera.zoom += (1 - camera.zoom) * camera.speed/2;
 						}
 					}/*
 					else{
@@ -208,7 +208,7 @@
 					
 					if(planet[center].mass / planet[center2].mass <= binaryRatio){camera.slide = true;}
 				}
-				if(!trail) camera.zoom = Math.min(camera.zoom, 1);
+				camera.zoom = Math.min(camera.zoom, 1);
 				
 				
 				
