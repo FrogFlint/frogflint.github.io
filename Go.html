@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 
@@ -39,10 +38,7 @@
 			var scale = 600/boardSize;
 			
 			
-			var index1 = 0;
-			var index2 = 0;
-			var index3 = 0;
-			var index4 = 0;
+			var [index1, index2, index3, index4, index5] = [0,0,0,0,0];
 			var adjacent = [{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
 			
 			var tile = [[]];
@@ -56,19 +52,19 @@
 			var undid = 0;
 			var nestIfs = 0;
 			
-			var stop = 0; //1 means exit loop
+			var stop = 0;
 			var a = {start:[], end:[], loop:[], condition:[], statement:[]};
 			a.start = ["","tilesMarked = 0;","blobCheck = 0;","tile[selected.x][selected.y].blob = 1;","blobCheck = 1;","tilesMarked = 1;","if(tilesMarked > 0){blobCheck = 1;}",
-				   "tile[selected.x][selected.y].stone = turn;",     "if(tile[index1][index2].stone == !0){stop = 1;}","if(tile[index1][index2].safe == 0){stop = 1;}","if(tile[index1][index2].safe == 1){stop = 1;}"];//8,9,10
-			a.end = ["","if(tilesMarked > 0){blobCheck = 1;}","undid = 0;"];
-			a.loop = [";tilesMarked > 0;console.log(tilesMarked)","index1 = 0;index1 < boardSize;index1++","index2 = 0;index2 < boardSize;index2++","index3 = 0;index3 < 4;index3++"];
+				   "tile[selected.x][selected.y].stone = turn;", "if(tile[index1][index2].stone){stop = 1;}","if(!tile[index1][index2].safe){stop = 1;}","if(tile[index1][index2].safe){stop = 1;}"];
+			a.end = ["","if(tilesMarked){blobCheck = 1;}","undid = 0;","tile[index1][index2].blob = 0;","tile[index1][index2].safe = 0;"];
+			a.loop = [";tilesMarked;","index1 = 0;index1 < boardSize;index1++","index2 = 0;index2 < boardSize;index2++","index3 in adjacent"];
 			a.condition = ["onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y)","onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y)",
 				       "tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3",
-				       "tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0",
-				       "tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone","tile[index1][index2].blob == 1",
-				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0","tile[index1][index2].stone == 0",   //7, 9, 11
-				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1","tile[index1][index2].safe == 1",
-				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0","tile[index1][index2].safe == 0"];
+				       "!tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob",
+				       "tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone","tile[index1][index2].blob",
+				       "!tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob","!tile[index1][index2].stone",
+				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob","tile[index1][index2].safe",
+				       "!tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe","!tile[index1][index2].safe"];
 			a.statement = ["tilesMarked++;","tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;",
 				       "tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;","tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;",
 				       "tile[index1][index2].stone = 0;","lastTile[index1][index2].stone = tile[index1][index2].stone;"];
@@ -81,6 +77,10 @@
 			var score = ["",0,0];
 			
 			var box = [0,0];
+			
+			var torus = {on:false, x:0, y:0, drag:false, dragX:0, dragY:0};
+			
+			var extraStones = {x:[0],y:[0]}; //for torus mode, goes up to [0,1] or [0,-1]
 			
 			
 			
@@ -108,7 +108,7 @@
 					turn = 3 - turn;
 				}
 				
-				
+				draw();
 			}
 			
 			
@@ -159,46 +159,20 @@
 			
 			
 			
-			function spreadTile(layer, start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
-				if(layer < start.length){
-					for(index4 = 0;index4 < start[layer].length;index4++){
-						eval(a.start[start[layer][index4]]);
-					}
+			function step(start, end, loop, condition, statement){  //start, end, loop, condition, and statement are arrays, start and end are 2D
+				var s = "", c = "";
+				
+				for(index4 in loop){
+					s += (index4 in start ? start[index4].map(i => a.start[i]).join(" ") : "") + " for(" + a.loop[loop[index4]] + "){";
+					c = "} " + (index4 in end ? end[index4].map(i => a.end[i]).join(" ") : "") + c;
 				}
-				if(layer < loop.length){
-					if(stop == 1){
-						stop = 0;
-					}
-					else{
-						//console.log("layer " + layer);
-						eval("for(" + a.loop[loop[layer]] + "){spreadTile(" + (layer + 1) + ", start, end, loop, condition, statement);}");
-					}
-				}
-				else{
-					nestIfs = 1;
-					for(index4 = 0;index4 < condition.length;index4++){
-						eval("if(!(" + a.condition[condition[index4]] + ")){ nestIfs = 0;}");
-						if(nestIfs == 0){break;}
-					}
-					if(nestIfs == 1){
-						for(index4 = 0;index4 < statement.length;index4++){
-							eval(a.statement[statement[index4]]);
-						}
-					}
-				}
-				if(layer < end.length){
-					for(index4 = 0;index4 < end[layer].length;index4++){
-						eval(a.end[end[layer][index4]]);
-					}
-				}
+				eval(s + (0 in condition ? "if(" + condition.map(i => a.condition[i]).join(" && ") + "){" : "{") + statement.map(i => a.statement[i]).join(" ") + "}" + (parseInt(index4)+1 in end ? end[parseInt(index4)+1].map(i => a.end[i]).join(" ") : "") + c);
 			}
 			
 			
 			function addStone(evt) {
 				
-				
-				
-				if(sizeSelect == 1){
+				if(sizeSelect){
 					
 					var rect = canvas.getBoundingClientRect();
 					selected = {x: Math.floor(evt.clientX - rect.left), y: Math.floor(evt.clientY - rect.top)};
@@ -207,22 +181,22 @@
 						boardSize = Math.floor((selected.x - canvas.width/2 + 250)/100);
 						switch(boardSize){
 						    case 0:
-							boardSize = 9;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 9;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    case 2:
-							boardSize = 13;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 13;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    case 4:
-							boardSize = 19;
-							scale = 600/boardSize;
-							createBoard();
-							break;
+								boardSize = 19;
+								scale = 600/boardSize;
+								createBoard();
+								break;
 						    default:
-							break;
+								break;
 						}
 					}
 				}
@@ -232,187 +206,33 @@
 
 					if(onBoard(selected.x,selected.y) && tile[selected.x][selected.y].stone == 0  &&  winner == 0){
 
+						
+						
 						//save board
-
-
-
-						spreadTile(0,[[]],[[2]],[1,2],[],[5]);
-						/*for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
-								lastTile[index1][index2].stone = tile[index1][index2].stone;
-							}
-						}
-						undid = 0;*/
+						step([],[[2]],[1,2],[],[5]);
 						
-						spreadTile(0,[[7,1]],[[]],[3],[1,2,3],[1,0]);
 						
-						/*tile[selected.x][selected.y].stone = turn;
-						tilesMarked = 0;
 						
-						for(index3 = 0;index3 < 4;index3++){
-							if(onBoard(selected.x + adjacent[index3].x,selected.y + adjacent[index3].y) &&
-							   tile[selected.x][selected.y].stone + tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].stone == 3 &&
-							   tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob == 0){
-								tile[selected.x + adjacent[index3].x][selected.y + adjacent[index3].y].blob = 1;
-								tilesMarked += 1;
-							}
-						}*/
+						step([[7,1]],[],[3],[1,2,3],[1,0]);
+						step([[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
+						if(blobCheck) step([[],[],[8]],[],[1,2,3],[0,7,8],[3,0]);
 						
-						spreadTile(0,[[2,6],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
+						step([[],[1]],[],[0,1,2,3],[0,4,9,10],[3,0]);
+						step([],[[],[],[3,4]],[1,2],[5,11],[4]);
+
+
+
+						step([[3,4,5],[1]],[[],[1]],[0,1,2,3],[0,4,5,6],[2,0]);
+						if(blobCheck) step([],[],[1,2,3],[0,7,8],[3,0]);
 						
-						/*blobCheck = 0;
-						if(tilesMarked > 0){blobCheck = 1;}
-						
-						while(tilesMarked > 0){
-							tilesMarked = 0;
-
-							for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-										   tile[index1][index2].blob == 1 &&
-										   tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}
-							if(tilesMarked > 0){blobCheck = 1;}
-						}*/
-						
-						if(blobCheck == 1){
-							spreadTile(0,[[],[],[8]],[[]],[1,2,3],[0,7,8],[3,0]);
-							
-							/*for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}*/
-						}
-						
-						//console.log(4);
-						//spreadTile(0,[[0],[1]],[[]],[0,1,2,3],[0,4,8,9],[3,0]);
-						
-						for(;tilesMarked > 0;console.log(tilesMarked)){
-							tilesMarked = 0;
-
-							for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-										   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}
-						}
-						
-						for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
-
-								if(tile[index1][index2].blob == 1 && tile[index1][index2].safe == 0){
-									tile[index1][index2].stone = 0;
-								}
-								tile[index1][index2].blob = 0;
-								tile[index1][index2].safe = 0;
-							}
-						}
+						step([[],[1]],[],[0,1,2,3],[0,4,9,10],[3,0]);
+						step([],[[],[],[3,4]],[1,2],[5,11],[4]);
 
 
-						//=============================================================================================================================================================================
-
-
-
-						tile[selected.x][selected.y].blob = 1;
-						blobCheck = 1;
-						tilesMarked = 1;
-						
-						while(tilesMarked > 0){
-							tilesMarked = 0;
-
-							for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-										   tile[index1][index2].blob == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 0){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}
-							if(tilesMarked > 0){blobCheck = 1;}
-						}
-						
-						if(blobCheck == 1){
-							for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == 0 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].blob == 1){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}
-						}
-						
-						while(tilesMarked > 0){
-							tilesMarked = 0;
-
-							for(index1 = 0; index1 < boardSize; index1++){
-								for(index2 = 0; index2 < boardSize; index2++){
-
-									for(index3 = 0;index3 < 4;index3++){
-										if(onBoard(index1 + adjacent[index3].x,index2 + adjacent[index3].y) &&
-										   tile[index1][index2].stone == tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].stone &&
-										   tile[index1][index2].safe == 1 && tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe == 0){
-											tile[index1 + adjacent[index3].x][index2 + adjacent[index3].y].safe = 1;
-											tilesMarked += 1;
-										}
-									}
-								}
-							}
-						}
-						
-						for(index1 = 0; index1 < boardSize; index1++){
-							for(index2 = 0; index2 < boardSize; index2++){
-
-								if(tile[index1][index2].blob == 1 && tile[index1][index2].safe == 0){
-									tile[index1][index2].stone = 0;
-								}
-								tile[index1][index2].blob = 0;
-								tile[index1][index2].safe = 0;
-							}
-						}
-
-
-
-						console.log("---------");
-
-
-
-						turn = turn % 2 + 1;
+						turn = 3 - turn;
 					}
 				}
+				draw();
 			}
 			
 			function countScore() {
@@ -585,7 +405,7 @@
 				
 				
 				
-				setTimeout(draw, 50);
+				//setTimeout(draw, 50);
 			}
 			draw();
 			
