@@ -33,7 +33,7 @@
 			
 			var speed = 6;
 			
-			var players = 2;
+			var players = 1;
 			var player = [{}];
 			
 			
@@ -66,20 +66,23 @@
 					seeking:true
 				}
 			}
-			for(index = 0;index < players;index++){
-				player[index] = {
-					Xpos:canvas.width * (index + 1)/(players + 1),
-					Ypos:canvas.height/2,
-					up:0,
-					down:0,
-					left:0,
-					right:0,
-					score:0,
-					highscore:getCookie("Highscore"),
-					dead:1
+			function initPlayers(){
+				for(index = 0;index < players;index++){
+					player[index] = {
+						Xpos:canvas.width * (index + 1)/(players + 1),
+						Ypos:canvas.height/2,
+						up:0,
+						down:0,
+						left:0,
+						right:0,
+						score:0,
+						highscore:getCookie("Highscore"),
+						dead:1
+					}
+					if(!(player[index].highscore > 0)){player[index].highscore = 0;}
 				}
-				if(!(player[index].highscore > 0)){player[index].highscore = 0;}
 			}
+			initPlayers();
 			
 			
 			
@@ -125,10 +128,10 @@
 			
 			function keyDownHandler(e) {
 				for(index0 = 0;index0 < players;index0++){
-					if((e.key == controls[index0][0]) && player[index0].up    == 0){player[index0].up    = 1;}
-					if((e.key == controls[index0][1]) && player[index0].down  == 0){player[index0].down  = 1;}
-					if((e.key == controls[index0][2]) && player[index0].left  == 0){player[index0].left  = 1;}
-					if((e.key == controls[index0][3]) && player[index0].right == 0){player[index0].right = 1;}
+					if((e.key == controls[index0][0]) && player[index0].up    == 0) player[index0].up    = 1;
+					if((e.key == controls[index0][1]) && player[index0].down  == 0) player[index0].down  = 1;
+					if((e.key == controls[index0][2]) && player[index0].left  == 0) player[index0].left  = 1;
+					if((e.key == controls[index0][3]) && player[index0].right == 0) player[index0].right = 1;
 					
 				}
 				if(e.keyCode == 32 && menu){
@@ -149,14 +152,18 @@
 						}
 					}
 				}
+				if(e.keyCode == 80 && menu){
+					players = 3 - players;
+					initPlayers();
+				}
 				event.preventDefault();
 			}
 			function keyUpHandler(e) {
 				for(index0 = 0;index0 < players;index0++){
-					if(e.key == controls[index0][0]){player[index0].up = 0;}
-					if(e.key == controls[index0][1]){player[index0].down = 0;}
-					if(e.key == controls[index0][2]){player[index0].left = 0;}
-					if(e.key == controls[index0][3]){player[index0].right = 0;}
+					if(e.key == controls[index0][0]) player[index0].up    = 0;
+					if(e.key == controls[index0][1]) player[index0].down  = 0;
+					if(e.key == controls[index0][2]) player[index0].left  = 0;
+					if(e.key == controls[index0][3]) player[index0].right = 0;
 				}
 				event.preventDefault();
 			}
@@ -292,6 +299,8 @@
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "white";
 				ctx.textAlign = "left";
+				ctx.fillText("Press [space] to start\nPress [p] to toggle multiplayer\n\nPlayers:  " + players, 10, 10);
+				
 				ctx.fillText("Score: " + Math.floor(player[0].score), 10, canvas.height - 5);
 				ctx.textAlign = "right";
 				ctx.fillText("Highscore: " + player[0].highscore, canvas.width - 30, canvas.height - 5);
