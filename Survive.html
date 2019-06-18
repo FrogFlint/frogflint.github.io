@@ -41,8 +41,10 @@
 			var index = 0;
 			var indexMax = 500 * players;
 			var nextProjectile = 0;
+			var splitAfter = 200;
 			var frame = 0;
 			var frameSpeed = 3;
+			var fps = 50; //50
 			
 			var index0 = 0;
 			var playerCount = 0;
@@ -215,7 +217,7 @@
 					for(index0 = 0;index0 < players;index0++){
 						if(Math.sqrt((player[index0].Xpos - projectile[index].Xpos)**2 + (player[index0].Ypos - projectile[index].Ypos)**2) <= 600) playerCount++;
 					}
-					if(player[0].score >= 200 && projectile[index].split == 0 &&
+					if(player[0].score >= splitAfter && projectile[index].split == 0 &&
 					
 						projectile[index].Xpos > 20 &&
 						projectile[index].Xpos < canvas.width - 20 &&
@@ -245,7 +247,7 @@
 				
 				
 				
-				for(index0 = 0;index0 < players;index0++){
+				for(index0 in player){
 					if(player[index0].dead == 0){
 						if(player[index0].up    == 1 && player[index0].Ypos >                 10){player[index0].Ypos -= speed;}
 						if(player[index0].down  == 1 && player[index0].Ypos < canvas.height - 10){player[index0].Ypos += speed;}
@@ -259,9 +261,8 @@
 					for(index0 = 0;index0 < players;index0++){
 						if(Math.sqrt((player[index0].Xpos - projectile[index].Xpos)**2 + (player[index0].Ypos - projectile[index].Ypos)**2) <= 12){
 							player[index0].dead = 1;
-							if(true){
-								menu = true;
-							}
+							menu = true;
+							
 							
 							if(player[index0].score > player[index0].highscore){
 								player[index0].highscore = Math.floor(player[index0].score);
@@ -327,8 +328,7 @@
 				
 				
 				
-				
-				setTimeout(draw, 20);
+				setTimeout(draw, 1000/fps);
 			}    
 			draw();
         		
