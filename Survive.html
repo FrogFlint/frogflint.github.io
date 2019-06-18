@@ -23,7 +23,7 @@
 
 	<canvas id="myCanvas" width="1350" height="650"></canvas>
 
-	<body style="background-color:blue;">
+	<body id="body" style="background-color:blue;">
 
 		<SCRIPT LANGUAGE="JavaScript">
 			
@@ -49,6 +49,8 @@
 			
 			var controls = [["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"],["w","s","a","d"]];
 			var playerColor = ["Lime","#009900"];
+			var colors = [["blue","red","black","lime","#009900"],["black","white","white","red","aqua"]];
+			var colorScheme = 0;
 			
 			var menu = true;
 			var start = true;
@@ -67,6 +69,7 @@
 				}
 			}
 			function initPlayers(){
+				player = [];
 				for(index = 0;index < players;index++){
 					player[index] = {
 						Xpos:canvas.width * (index + 1)/(players + 1),
@@ -120,7 +123,7 @@
 			}
 			
 			
-			window.oncontextmenu = function(){return false;}
+			window.oncontextmenu = () => false;
 			
 			
 			document.addEventListener("keydown", keyDownHandler, false);
@@ -155,6 +158,11 @@
 				if(e.keyCode == 80 && menu){
 					players = 3 - players;
 					initPlayers();
+				}
+				if(e.keyCode == 67){
+					colorScheme = 1 - colorScheme;
+					document.getElementById('myCanvas').style = "background-color:" + colors[colorScheme][0] + ";";
+					document.getElementById('body').style = "background-color:" + colors[colorScheme][0] + ";";
 				}
 				event.preventDefault();
 			}
@@ -275,10 +283,10 @@
 				
 				
 				for(index0 = 0;index0 < players;index0++){
-					if(player[index0].dead == 0 || start){
+					if(start || !player[index0].dead){
 						ctx.beginPath();
 						ctx.arc(player[index0].Xpos, player[index0].Ypos, 6, 0, Math.PI * 2);
-						ctx.fillStyle = playerColor[index0];
+						ctx.fillStyle = colors[colorScheme][3 + index0];
 						ctx.fill();
 						ctx.closePath();
 					}
@@ -290,7 +298,7 @@
 					ctx.moveTo(projectile[index].Xpos + Math.sin(projectile[index].direction)*15,      projectile[index].Ypos + Math.cos(projectile[index].direction)*15);
 					ctx.lineTo(projectile[index].Xpos + Math.sin(projectile[index].direction + 2.5)*8, projectile[index].Ypos + Math.cos(projectile[index].direction + 2.5)*8);
 					ctx.lineTo(projectile[index].Xpos + Math.sin(projectile[index].direction - 2.5)*8, projectile[index].Ypos + Math.cos(projectile[index].direction - 2.5)*8);
-					ctx.fillStyle = "red";
+					ctx.fillStyle = colors[colorScheme][1];
 					ctx.fill();
 					ctx.closePath();
 				}
@@ -299,7 +307,10 @@
 				ctx.font = "15px Arial";
 				ctx.fillStyle = "white";
 				ctx.textAlign = "left";
-				ctx.fillText("Press [space] to start\nPress [p] to toggle multiplayer\n\nPlayers:  " + players, 10, 10);
+				ctx.fillText("Press [space] to start", 10, 30);
+				ctx.fillText("Press [p] to toggle multiplayer", 10, 50);
+				ctx.fillText("Press [c] to change color scheme", 10, 70);
+				ctx.fillText("Players:  " + players, 10, 110);
 				
 				ctx.fillText("Score: " + Math.floor(player[0].score), 10, canvas.height - 5);
 				ctx.textAlign = "right";
@@ -308,7 +319,7 @@
 				
 				if(menu && !start && players == 1){
 					ctx.font = "150px Arial";
-					ctx.fillStyle = "black";
+					ctx.fillStyle = colors[colorScheme][2];
 					ctx.textAlign = "center";
 					ctx.fillText("GAME OVER",canvas.width/2,canvas.height/2);
 				}
