@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+	<style>
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		canvas {
+			background: black;
+			display: block;
+			margin: 0 auto;
+		}
+	</style>
+
+<title>Asteroids</title>
+</head>
+
+<body>
+
+	<canvas id="myCanvas" width="1350" height="630"></canvas>
+
+	<body style="background-color:black;">
+
+		<SCRIPT LANGUAGE="JavaScript">
+			
+			
+			var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+			
+			ctx.transform(1, 0, 0, -1, canvas.width/2, canvas.height/2);
+			//ctx.scale(0.2, 0.2);
+			
+			var fps = 60;
+			
+			
+			var i,j,k,l;
+			
+			var player = {
+				x:0,
+				y:0,
+				r:0,
+				vx:0,
+				vy:0,
+				vr:0,
+				
+				maxSpeed:10,
+				maxTurnSpeed:0.07,
+				acceleration:1,
+				deceleration:0.5,
+				turnAcceleration:0.004,
+				turnDeceleration:0.004,
+				
+				dead:80, //time since death
+				score:0,
+				highscore:0,
+				
+				laserSpeed:35,
+				laserCooldown:0,
+				laserVelocity:15,
+				
+				hue:0,
+				trail:[{x:0, y:0, r:0}],
+				
+				keys:[0,0,0,0]
+			}
+			var laser = [];
+			var asteroid = [];
+			
+			function Laser(){
+				this.x = player.x;
+				this.y = player.y;
+				this.r = player.r;
+				this.vx = Math.cos(this.r)*player.laserVelocity;
+				this.vy = Math.sin(this.r)*player.laserVelocity;
+				this.age = 0;
+			}
+			function Asteroid(start = false, s = Math.random()*40 + 10){
+				this.size = s;
+				this.x = player.x;
+				this.y = player.y;
+				while(polarFormMod(this.x - player.x, this.y - player.y, world.size).distance < canvas.width*(start ? 0.2 : 0.8)){
+					this.x = Math.random()*world.size;
+					this.y = Math.random()*world.size;
+				}
+				this.r = Math.random() * Math.PI * 2;
+				this.vx = Math.random()*4 - 2;
+				this.vy = Math.random()*4 - 2;
+				this.vr = Math.random()*0.03 - 0.015;
+				
+				this.points = Math.floor(Math.random()*this.size/10) + 5;
+				this.point = [];
+				for(let k = 0;k < this.points;k++) this.point[k] = (Math.random()*asteroidRegularity + k)/this.points * Math.PI*2;
+				
+				this.dead = 0; //time since death
+				this.trail = [{x:this.x, y:this.y, r:this.r}];
+			}
+			
+			
+			var controls = [37, 38, 39, 191, 32];
+			var gravity = {
+				on:false,
+				constant:0.1,
+				exponent:2
+			}
+			var trails = {
+				on:false,
+				length:8,
+				distance:10,
+				fadePower:3
+			}
+			var colorMode = "white"; //white, rainbow...
+			var difficulty = 40;
+			var initial = true;
+			var menu = false;
+			var world = {size:canvas.width*1.5};
+			var asteroidRegularity = 0.8; //1 is none, 0 is max
+			
+			
+			
+			window.oncontextmenu = () => false;
+			const mod = (n, m) => n - m * Math.floor(n/m);
+			const distance = (x, y) => Math.sqrt(x*x + y*y);
+			
+			function polarFormMod(x, y, m){
+				if(Math.abs(x) > m/2) x -= Math.sign(x)*m;
+				if(Math.abs(y) > m/2) y -= Math.sign(y)*m;
+				return {distance:distance(x,y), angle:Math.atan(y/x) + (x < 0 ? Math.PI : 0)};
+			}
+			
+			const color = (d, t = 0) => ({white:"white", rainbow:"hsl(" + (0.3*d + player.hue - t) + ", 100%, 50%)"})[colorMode];
+			
+			
+			function move(){
+				if(!player.dead){
+					if(player.keys[0]) player.vr += player.turnAcceleration;
+					if(player.keys[2]) player.vr -= player.turnAcceleration;
+					if(!(player.keys[0] + player.keys[2])) player.vr -= Math.sign(player.vr) * player.turnDeceleration;
+					player.vr = Math.max(Math.min(player.vr, player.maxTurnSpeed), -player.maxTurnSpeed);
+					if(Math.abs(player.vr) < player.turnDeceleration/2) player.vr = 0;
+					
+					if(player.keys[1]){
+						player.vx += Math.cos(player.r) * player.acceleration;
+						player.vy += Math.sin(player.r) * player.acceleration;
+						let scale = player.maxSpeed/distance(player.vx, player.vy);
+						if(scale < 1){
+							player.vx *= scale;
+							player.vy *= scale;
+						}
+					}
+					else{
+						player.vx -= Math.cos(player.r) * player.deceleration;
+						player.vy -= Math.sin(player.r) * player.deceleration;
+						if(distance(player.vx, player.vy) < player.deceleration/2 || Math.abs(polarFormMod(player.vx, player.vy, Infinity).angle - player.r) > Math.PI/2){
+							player.vx = 0;
+							player.vy = 0;
+						}
+					}
+					
+					player.x = mod(player.x + player.vx, world.size);
+					player.y = mod(player.y + player.vy, world.size);
+					player.r = mod(player.r + player.vr, Math.PI*2);
+					
+					if(trails.on) player.trail.unshift({x:player.x, y:player.y, r:player.r});
+					
+					
+					if(player.keys[3] && player.laserCooldown <= 0){
+						player.laserCooldown = player.laserSpeed;
+						laser.push(new Laser());
+					}
+					else player.laserCooldown--;
+				}
+				
+				for(i in asteroid){
+					asteroid[i].x = mod(asteroid[i].x + asteroid[i].vx, world.size);
+					asteroid[i].y = mod(asteroid[i].y + asteroid[i].vy, world.size);
+					asteroid[i].r = mod(asteroid[i].r + asteroid[i].vr, Math.PI*2);
+					
+					if(trails.on) asteroid[i].trail.unshift({x:asteroid[i].x, y:asteroid[i].y, r:asteroid[i].r});
+					if(asteroid[i].dead) asteroid[i].dead++;
+					if(asteroid[i].dead > trails.length * trails.distance) asteroid.splice(i, 1);
+				}
+				for(i in laser){
+					laser[i].x = mod(laser[i].x + laser[i].vx, world.size);
+					laser[i].y = mod(laser[i].y + laser[i].vy, world.size);
+					laser[i].age++;
+					
+					if(laser[i].age > 10*fps) laser.splice(i, 1);
+				}
+			}
+			function collide(){
+				for(i in asteroid)if(!asteroid[i].dead){
+					if(polarFormMod(asteroid[i].x - player.x, asteroid[i].y - player.y).distance < asteroid[i].size + 15) player.dead = true;
+					for(j in laser){
+						if(polarFormMod(asteroid[i].x - laser[j].x, asteroid[i].y - laser[j].y).distance < asteroid[i].size){
+							asteroid[i].dead = 1;
+							laser.splice(j, 1);
+							let a = trails.on ? asteroid[i] : asteroid.splice(i, 1)[0];
+							if(a && a.size/2 > 10) for(k = 0;k < 3;k++){
+								asteroid.push(new Asteroid(true, a.size/2));
+								asteroid[asteroid.length - 1].x = a.x;
+								asteroid[asteroid.length - 1].y = a.y;
+							}
+							break;
+						}
+					}
+				}
+			}
+			
+			function drawAsteroids(){
+				for(i in asteroid){
+					let a = polarFormMod(asteroid[i].x - player.x, asteroid[i].y - player.y, world.size);
+					a.size = asteroid[i].size;
+					a.point = asteroid[i].point;
+					a.points = asteroid[i].points;
+					if(trails.on){
+						if(asteroid[i].trail.length > trails.distance * trails.length) asteroid[i].trail.pop();
+						for(k = 0;k < Math.min(trails.length, asteroid[i].trail.length/trails.distance);k++){
+							let m = k * trails.distance;
+							let l = asteroid[i].trail[m];
+							if(asteroid[i].dead <= m){
+								let d = polarFormMod(l.x - player.x, l.y - player.y, world.size);
+								d.x = Math.cos(d.angle - player.r + Math.PI/2) * d.distance;
+								d.y = Math.sin(d.angle - player.r + Math.PI/2) * d.distance;
+								d.r = l.r - player.r;
+								
+								ctx.beginPath();
+								ctx.strokeStyle = color(polarFormMod(l.x - player.trail[m].x, l.y - player.trail[m].y, world.size).distance, m);
+								ctx.lineWidth = 2;
+								ctx.lineJoin = "miter";
+								ctx.globalAlpha =(1 - (k * trails.distance/asteroid[i].trail.length))**trails.fadePower;
+								for(j = 0;j <= a.points + 1;j++) ctx[j?"lineTo":"moveTo"](d.x + Math.cos(a.point[mod(j, a.points)] + d.r)*a.size, d.y + Math.sin(a.point[mod(j, a.points)] + d.r)*a.size);
+								ctx.stroke();
+								ctx.closePath();
+							}
+						}
+						ctx.globalAlpha = 1;
+					}
+					else{
+						a.x = Math.cos(a.angle - player.r + Math.PI/2) * a.distance;
+						a.y = Math.sin(a.angle - player.r + Math.PI/2) * a.distance;
+						a.r = asteroid[i].r - player.r;
+						
+						ctx.beginPath();
+						ctx.strokeStyle = color(a.distance);
+						ctx.lineWidth = 2;
+						ctx.lineJoin = "miter";
+						for(j = 0;j <= a.points + 1;j++) ctx[j?"lineTo":"moveTo"](a.x + Math.cos(a.point[mod(j, a.points)] + a.r)*a.size, a.y + Math.sin(a.point[mod(j, a.points)] + a.r)*a.size);
+						ctx.stroke();
+						ctx.closePath();
+					}
+				}
+			}
+			function drawLasers(){
+				for(i in laser){
+					let l = polarFormMod(laser[i].x - player.x, laser[i].y - player.y, world.size);
+					l.x = Math.cos(l.angle - player.r + Math.PI/2) * l.distance;
+					l.y = Math.sin(l.angle - player.r + Math.PI/2) * l.distance;
+					l.r = laser[i].r - player.r + Math.PI/2;
+					l.size = Math.min(laser[i].age*(player.laserVelocity - player.maxSpeed), 20);
+					
+					ctx.beginPath();
+					ctx.strokeStyle = color(l.distance);
+					ctx.lineWidth = 4;
+					ctx.lineCap = "round";
+					ctx.moveTo(l.x, l.y);
+					ctx.lineTo(l.x - Math.cos(l.r)*l.size, l.y - Math.sin(l.r)*l.size);
+					ctx.stroke();
+					ctx.closePath();
+				}
+			}
+			function drawPlayer(){
+				if(trails.on){
+					let wing = {length:Math.sqrt(269), angle:Math.atan(-1.3)};
+					let path = [[0,15],[Math.PI*3/2 + wing.angle,wing.length],[Math.PI,5],[Math.PI*1/2 - wing.angle,wing.length]];
+					
+					if(player.trail.length > trails.distance * trails.length) player.trail.pop();
+					for(k = 0;k < Math.min(trails.length, player.trail.length/trails.distance);k++){
+						let m = k * trails.distance;
+						let l = player.trail[m];
+						if(player.dead <= m){
+							let d = polarFormMod(l.x - player.x, l.y - player.y, world.size);
+							if(!d.angle) d.angle = 0;
+							d.x = Math.cos(d.angle - player.r + Math.PI/2) * d.distance;
+							d.y = Math.sin(d.angle - player.r + Math.PI/2) * d.distance;
+							d.r = l.r - player.r;
+							
+							ctx.beginPath();
+							ctx.strokeStyle = color(0, m);
+							ctx.lineWidth = 2;
+							ctx.lineJoin = "miter";
+							ctx.globalAlpha = (1 - (k * trails.distance/player.trail.length))**trails.fadePower;
+							for(j = 0;j <= 5;j++) ctx[j?"lineTo":"moveTo"](d.x + Math.cos(path[mod(j, 4)][0] + Math.PI/2 + d.r)*path[mod(j, 4)][1], d.y + Math.sin(path[mod(j, 4)][0] + Math.PI/2 + d.r)*path[mod(j, 4)][1]);
+							ctx.stroke();
+							ctx.closePath();
+						}
+					}
+					ctx.globalAlpha = 1;
+				}
+				else{
+					ctx.beginPath();
+					ctx.strokeStyle = color(0);
+					ctx.lineWidth = 2;
+					ctx.lineJoin = "miter";
+					ctx.moveTo(0, 15);
+					ctx.lineTo(10, -13);
+					ctx.lineTo(0, -5);
+					ctx.lineTo(-10, -13);
+					ctx.lineTo(0, 15);
+					ctx.lineTo(10, -13);
+					ctx.stroke();
+					ctx.closePath();
+				}
+			}
+			
+			
+			document.addEventListener("keydown", e => {
+				for(i in controls) if(e.keyCode == controls[i]){
+					player.keys[i] = true;
+					e.preventDefault();
+				}
+				if(e.keyCode == 32 && player.dead){
+					asteroid = [];
+					laser = [];
+					for(i = 0;i < difficulty;i++) asteroid[i] = new Asteroid(true);
+					player.dead = false;
+					player.vx = player.vy = player.vr = 0;
+					player.trail.splice(1);
+					initial = false;
+				}
+				if(e.keyCode == 27) menu = !menu;
+			}, false);
+			document.addEventListener("keyup", e => {
+				for(i in controls) if(e.keyCode == controls[i]){
+					player.keys[i] = false;
+					e.preventDefault();
+				}
+			}, false);
+			
+			document.addEventListener("click", e => {
+				let mouse = getMousePos(canvas, e);
+				if(175 <= mouse.y && mouse.y <= 285){
+					if(315 <= mouse.x && mouse.x <= 425){
+						trails.on = !trails.on;
+						player.trail = [{x:player.x, y:player.y, r:player.r}];
+						asteroid.forEach(a => {a.trail = [{x:a.x, y:a.y, r:a.r}]});
+					}
+					else if(620 <= mouse.x && mouse.x <= 730) colorMode = colorMode == "white" ? "rainbow" : "white";
+					else if(905 <= mouse.x && mouse.x <= 1015) gravity.on = !gravity.on;
+				}
+				e.preventDefault();
+			}, false);
+			function getMousePos(canvas, evt) {
+			    var rect = canvas.getBoundingClientRect();
+			    return {
+			      x: evt.clientX - rect.left,
+			      y: evt.clientY - rect.top
+			    };
+			}
+			
+			
+			function draw() {
+				
+				ctx.clearRect(-canvas.width/2, -canvas.height/2, canvas.width, canvas.height);
+				//ctx.clearRect(-canvas.width/2*5, -canvas.height/2*5, canvas.width*5, canvas.height*5);
+				
+				if(menu){
+					let s = 7;
+					let c = 50;
+					for(i = 0;i < (trails.on ? trails.length : 1);i++){
+						ctx.lineWidth = 2;
+						ctx.globalAlpha = (1 - i/trails.length)**trails.fadePower;
+						for(j = 0;j < 3;j++){
+							ctx.beginPath();
+							ctx.strokeStyle = color(0, 2*s*i + j*c);
+							ctx.rect(-360 + 305*j + s*i, 30 + s*i, 110, 110);
+							ctx.stroke();
+							ctx.closePath();
+						}
+						
+					}
+					
+					ctx.transform(1, 0, 0, -1, 0, 0);
+					
+					ctx.beginPath();
+					ctx.globalAlpha = 1;
+					ctx.font = "22px Arial";
+					ctx.fillStyle = color(0);
+					ctx.fillText("Trails", -305, -80);
+					ctx.fillStyle = color(0, c);
+					ctx.fillText("Rainbow", 0, -80);
+					ctx.fillStyle = color(0, 2*c);
+					ctx.fillText("Gravity", 305, -80);
+					ctx.closePath();
+					
+					ctx.transform(1, 0, 0, -1, 0, 0);
+				}
+				else{
+					move();
+					collide();
+					
+					drawAsteroids();
+					drawLasers();
+					
+					if(player.dead){
+						ctx.transform(1, 0, 0, -1, 0, 0);
+						
+						ctx.beginPath();
+						ctx.fillStyle = "white";
+						ctx.font = "80px Arial";
+						ctx.textAlign = "center";
+						ctx.fillText(initial ? "NEW GAME" : "GAME OVER", 0, -150);
+						ctx.font = "20px Arial";
+						ctx.fillText("Press space to " + (initial ? "" : "re") + "start", 0, 50);
+						ctx.font = "15px Arial";
+						ctx.fillText("Press escape to change settings", 0, 80);
+						ctx.closePath();
+						
+						ctx.transform(1, 0, 0, -1, 0, 0);
+					}
+					else{
+						drawPlayer();
+						
+						if(asteroid.length < difficulty && Math.random() < 0.03) asteroid.push(new Asteroid(false));
+					}
+				}
+				
+				if(colorMode == "rainbow") player.hue = mod(player.hue + 1, 360)
+				
+       			setTimeout(draw, 1000/fps);
+			}    
+			draw();
+        		
+   		 </SCRIPT>
+	</body>
+</html>
