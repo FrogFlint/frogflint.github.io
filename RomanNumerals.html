@@ -2,9 +2,9 @@
 <html>
 
 	<head>
-			
+
 		<title>Roman Numerals</title>
-		
+
 		<style>
 			body {
 				background-color: #f0f0f0;
@@ -24,30 +24,30 @@
 	</head>
 
 	<body>
-		
+
 		<div>
 			<div>
 				<h1>Arabic Numbers</h1>
-				<input id="arabic" type="number" oninput="FromArabic();" onclick="FromArabic();">
+				<input id="arabic" type="number" oninput="FromArabic();" onclick="FromArabic();" spellcheck="false">
 			</div>
 			<div>
 				<h1>Roman Numerals</h1>
-				<input id="roman" type="text" oninput="FromRoman();" onclick="FromRoman();">
+				<input id="roman" type="text" oninput="FromRoman();" onclick="FromRoman();" spellcheck="false">
 			</div>
 			<div>
 				<h1>Better roman numerals</h1>
-				<input id="newroman" type="text" oninput="FromNewRoman();" onclick="FromNewRoman();">
+				<input id="newroman" type="text" oninput="FromNewRoman();" onclick="FromNewRoman();" spellcheck="false">
 			</div>
 		</div>
 
 
 		<SCRIPT LANGUAGE="JavaScript">
-			
-			
+
+
 			//var canvas = document.getElementById("myCanvas");
 			//var ctx = canvas.getContext("2d");
-			
-			
+
+
 			const letterValue = {
 				I:1,
 				V:5,
@@ -59,22 +59,20 @@
 				R:5000,
 				K:10000
 			};
-			const letter = ["K","R","M","D","C","L","X","V","I"];
-			
-			var i,j,k;
-			var digits = [0,0,0,0,0,0,0]; //largest to smallest
-			var result;
-			
+			const letter = Object.keys(letterValue).reverse();
+
+			let digits = new Array(letter.length).fill(0); //largest to smallest
+
 			const A = document.getElementById("arabic");
 			const R = document.getElementById("roman");
 			const N = document.getElementById("newroman");
-			
-			
+
+
 			const int = x => parseInt(x);
-			
+
 			const ratio = [Infinity, ...
 				letter.map(
-					(x,i) => 
+					(x,i) =>
 					letterValue[x]/letterValue[
 						letter[
 							int(i) + (int(i) + 1 in letter)
@@ -83,150 +81,94 @@
 				)
 			];
 			const flip = letter.map(
-				(x,i) => 
+				(x,i) =>
 				letter.map(
-					(y,j) => 
+					(y,j) =>
 					letterValue[y] * Math.floor(ratio[j]/2)
 				).splice(i).reduce(
-					(a,b) => 
+					(a,b) =>
 					a + b
 				)
-			);
+			).concat(0);
 			const maxInput = letter.map(
-					(y,j) => 
+					(y,j) =>
 					letterValue[y] * (2 - j%2)
 				).reduce(
-					(a,b) => 
+					(a,b) =>
 					a + b
 				)
 			;
-			
+
 			const bound = x => Math.max(Math.min(int(x), maxInput), 1);
-			
-			
-			
-			
-			
+
+
+
 			const ArabicToRoman = n =>
 				n.toString().split("").map(
-					(x,i,a) => 
-					[[],[0],[0,0],[0,0,0],[0,1],[1],[1,0],[1,0,0],[1,0,0,0],[0,2],[2]][x].map(
-						z => 
-						letter[letter.length - 2*(a.length - i) + 1 - z]
-					).join("")
+					(x,i,a) =>
+					[[],[0],[0,0],[0,0,0],[0,1],[1],[1,0],[1,0,0],[1,0,0,0],[0,2],[2]][x]
+					.map(z => letter[letter.length - 2*(a.length - i) + 1 - z])
+					.join("")
 				).join("")
 			;
-			
-			function ArabicToNewRoman(n){
-				result = [];
-				
-				
-				
-				/*letter.forEach(
-					(x,i) => {
-						digits[i] = 0;
-						switch(Math.sign(n)){
-							case 1:
-								if(n - letterValue[x] > -flip[i- -1]){
-									digits[i]++;
-									n -= letterValue[x];
-								}
-								break;
-							case -1:
-								if(n + letterValue[x] < flip[i- -1]){
-									digits[i]--;
-									n += letterValue[x];
-								}
-								break;
-						}
-					}
-				);*/
-				
-				
-				
-				letter.forEach((x,i) => {digits[i] = Math.floor(n / letterValue[x]); n -= letterValue[x]*digits[i];});
-				
-				for(j = 0;j < digits.length;j++){
-					for(i = digits.length - 1;i > 0;i--){
-						while(digits[i] > ratio[i]/2 || digits[i] == ratio[i]/2 && digits[i - 1] < 0){
-							digits[i] -= ratio[i];
-							digits[i - 1]++;
-						}
-						while(digits[i] < -ratio[i]/2){
-							digits[i] += ratio[i];
-							digits[i - 1]--;
-						}
-					}
-				}
-				digits = digits.map((x,i) => [i,x]);
-				result = digits.filter(x => x[1] > 0);
-				digits.filter(x => x[1] < 0).forEach(d => {result.splice(result.reduce((a,x,b,r) => r[b][0] > r[a][0] && r[b][0] < d[0] ? b : a, 0), 0, d)});
-				
-				return result.map(([a,b]) => letter[a].repeat(Math.abs(b))).join("");
-			}
-			
-			const NewRomanToArabic = n =>
-				n.match(/(.)\1*/g).map(
-					x => 
-					[letterValue[x[0]], x.length]
-				).map(
-					([x,y],i,a) => 
-					x * y * (
-						x < a[int(i) + (int(i) + 1 in a)][0] ? -1 : 1
-					)
-				).reduce(
-					(a,b) => 
-					a + b
-				)
+
+			const ArabicToNewRoman = n =>
+				letter.reduce(
+					(a,x,i) =>
+					[Math.max(Math.ceil((Math.abs(a[0][1]) - flip[int(i) + 1])/letterValue[x]), 0)*Math.sign(a[0][1])]
+					.map(m => [m, a[0][1] - m * letterValue[x]])
+					.concat(a),
+					[[0,n]]
+				).reverse().slice(1)
+				.map(([x],i,a) => [i,x,a.map(([x],i) => [i,x])])
+				.filter(x => x[1] > 0)
+				.flatMap(x => x[2].slice(x[0], x[2].concat([[Infinity, 1]]).findIndex(y => y[0] > x[0] && y[1] > 0)).reverse())
+				.map(([a,b]) => letter[a].repeat(Math.abs(b)))
+				.join("")
 			;
-			
-			
+
+			const NewRomanToArabic = n =>
+				n.match(/(.)\1*/g)
+				.map(x => [letterValue[x[0]], x.length])
+				.map(([x,y],i,a) => x * y * (x < a[int(i) + (int(i) + 1 in a)][0] ? -1 : 1))
+				.reduce((a,b) => a + b)
+			;
+
+
+
 			function FromArabic(){
 				if(A.value){
-					let a = bound(A.value);
-					
-					A.value = a;
+					let a = A.value = bound(A.value);
 					R.value = ArabicToRoman(a);
 					N.value = ArabicToNewRoman(a);
-				}
-				else R.value = N.value = "";
-					
-				R.style = N.style = "background: white";
+				} else R.value = N.value = "";
+				R.style.background = N.style.background = "white";
 			}
-			function FromRoman(){
-				let r = R.value.toUpperCase().split("").filter(x => x in letterValue).join("");
-				if(r){
-					let a = bound(NewRomanToArabic(r));
-					R.style = "background: " + (r === ArabicToRoman(a) ? "white" : "#ffc0c0");
-					A.value = a;
+			function FromRoman(r){
+				if(r = R.value.toUpperCase().split("").filter(x => x in letterValue).join("")){
+					let a = A.value = bound(NewRomanToArabic(r));
+					R.style.background = r === ArabicToRoman(a) ? "white" : "#ffc0c0";
 					N.value = ArabicToNewRoman(a);
-				}
-				else {
+				} else {
 					A.value = N.value = "";
-					R.style = "background: white";
+					R.style.background = "white";
 				}
-				
 				R.value = r;
-				N.style = "background: white";
+				N.style.background = "white";
 			}
-			function FromNewRoman(){
-				let n = N.value.toUpperCase().split("").filter(x => x in letterValue).join("");
-				if(n){
-					let a = bound(NewRomanToArabic(n));
+			function FromNewRoman(n){
+				if(n = N.value.toUpperCase().split("").filter(x => x in letterValue).join("")){
+					let a = A.value = bound(NewRomanToArabic(n));
 					N.style = "background: " + (n === ArabicToNewRoman(a) ? "white" : "#ffc0c0");
-					A.value = a;
 					R.value = ArabicToRoman(a);
-				}
-				else {
+				} else {
 					A.value = R.value = "";
-					N.style = "background: white";
+					N.style.background = "white";
 				}
-				
 				N.value = n;
-				R.style = "background: white";
+				R.style.background = "white";
 			}
-			
-			
+
 		</SCRIPT>
 	</body>
 </html>
