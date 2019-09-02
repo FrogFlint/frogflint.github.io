@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Key Jumper</title>
+
+		<style type="text/css">
+
+			body {
+				background: #b0b0b0;
+				font-family: Courier;
+			}
+			body>div {
+				display: none;
+			}
+			input {
+				background: #e8e8e8;
+				border: 1px solid gray;
+				padding: 2px;
+			}
+			button {
+				user-select: none;
+			}
+
+
+			.centerAbsolute {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%,-50%);
+			}
+
+			#titleScreen {
+				position: absolute;
+				width: 40%;
+				height: 75%;
+
+				border: 2px solid gray;
+				background: #dddddd;
+			}
+			#titleScreen h1 {
+				font-size: 70px;
+				text-align: center;
+				margin-top: 10%;
+			}
+			#titleScreen div {
+				width: 40%;
+				margin-top: 17%;
+
+				margin-left: 50%;
+				transform: translate(-50%,0%);
+			}
+			#titleScreen button {
+				width: 100%;
+				height: 50px;
+				padding: 3px;
+
+				font-weight: bold;
+				font-family: inherit;
+				font-size: 30px;
+			}
+			#titleScreen button + button {
+				margin-top: 20%;
+			}
+
+			#login, #register {
+				position: absolute;
+				width: 24%;
+				height: 40%;
+
+				border: 1px solid gray;
+				background: #dddddd;
+			}
+			#login *, #register * {
+				margin-left: 20%;
+				width: 60%;
+				margin-top: 14%;
+			}
+			#login input + input, #login p , #register input + input, #register p {
+				margin-top: 3%;
+			}
+			#login p , #register p{
+				color: red;
+			}
+
+			#browsing {
+				position: absolute;
+				width: 50%;
+				height: 80%;
+				cursor: default;
+				user-select: none;
+			}
+			#selectorBar {
+				width: 100%;
+				height: 10%;
+				display: flex;
+			}
+			#selectorBar div {
+				width: 33.33%;
+				height: 100%;
+				text-align: center;
+				line-height: 50px;
+				font-size: 20px;
+				border: 1px gray solid;
+				background: #dddddd;
+			}
+			#itemList {
+				top: 15%;
+				width: 55%;
+				height: 85%;
+				overflow-y: scroll;
+			}
+			#itemList>div {
+				padding: 5px;
+				background: #dddddd;
+				border: 1px solid gray;
+			    display: flex;
+			    justify-content: space-between;
+				align-items: center;
+			}
+			#itemList>div:hover{
+				background: #c0c0c0;
+			}
+			.stars {
+				height: 30px;
+				background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Stj%C3%A4rna.svg/801px-Stj%C3%A4rna.svg.png');
+				background-size: 30px;
+				background-repeat: repeat;
+    			background-position: right;
+			}
+			#itemSearch {
+				left: 58%;
+				top: 15%;
+				width: 42%;
+				height: 18%;
+				padding: 10px;
+				box-sizing: border-box;
+				font-size: 15px;
+			}
+			#itemSearch>div {
+				height: 17%;
+				margin-top: 4%;
+				display: flex;
+				place-content: space-between;
+			}
+			#itemSearch>div>div {
+				width: fit-content;
+				height: fit-content;
+				padding-left: 3px;
+				padding-right: 3px;
+				border-radius: 10px;
+			}
+			#itemSearch>div>div:hover {
+				background-color: #b0b0b0;
+			}
+			#itemInfo {
+				left: 58%;
+				top: 36%;
+				width: 42%;
+				height: 64%;
+				padding: 10px;
+				padding-top: 0px;
+				box-sizing: border-box;
+				line-height: 1.4;
+			}
+			#itemInfo input {
+				margin-top: 20px;
+			}
+			#highscores {
+				width: 100%;
+				height: 40%;
+				overflow: scroll;
+				background: #e8e8e8;
+				border: 1px gray solid;
+			}
+			#highscores table {
+				width: 100%;
+			}
+			#highscores td {
+				vertical-align: top;
+			}
+			#browsing>div + div {
+				position: inherit;
+				background: #dddddd;
+				border: 1px gray solid;
+			}
+
+			::-webkit-scrollbar {
+				display: none;
+			}
+
+			#playing, #building {
+				position: absolute;
+				width: 50%;
+				height: 80%;
+				cursor: default;
+				user-select: none;
+			}
+			canvas {
+				width: 100%;
+				height: 100%;
+			}
+			p#name {
+				position: absolute;
+				left: 1.5%;
+				top: -1.3%;
+				pointer-events: none;
+			}
+			p#score {
+				position: absolute;
+				right: 1.5%;
+				top: -1.3%;
+			}
+			#dead {
+				position: absolute;
+				font-size: 130px;
+				text-align: center;
+				font-weight: bold;
+			}
+			#building>div:not(#controls) {
+				position: absolute;
+				height: 100%;
+				width: 30%;
+				top: 0%;
+				display: flex;
+				flex-flow: column;
+				place-content: space-around;
+				align-items: center;
+				border: 1px solid gray;
+			}
+			#itemToolbar {
+				left: -40%;
+			}
+			#tileToolbar {
+				left: 110%;
+			}
+			#building>div:not(#controls)>div {
+				width: 60px;
+				height: 60px;
+			}
+			#controls {
+				top: 105%;
+				width: 100%;
+				display: flex;
+				white-space: nowrap;
+			}
+			#controls p:not([class]){
+				margin-top: 0%;
+				margin-bottom: 0%;
+				margin-left: 5%;
+				margin-right: 5%;
+			}
+			#controls [class], #controls:hover :not([class]){
+				display: inherit;
+			}
+			#controls:hover [class], #controls :not([class]){
+				display: none;
+			}
+
+
+		</style>
+	</head>
+	<body onload="setView('#titleScreen')">
+
+		<div id="titleScreen" class="centerAbsolute">
+			<h1>Key Jumper</h1>
+			<div>
+				<button onclick="setView('#login')">Sign In</button>
+				<button onclick="setView('#register')">Register</button>
+			</div>
+		</div>
+		<div id="login" class="centerAbsolute">
+			<input type="text" id="username" placeholder="username">
+			<input type="password" id="password" placeholder="password">
+			<button onclick="login()">Sign in</button>
+			<p></p>
+		</div>
+		<div id="register" class="centerAbsolute">
+			<input type="text" id="username" placeholder="username">
+			<input type="password" id="password" placeholder="password">
+			<input type="password" id="passwordConfirm" placeholder="confirm password">
+			<button onclick="register()">Register</button>
+			<p></p>
+		</div>
+
+		<div id="browsing" class="centerAbsolute">
+			<div id="selectorBar">  <!-- User levels, My levels, User profile -->
+				<div id="userLevels" onclick="setBrowseTab('userLevels')">User Levels</div>
+				<div id="myLevels" onclick="setBrowseTab('myLevels')">My Levels</div>
+				<div id="users" onclick="setBrowseTab('users')">User Profiles</div>
+			</div>
+			<div id="itemList"></div>  <!-- Item means a level or player -->
+			<div id="itemSearch">  <!-- Sort by [most recent (default), highest rating, most plays/deaths], filter by [name, author's name, friends with author, maybe size] -->
+				<input type="text" placeholder="filter criteria">
+				<div id="filter"></div>
+				<div id="sort"></div>
+			</div>
+			<div id="itemInfo">
+				<input type="text">
+				<p><p>
+				<button>Open</button>
+				<button>Public</button>
+				<button>Delete</button>
+				<div style="position: absolute; transform: translate(45px, -45px);"></div>
+				<div id="highscores">
+					<table></table>
+				</div>
+			</div>
+		</div>
+
+		<div id="playing" class="centerAbsolute">
+			<canvas id="game" class="centerAbsolute"></canvas>
+			<div id="dead" class="centerAbsolute">You died</div>
+			<p id="name"></p>
+			<p id="score"></p>
+		</div>
+		<div id="building" class="centerAbsolute">
+			<canvas id="editor" class="centerAbsolute"></canvas>
+			<div id="itemToolbar">
+				<div id="player" style="background: black; width: 52.5px;"></div>
+				<div id="bouncer" style="background: cyan; border-radius: 30px;"></div>
+				<div id="stretch" style="background: lime; height: 30px; border-top-left-radius: 30px; border-top-right-radius: 30px;"></div>
+				<div id="cannon">
+					<div style="background: red; height: 30px; width: 15px; left: 22.5px; position: relative;"></div>
+					<div style="background: red; height: 30px; border-top-left-radius: 30px; border-top-right-radius: 30px; top: -5px; position: relative;"></div>
+				</div>
+			</div>
+			<div id="tileToolbar">
+				<div id="wall" style="background: #b97611;"></div>
+				<div id="" style="background: #864706;"></div>
+				<div id="spikes" style="background: grey; clip-path: polygon(50% 0, 0 100%, 100% 100%);"></div>
+				<div id="door" style="background: #462402; border-top-left-radius: 30px; border-top-right-radius: 30px;"></div>
+				<div id="key">
+					<div style="background: gold; position: relative; width: 30px; height: 30px; border-radius: 15px; left: 15px;"></div>
+					<div style="background: gold; position: relative; width: 15px; height: 35px; left: 22.5px; top: -10px;"></div>
+				</div>
+			</div>
+			<div id="controls" class="centerAbsolute">
+				<p>
+					Escape - Save and exit <br>
+					Space - Playtest <br>
+					R - Rotate <br>
+					K - Key  <!-- maybe add a "more info" button with popup onclick -->
+				</p>
+				<p>
+					S - select rectangle <br>
+					C - Copy <br>
+					X - Cut <br>
+					V - Paste
+				</p>
+				<p>
+					Z - Undo <br>
+					Y - Redo
+				</p>
+				<p class="centerAbsolute"> Keybindings </p>
+			</div>
+			<p id="name"></p>
+		</div>
+
+
+		<script type="text/javascript">
+			"use strict"
+
+			let users = [];
+			let publishedLevels = [];
+
+			let currentUser = null;
+			let selectedItem = null; //level or user
+
+			let view = "title";
+			let browseTab = "userLevels";
+
+			let searchCriteria = "";
+			let sortType = "recent";
+			let filterType = "all";
+
+			let sortOptions = {userLevels: ["Recent", "Popular", "Played", "Hardest"], myLevels: ["Recent"], users: ["Recent", "Popular", "Levels"]};
+			let filterOptions = {userLevels: ["All", "Name", "Author", "Friends"], myLevels: ["All", "Name"], users: ["All", "Name", "Friends"]};
+
+			const sortFunc = {
+				recent: () => 0,
+				popular: (a, b) => a.averageRating - b.averageRating,
+				played: (a, b) => a.totalDeaths - b.totalDeaths,
+				hardest: (a, b) => Object.keys(a.playerDeaths).length / Object.keys(a.highscores).length - Object.keys(b.playerDeaths).length / Object.keys(b.highscores).length,
+				levels: (a, b) => publishedLevels.filter(level => level.author == a.name).length - publishedLevels.filter(level => level.author == b.name).length
+			};
+			const filterFunc = {
+				all: () => true,
+				name: item => item.name == searchCriteria,
+				author: item => item.author == searchCriteria,
+				friends: item => currentUser.friends.includes(item.name) || currentUser.friends.includes(item.author)
+			};
+
+
+			const average = arr => arr.length > 1 ? arr.reduce((x, y) => x + y) / arr.length : arr[0];
+			const addRemove = (arr, item) => arr.includes(item) ? arr.splice(arr.indexOf(item), 1) : arr.push(item);
+			const rotate = (coords, rotation) => rotation ? rotate([-coords[1], coords[0]], --rotation) : coords;
+			const playerDistance = (x, y) => Math.sqrt(
+				(Math.max(Math.min(x, game.player.x + game.player.width), game.player.x) - x)**2 +
+				(Math.max(Math.min(y, game.player.y + game.player.height), game.player.y) - y)**2
+			);
+			const copyTile = (a, b = {}) => Object.assign(b, a, {keys: Array.from(a.keys)});
+
+
+			function setView(area){
+				view = area;
+				document.querySelectorAll("body>div").forEach(element => element.style.display = "none");
+				document.querySelectorAll(view).forEach(element => element.style.display = "block");
+			}
+			function setBrowseTab(tab = browseTab, sort = sortType, filter = filterType){
+				if(!sortOptions[tab].map(x => x.toLowerCase()).includes(sort)) sort = sortOptions[tab][0].toLowerCase();
+				if(!filterOptions[tab].map(x => x.toLowerCase()).includes(filter)) filter = filterOptions[tab][0].toLowerCase();
+				browseTab = tab;
+				sortType = sort;
+				filterType = filter;
+				searchCriteria = document.querySelector("#itemSearch input").value;
+				let list = document.querySelector("#itemList");
+				list.innerHTML = "";
+				document.querySelector("#itemInfo p").innerHTML = "";
+				document.querySelectorAll("#itemInfo button, #itemInfo input, #itemInfo>div").forEach(element => element.style.display = "none");
+				if(browseTab == "myLevels"){
+					let button = document.querySelector("#itemInfo button");
+					button.style.display = "";
+					button.innerHTML = "New level";
+					button.onclick = () => {
+						currentUser.levels.push(new Level());
+						setBrowseTab();
+						selectItem(currentUser.levels[currentUser.levels.length - 1]);
+						button.click();
+					};
+				}
+				switch(tab){
+					case "userLevels":
+						publishedLevels.filter(filterFunc[filter]).sort(sortFunc[sort]).forEach(level => {
+							level.averageRating = average(Object.values(level.ratings));
+							level.totalDeaths = Object.values(level.playerDeaths).reduce((a, b) => a + b, 0);
+							let item = document.createElement("div");
+							item.innerHTML = "<div>" + level.name + "<br>By: " + level.author +
+								"</div><div class='stars' style='width: " + level.averageRating * 30 + "px'>";
+							item.onclick = () => selectItem(level);
+							list.prepend(item);
+						});
+					break;
+					case "myLevels":
+						currentUser.levels.filter(filterFunc[filter]).sort(sortFunc[sort]).forEach(level => {
+							let item = document.createElement("div");
+							item.innerHTML = level.name + "<br>" + level.width + "x" + level.height;
+							item.onclick = () => selectItem(level);
+							list.prepend(item);
+						});
+					break;
+					case "users":
+						users.filter(filterFunc[filter]).sort(sortFunc[sort]).forEach(user => {
+							user.averageRating = average(publishedLevels.filter(level => level.author == user.name).map(level => level.averageRating));
+							let item = document.createElement("div");
+							item.innerHTML = "<div>" + user.name + "<br>" + publishedLevels.filter(level => level.author == user.name).length + " Published levels" +
+								"</div><div class='stars' style='width: " + user.averageRating * 30 + "px'>";
+							item.onclick = () => selectItem(user);
+							list.prepend(item);
+						});
+					break;
+				}
+				let [filters, sorts] = document.querySelectorAll("#itemSearch>div");
+				filters.innerHTML = sorts.innerHTML = "";
+				filterOptions[tab].forEach(name => {
+					let item = document.createElement("div");
+					item.innerHTML = name;
+					item.style.backgroundColor = name.toLowerCase() == filter ? "#b0b0b0" : "none";
+					item.onclick = () => setBrowseTab(tab, sort, name.toLowerCase());
+					filters.append(item);
+				});
+				sortOptions[tab].forEach(name => {
+					let item = document.createElement("div");
+					item.innerHTML = name;
+					item.style.backgroundColor = name.toLowerCase() == sort ? "#b0b0b0" : "none";
+					item.onclick = () => setBrowseTab(tab, name.toLowerCase(), filter);
+					sorts.append(item);
+				});
+
+				document.querySelectorAll("#selectorBar div").forEach(element => element.style.background = element.id == tab ? "#c0c0c0" : "#dddddd");
+
+				if(!users.includes(currentUser)){
+					currentUser = null;
+					setView("#titleScreen");
+				}
+			}
+			function selectItem(item = selectedItem){
+				selectedItem = item;
+				let rename = document.querySelector("#itemInfo input");
+				let info = document.querySelector("#itemInfo p");
+				let rate = document.querySelector("#itemInfo div");
+				rate.innerHTML = "";
+				rate.style.display = "none";
+				info.innerHTML = {
+					userLevels: item => item.name +
+						"<br>Published by " + item.author +
+						"<br>On " + item.dateCreated.toISOString().split('T')[0] +
+						"<br>ID: " + item.id,
+					myLevels: item => item.name,
+					users: item => item.name +
+						"<br>Joined on " + item.dateCreated.toISOString().split('T')[0] +
+						"<br>" + publishedLevels.filter(level => level.author == item.name).length + " published levels"
+				}[browseTab](item);
+				info.onclick = browseTab == "myLevels" ? () => {
+					rename.value = info.innerHTML;
+					info.innerHTML = " ";
+					rename.style.display = "";
+					rename.onblur = () => {
+						item.name = rename.value;
+						setBrowseTab();
+						selectItem();
+					};
+					rename.focus();
+				} : null;
+
+				let buttons = document.querySelectorAll("#itemInfo button");
+				buttons[0].style.display = "";
+				buttons[0].innerHTML = {
+					userLevels: "Play",
+					myLevels: "Edit",
+					users: "View levels"
+				}[browseTab];
+				buttons[0].onclick = {
+					userLevels: () => loadLevel(),
+					myLevels: () => { setView("#building"); setCanvasSize(editorCanvas, selectedItem); startEditor(); },
+					users: () => { document.querySelector("#itemSearch input").value = item.name; setBrowseTab("userLevels", sortType, "author") }
+				}[browseTab];
+				buttons[1].style.display = "";
+				buttons[1].innerHTML = {
+					userLevels: "Rate",
+					myLevels: "Publish",
+					users: item == currentUser ? "Sign out" : currentUser.friends.includes(item.name) ? "Remove friend" : "Add friend"
+				}[browseTab];
+				buttons[1].onclick = {
+					userLevels: () => {
+						buttons[1].style.display = "none";
+						rate.style.display = "inline-flex";
+						for(let i = 1; i <= 5; i++){
+							let star = document.createElement("div");
+							star.classList.add("stars");
+							star.style.width = "30px";
+							star.onclick = () => {
+								selectedItem.ratings[currentUser.name] = i;
+								setBrowseTab();
+								selectItem();
+							}
+							rate.append(star);
+						}
+					},
+					myLevels: () => {
+						publishedLevels.push(
+							new PublicLevel(
+								selectedItem.name,
+								currentUser.name,
+								publishedLevels.length,
+								currentUser.levels.splice(
+									currentUser.levels.indexOf(
+										selectedItem
+									),
+									1
+								)[0]
+							)
+						);
+						setBrowseTab();
+					},
+					users: item == currentUser ?
+						() => {
+							currentUser = null;
+							setBrowseTab();
+						} :
+						() => {
+							addRemove(currentUser.friends, selectedItem.name);
+							setBrowseTab();
+							selectItem();
+						}
+				}[browseTab];
+				buttons[2].style.display = {
+					userLevels: false,
+					myLevels: true,
+					users: currentUser.name == item.name
+				}[browseTab] ? "" : "none";
+				buttons[2].onclick = (list => () => {
+					list.splice(list.indexOf(item), 1);
+					setBrowseTab();
+				})({myLevels: currentUser.levels, users: users}[browseTab]);
+
+				if(browseTab == "userLevels"){
+					let scoreboard = document.querySelector("#highscores");
+					scoreboard.style.display = "";
+					let scores = Object.entries(item.highscores).sort((a,b) => a[1] - b[1]);
+					scoreboard.children[0].innerHTML = scores.map(([name, score], position) => "<tr><td>" + (position- -1) + ". " + name + "</td><td>" + score.toFixed(2) + "s</td></tr>").join("");
+				}
+			}
+
+			function login(){
+				let [{value:username}, {value:password}] = document.querySelectorAll("#login input");
+				let failText = document.querySelector("#login p");
+				let id = users.findIndex(x => x.name == username);
+				if(id >= 0){
+					if(users[id].passwordHash == password){  //TODO: Hash the password
+						currentUser = users[id];
+						setView("#browsing");
+						setBrowseTab("userLevels");
+					} else failText.innerHTML = "Password incorrect";
+				} else failText.innerHTML = "Username incorrect";
+			}
+			function register(){
+				let [{value:username}, {value:password}, {value:passwordConfirm}] = document.querySelectorAll("#register input");
+				let failText = document.querySelector("#register p");
+				if(Math.min(username.length, password.length, passwordConfirm.length) > 3){
+					if(!users.map(x => x.name).includes(username)){
+						if(password == passwordConfirm){  //TODO: Hash the password
+							users.push(new User(username, password));
+							currentUser = users[users.length - 1];
+							setView("#browsing");
+							setBrowseTab("userLevels");
+						} else failText.innerHTML = "Passwords must match";
+					} else failText.innerHTML = "Username taken";
+				} else failText.innerHTML = "Too short";
+			}
+
+
+			function User(username, password){
+				this.name = username;
+				this.passwordHash = password;
+				this.dateCreated = new Date();
+
+				this.levels = []; //unpublished
+
+				this.averageRating = 0;
+				this.friends = [];
+			}
+			function Level(name = "untitled"){
+				this.name = name;
+
+				this.width = 20;  //does not include padding
+				this.height = 14;
+				this.tiles = new Array(this.width + 2).fill().map(
+					(x,i) => new Array(this.height + 2).fill().map(
+						(y,j) => new Tile((i % 21) && (j % 15) ? "" : "wall")
+					)
+				);
+			}
+			function PublicLevel(name, user, id, data){
+				this.name = name;
+				this.author = user;
+				this.id = id;
+				this.dateCreated = new Date();
+
+				this.data = data;
+
+				this.highscores = {};
+				this.playerDeaths = {};
+				this.ratings = {};  //1 to 5
+
+				this.totalDeaths = 0;
+				this.averageRating = 0;
+			}
+
+
+			let i, j;
+
+			let gameCanvas = document.querySelector("#game");
+			let editorCanvas = document.querySelector("#editor");
+			let gctx = gameCanvas.getContext("2d");
+			let ectx = editorCanvas.getContext("2d");
+
+			let game = {
+				data: {},
+				tiles: [[{}]],
+				enemies: [],
+				projectiles: [],
+				player: {
+					x:2,
+					y:2,
+					vx:0,
+					vy:0,
+					width: 0.7,
+					height: 0.8,
+					accel: 0.04,
+					decel: 0.04,
+					wallGrab: 0.1,
+					onGround: false,
+					onWallLeft: 0,
+					onWallRight: 0,
+					sliding: false,
+					jumped: false,
+					autoJump: false,
+					alive: true
+				},
+				tileSize: 10,
+				keys: {w:false, a:false, d:false},
+				timer: 0,
+			};
+			let editor = {
+				selectedItem: "player",
+				selectedTile: "wall",
+				rotation: 0,
+				key: -1,
+				keyX: 0,
+				keyY: 0,
+				k: false,
+				copied: null,
+				undoStack: [],
+				redoStack: [],
+				selecting: false,
+				selection: []  //array of arrays in [top, left, bottom, right] format
+			};
+
+			let itemIcons = document.querySelectorAll("#itemToolbar>div");
+			let tileIcons = document.querySelectorAll("#tileToolbar>div");
+			[itemIcons, tileIcons].forEach((icons, type) => icons.forEach(icon => {
+				icon.style.order = 1;
+				icon.onmousedown = () => {
+					icons.forEach(x => x.style.order = 1);
+					icon.style.order = 0;
+					editor[["selectedItem","selectedTile"][type]] = icon.id;
+				}
+			}));
+
+			function Enemy(type, x, y, keys = [], rotation = 0, active = true){
+				this.type = type;
+				this.x = x;
+				this.y = y;
+				this.vx = this.vy = 0;
+				this.keys = keys;
+				this.rotation = rotation;
+				this.active = active;
+				this.size = {bouncer: 0.8, stretch: 0.9}[type];
+				this.reload = 0;
+			}
+			function Projectile(type, x, y, vx, vy){
+				this.type = type;
+				this.x = x;
+				this.y = y;
+				this.vx = vx;
+				this.vy = vy;
+				this.active = true;
+			}
+			function Tile(type = "wall", rotation = 0, keys = [], active = true){
+				this.type = type;
+				this.rotation = rotation;
+				this.keys = Array.from(keys);
+				this.active = active;
+			}
+
+
+			function drawSprite(ctx, type, x, y, rotation){
+				x = Number(x);
+				y = Number(y);
+				ctx.beginPath();
+				switch(type){
+					case "wall":
+						ctx.fillStyle = "#b97611";
+						ctx.fillRect(x*game.tileSize - 0.5, y*game.tileSize - 0.5, game.tileSize + 1, game.tileSize + 1);
+					break;
+					case "spikes":
+						let start = rotate([-0.5, -0.5], rotation + 1);
+						let path = [[-0.333,-0.2],[-0.166,-0.5],[0,-0.2],[0.166,-0.5],[0.333,-0.2],[0.5,-0.5]].map(x => rotate(x, rotation + 1));
+						ctx.fillStyle = "gray";
+						ctx.moveTo((x + 0.5 + start[0])*game.tileSize, (y + 0.5 + start[1])*game.tileSize);
+						path.forEach(step => ctx.lineTo((x + 0.5 + step[0])*game.tileSize, (y + 0.5 + step[1])*game.tileSize));
+						ctx.fill();
+					break;
+					case "door":
+						ctx.fillStyle = "#462402";
+						ctx.fillRect(x*game.tileSize, (y + 0.5)*game.tileSize, game.tileSize, 0.5*game.tileSize);
+						ctx.arc((x + 0.5)*game.tileSize, (y + 0.5)*game.tileSize, 0.5*game.tileSize, 0, Math.PI*2);
+						ctx.fill();
+					break;
+					case "key":
+						ctx.fillStyle = "gold";
+						ctx.arc((x + 0.5)*game.tileSize, (y + 0.35)*game.tileSize, 0.2*game.tileSize, 0, Math.PI*2);
+						ctx.rect((x + 0.43)*game.tileSize, (y + 0.35)*game.tileSize, 0.14*game.tileSize, 0.5*game.tileSize);
+						ctx.fill();
+					break;
+					case "player":
+						ctx.fillStyle = "black";
+						ctx.fillRect(x*game.tileSize, y*game.tileSize, game.player.width*game.tileSize, game.player.height*game.tileSize);
+					break;
+					case "bouncer":
+						ctx.fillStyle = "cyan";
+						ctx.arc((x + 0.5)*game.tileSize, (y + 0.5)*game.tileSize, 0.4*game.tileSize, 0, Math.PI*2);
+						ctx.fill();
+						ctx.closePath();
+						ctx.beginPath();
+						let eye = rotate([0.15, 0], rotation);
+						ctx.fillStyle = "black";
+						ctx.arc((x + 0.5 + eye[0])*game.tileSize, (y + 0.5 + eye[1])*game.tileSize, 0.1*game.tileSize, 0, Math.PI*2);
+						ctx.fill();
+					break;
+					case "stretch":
+						let center = rotate([0.5, 0], rotation);
+						ctx.fillStyle = "lime";
+						ctx.arc((x + 0.5 + center[0])*game.tileSize, (y + 0.5 + center[1])*game.tileSize, 0.45*game.tileSize, (rotation + 1) * Math.PI/2, (rotation + 3) * Math.PI/2);
+						ctx.fill();
+					break;
+					case "cannon":
+						let core = rotate([0.5, 0], rotation);
+						ctx.fillStyle = "red";
+						ctx.arc((x + 0.5 + core[0])*game.tileSize, (y + 0.5 + core[1])*game.tileSize, 0.3*game.tileSize, (rotation + 1) * Math.PI/2, (rotation + 3) * Math.PI/2);
+						ctx.fill();
+						ctx.fillRect(
+							(x + 0.5 + rotate([0, -0.1], rotation)[0])*game.tileSize,
+							(y + 0.5 + rotate([0, -0.1], rotation)[1])*game.tileSize,
+							rotate([0.5, 0.2], rotation)[0]*game.tileSize,
+							rotate([0.5, 0.2], rotation)[1]*game.tileSize
+						);
+					break;
+					case "bullet":
+						ctx.fillStyle = "#ff3b00";
+						ctx.arc(x*game.tileSize, y*game.tileSize, 0.2*game.tileSize, 0, Math.PI*2);
+						ctx.fill();
+					break;
+				}
+				ctx.closePath();
+			}
+
+
+			function editorFrame(){
+				ectx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+
+				let level = selectedItem;
+				Object.assign(deselect, select);
+				Object.assign(select, {
+					x: Math.floor(mouse.x / game.tileSize),
+					y: Math.floor(mouse.y / game.tileSize)
+				});
+
+
+				if(select.clickable = select.clickable && select.x in level.tiles && select.y in level.tiles[select.x]){
+					let old = level.tiles.map(tiles => tiles.map(tile => copyTile(tile)));
+					if(editor.k || editor.key >= 0 && (mouse.left || mouse.right)){
+						if(editor.k || deselect.clicked || select.x != deselect.x || select.y != deselect.y){
+							if(editor.key >= 0){
+								if(level.tiles[select.x][select.y].key == editor.key) level.tiles[select.x][select.y].active = !level.tiles[select.x][select.y].active;
+								else addRemove(level.tiles[select.x][select.y].keys, editor.key);
+								if(editor.k && !mouse.shift) editor.key = -1;
+							}
+							if(editor.key < 0 || mouse.right){
+								if(level.tiles[select.x][select.y].type == "key") Object.assign(editor, {keyX: select.x, keyY: select.y, key: level.tiles[select.x][select.y].key});
+								if(level.tiles[select.x][select.y].type != "key" || mouse.right) level.tiles[select.x][select.y].active = !level.tiles[select.x][select.y].active;
+							}
+							editor.k = false;
+						}
+					}
+					else if(mouse.left){
+						if(editor.selectedItem == "player") level.tiles.forEach(tiles => tiles.forEach(tile => { if(tile.type == "player") tile.type = ""; }));
+						level.tiles[select.x][select.y].type = editor.selectedItem;
+						level.tiles[select.x][select.y].rotation = editor.rotation;
+					}
+					else if(mouse.right){
+						if(editor.selectedTile == "key" && !level.tiles[select.x][select.y].key)
+							level.tiles[select.x][select.y].key = level.tiles.flat().map(x => x.key).filter(x => x != null).reduce((x,y) => Math.max(x,y), -1) + 1;
+						level.tiles[select.x][select.y].type = editor.selectedTile;
+						level.tiles[select.x][select.y].rotation = editor.rotation;
+					}
+
+					if(mouse.left || mouse.right || editor.k){
+						if(!(mouse.right && editor.selectedTile == "wall" && !editor.k)){
+							if(select.x == 0                && level.width  > 1) level.tiles.unshift(new Array(level.height + 2).fill().map(x => new Tile()));
+							if(select.x == level.width  + 1 && level.width  > 1) level.tiles.push(   new Array(level.height + 2).fill().map(x => new Tile()));
+
+							if(select.y == 0                && level.height > 1) level.tiles.forEach(tiles => tiles.unshift(new Tile()));
+							if(select.y == level.height + 1 && level.height > 1) level.tiles.forEach(tiles => tiles.push(   new Tile()));
+						}
+						while(select.x == 1           && level.tiles.slice(0, 2).flat().every(tile => tile.type == "wall")) level.tiles.shift();
+						while(select.x == level.width && level.tiles.slice(  -2).flat().every(tile => tile.type == "wall")) level.tiles.pop();
+
+						while(select.y == 1            && level.tiles.every(tiles => tiles.slice(0, 2).flat().every(tile => tile.type == "wall"))) level.tiles.forEach(tiles => tiles.shift());
+						while(select.y == level.height && level.tiles.every(tiles => tiles.slice(  -2).flat().every(tile => tile.type == "wall"))) level.tiles.forEach(tiles => tiles.pop());
+
+						level.width = level.tiles.length - 2;
+						level.height = level.tiles[0].length - 2;
+
+						select.x = Math.min(select.x, level.width + 1);
+						select.y = Math.min(select.y, level.height + 1);
+
+						setCanvasSize(editorCanvas, level);
+					}
+
+					let changes = [];
+					for(i in level.tiles){
+						for(j in level.tiles[i]){
+							if(Object.entries(
+									level.tiles[i][j]
+								).some(
+									([name, value]) =>
+									Array.isArray(value) ?
+									value.some(
+										(x,k) =>
+										x != old[i][j][name][k]
+									) :
+									value != old[i][j][name]
+								)
+							) changes.push({tile: old[i][j], x: i, y: j});
+						}
+					}
+					if(changes.length){
+						editor.undoStack.push(changes);
+						editor.redoStack = [];
+					}
+				}
+
+
+				document.querySelectorAll("#building>div:not(#controls)").forEach(toolbar => toolbar.style.height = (level.height + 2) * game.tileSize + "px");
+				document.querySelector("#building>p").innerHTML = level.name;
+
+
+				ectx.beginPath();
+				ectx.fillStyle = "#864706";
+				ectx.fillRect(0, 0, (selectedItem.width + 2) * game.tileSize, (selectedItem.height + 2) * game.tileSize);
+				ectx.closePath();
+
+				for(i in level.tiles){
+					for(j in level.tiles[i]){
+						ectx.globalAlpha = level.tiles[i][j].active ? 1 : 0.5;
+						drawSprite(ectx, level.tiles[i][j].type, i, j, level.tiles[i][j].rotation);
+					}
+				}
+				ectx.strokeStyle = "black";
+				if(select.clickable){
+					ectx.globalAlpha = 0.8;
+					if(level.tiles[select.x][select.y].type == "key"){
+						for(i in level.tiles){
+							for(j in level.tiles[i]){
+								if(level.tiles[i][j].keys.includes(level.tiles[select.x][select.y].key)){
+									ectx.beginPath();
+									ectx.moveTo((Number(i) + 0.5)*game.tileSize, (Number(j) + 0.5)*game.tileSize);
+									ectx.lineTo((select.x + 0.5)*game.tileSize, (select.y + 0.5)*game.tileSize);
+									ectx.stroke();
+									ectx.closePath();
+								}
+							}
+						}
+					}
+					ectx.globalAlpha = 1;
+					ectx.beginPath();
+					ectx.rect(select.x*game.tileSize - 0.5, select.y*game.tileSize - 0.5, game.tileSize + 1, game.tileSize + 1);
+					ectx.stroke();
+					ectx.closePath();
+				}
+				if(editor.key >= 0){
+					for(i in level.tiles){
+						for(j in level.tiles[i]){
+							if(level.tiles[i][j].keys.includes(editor.key)){
+								ectx.beginPath();
+								ectx.moveTo((Number(i) + 0.5)*game.tileSize, (Number(j) + 0.5)*game.tileSize);
+								ectx.lineTo((editor.keyX + 0.5)*game.tileSize, (editor.keyY + 0.5)*game.tileSize);
+								ectx.stroke();
+								ectx.closePath();
+							}
+						}
+					}
+					ectx.beginPath();
+					ectx.moveTo(mouse.x, mouse.y);
+					ectx.lineTo((editor.keyX + 0.5)*game.tileSize, (editor.keyY + 0.5)*game.tileSize);
+					ectx.stroke();
+					ectx.closePath();
+				}
+			}
+			function gameFrame(){
+
+				if(game.player.alive){
+					gctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+					gctx.fillStyle = "#864706";
+					gctx.fillRect(0, 0, (game.width + 2) * game.tileSize, (game.height + 2) * game.tileSize);
+					game.timer += 0.02;
+
+
+					if(game.keys.a && game.player.vx > -0.25) game.player.vx -= game.player.accel * (game.player.onGround || 0.7);
+					if(game.keys.d && game.player.vx <  0.25) game.player.vx += game.player.accel * (game.player.onGround || 0.7);
+					if(!(game.keys.a || game.keys.d) && game.player.onGround){
+						game.player.vx -= game.player.decel * Math.sign(game.player.vx);
+						if(Math.abs(game.player.vx) < game.player.decel/2) game.player.vx = 0;
+					}
+					if(game.keys.w && !game.player.jumped){
+						if(game.player.onGround) game.player.vy = -0.4;
+						else if(game.player.onWallLeft){
+							game.player.vy = -0.27;
+							game.player.vx = 0.25;
+						}
+						else if(game.player.onWallRight){
+							game.player.vy = -0.27;
+							game.player.vx = -0.25;
+						}
+					}
+					game.player.jumped = game.keys.w && !game.player.autoJump;
+					game.player.vy += 0.03;
+					if(game.player.sliding && game.player.vy > 0.14) game.player.vy -= 0.06;
+
+
+
+					let newX = game.player.x + game.player.vx;
+					let newY = game.player.y + game.player.vy;
+
+					game.player.onGround = game.player.sliding = game.player.onWallLeft = game.player.onWallRight = false;
+
+					if( Math.floor(newY) < Math.floor(game.player.y) && (
+						game.tiles[Math.floor(game.player.x)][Math.floor(newY)].type == "wall" ||
+						game.tiles[Math.ceil(game.player.x + game.player.width - 1)][Math.floor(newY)].type == "wall"
+					)){
+						newY = Math.floor(game.player.y);
+						game.player.vy = 0;
+					} else
+					if( Math.ceil(newY + game.player.height) > Math.ceil(game.player.y + game.player.height) && (
+						game.tiles[Math.floor(game.player.x)][Math.ceil(newY + game.player.height - 1)].type == "wall" ||
+						game.tiles[Math.ceil(game.player.x + game.player.width - 1)][Math.ceil(newY + game.player.height - 1)].type == "wall"
+					)){
+						newY = Math.ceil(newY + game.player.height - 1) - game.player.height;
+						game.player.vy = 0;
+						game.player.onGround = true;
+					}
+
+					if( Math.floor(newX) < Math.floor(game.player.x) && (
+						game.tiles[Math.floor(newX)][Math.floor(game.player.y)].type == "wall" ||
+						game.tiles[Math.floor(newX)][Math.ceil(game.player.y + game.player.height - 1)].type == "wall"
+					)){
+						newX = Math.floor(game.player.x);
+						game.player.vx = 0;
+						if(game.keys.a) game.player.sliding = true;
+					} else
+					if( Math.ceil(newX + game.player.width) > Math.ceil(game.player.x + game.player.width) && (
+						game.tiles[Math.ceil(newX + game.player.width - 1)][Math.floor(game.player.y)].type == "wall" ||
+						game.tiles[Math.ceil(newX + game.player.width - 1)][Math.ceil(game.player.y + game.player.height - 1)].type == "wall"
+					)){
+						newX = Math.ceil(newX + game.player.width - 1) - game.player.width;
+						game.player.vx = 0;
+						if(game.keys.d) game.player.sliding = true;
+					}
+
+					for(i of [Math.floor(newX), Math.ceil(newX + game.player.width - 1)])
+						for(j of [Math.floor(newY), Math.ceil(newY + game.player.height - 1)])
+							if(game.tiles[i][j].type == "wall") newY = game.player.y;
+
+
+					if( game.tiles[Math.floor(game.player.x - game.player.wallGrab)][Math.floor(game.player.y)].type == "wall" ||
+						game.tiles[Math.floor(game.player.x - game.player.wallGrab)][Math.floor(game.player.y + game.player.height - 0.01)].type == "wall"
+					) game.player.onWallLeft = true;
+					if( game.tiles[Math.floor(game.player.x + game.player.width + game.player.wallGrab)][Math.floor(game.player.y)].type == "wall" ||
+						game.tiles[Math.floor(game.player.x + game.player.width + game.player.wallGrab)][Math.floor(game.player.y + game.player.height - 0.01)].type == "wall"
+					) game.player.onWallRight = true;
+
+
+					game.player.x = newX;
+					game.player.y = newY;
+
+
+
+					for(let enemy of game.enemies){
+						if(enemy.active){
+							switch(enemy.type){
+								case "bouncer":
+									if(game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + 0.4*Math.sign(enemy.vx))]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + 0.4*Math.sign(enemy.vy))].type == "wall"
+									) enemy.rotation = (enemy.rotation + 2) % 4;
+									[enemy.vx, enemy.vy] = rotate([0.1, 0], enemy.rotation);
+
+									if(playerDistance(enemy.x + enemy.size/2, enemy.y + enemy.size/2) < enemy.size/2) game.player.alive = false;
+								break;
+								case "stretch":
+									let base = rotate([0.6, 0], enemy.rotation);
+									if(game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + base[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + base[1])]
+										.type != "wall" || game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + rotate([0.55, 0], enemy.rotation + 1)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + rotate([0.55, 0], enemy.rotation + 1)[1])]
+										.type + game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + rotate([0.55, 0], enemy.rotation + 3)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + rotate([0.55, 0], enemy.rotation + 3)[1])]
+										.type == "wallwall" || game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + base[0] + rotate([0.55, 0], enemy.rotation + 1)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + base[1] + rotate([0.55, 0], enemy.rotation + 1)[1])]
+										.type + game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + base[0] + rotate([0.55, 0], enemy.rotation + 3)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + base[1] + rotate([0.55, 0], enemy.rotation + 3)[1])]
+										.type == ""
+									) enemy.vx = enemy.vy = 0;
+									else if(game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + base[0] + rotate([0.45, 0], enemy.rotation + 1)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + base[1] + rotate([0.45, 0], enemy.rotation + 1)[1])]
+										.type != "wall" || game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + rotate([0.45, 0], enemy.rotation + 1)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + rotate([0.45, 0], enemy.rotation + 1)[1])]
+										.type == "wall")
+									[enemy.vx, enemy.vy] = rotate([0.2, 0], enemy.rotation + 3);
+									else if(game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + base[0] + rotate([0.45, 0], enemy.rotation + 3)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + base[1] + rotate([0.45, 0], enemy.rotation + 3)[1])]
+										.type != "wall" || game.tiles
+										[Math.floor(enemy.x + enemy.vx + 0.5 + rotate([0.45, 0], enemy.rotation + 3)[0])]
+										[Math.floor(enemy.y + enemy.vy + 0.5 + rotate([0.45, 0], enemy.rotation + 3)[1])]
+										.type == "wall")
+									[enemy.vx, enemy.vy] = rotate([0.2, 0], enemy.rotation + 1);
+									else if(enemy.vx == enemy.vy) [enemy.vx, enemy.vy] = rotate([0.2, 0], enemy.rotation + 3);
+
+									if(playerDistance(enemy.x + 0.5 + rotate([0.5, 0], enemy.rotation)[0], enemy.y + 0.5 + rotate([0.5, 0], enemy.rotation)[1]) < enemy.size/2) game.player.alive = false;
+								break;
+								case "cannon":
+									if(enemy.reload > 0) enemy.reload--;
+									else{
+										game.projectiles.push(new Projectile("bullet", enemy.x + 0.5, enemy.y + 0.5, ...rotate([-0.4, 0], enemy.rotation)));
+										enemy.reload = 70;
+									}
+								break;
+							}
+							enemy.x += enemy.vx;
+							enemy.y += enemy.vy;
+						}
+					}
+					for(let projectile of game.projectiles){
+						projectile.x += projectile.vx;
+						projectile.y += projectile.vy;
+						if([[0,0.2],[0,-0.2],[0.2,0],[-0.2,0]].some(plus => game.tiles[Math.floor(projectile.x + plus[0])][Math.floor(projectile.y + plus[1])].type == "wall")) projectile.active = false;
+						else if(playerDistance(projectile.x, projectile.y) < 0.2) game.player.alive = false;
+					}
+					game.projectiles = game.projectiles.filter(projectile => projectile.active);
+					if(
+						game.player.alive &&
+						game.player.onGround &&
+						game.tiles[Math.floor(game.player.x + game.player.width/2)][Math.ceil(game.player.y + game.player.height - 1)].type == "door" &&
+						game.tiles[Math.floor(game.player.x + game.player.width/2)][Math.ceil(game.player.y + game.player.height - 1)].active
+					){
+						if(browseTab == "myLevels") setView("#building");
+						else{
+							if(selectedItem.highscores[currentUser.name]) selectedItem.highscores[currentUser.name] = Math.min(selectedItem.highscores[currentUser.name], game.timer);
+							else selectedItem.highscores[currentUser.name] = game.timer;
+							setView("#browsing");
+							selectItem();
+						}
+						return;
+					}
+
+
+					for(i in game.tiles){
+						for(j in game.tiles[i]){
+							if(game.tiles[i][j].type == "key" && game.tiles[i][j].active && Math.sqrt(
+								(game.player.x + game.player.width/2 - i - 0.5)**2 +
+								(game.player.y + game.player.height/2 - j - 0.5)**2
+							) < 1){
+								game.tiles[i][j].type = "";
+								game.tiles.forEach(tiles => tiles.forEach(tile => {
+									if(tile.keys.includes(game.tiles[i][j].key)){
+										if(["", "wall"].includes(tile.type)) tile.type = tile.type ? "" : "wall";
+										else tile.active = !tile.active;
+									}
+								}));
+								game.enemies.forEach(enemy => enemy.active = enemy.active != enemy.keys.includes(game.tiles[i][j].key));
+							}
+							else if(game.tiles[i][j].type == "spikes" && game.tiles[i][j].active){
+								let box = rotate([0.5, -0.5], game.tiles[i][j].rotation).concat(rotate([0.2, 0.5], game.tiles[i][j].rotation));
+								if(game.player.x - i - 0.5 < Math.max(box[0], box[2]) && game.player.x + game.player.width - i - 0.5 > Math.min(box[0], box[2]) &&
+									game.player.y - j - 0.5 < Math.max(box[1], box[3]) && game.player.y + game.player.height - j - 0.5 > Math.min(box[1], box[3]))
+									game.player.alive = false;
+							}
+						}
+					}
+
+
+
+
+					//drawing
+
+					for(i in game.tiles){
+						for(j in game.tiles[i]){
+							if(game.tiles[i][j].active)
+								drawSprite(gctx, game.tiles[i][j].type, i, j, game.tiles[i][j].rotation);
+						}
+					}
+					for(let enemy of game.enemies){
+						if(enemy.active){
+							drawSprite(gctx, enemy.type, enemy.x, enemy.y, enemy.rotation);
+						}
+					}
+					for(let projectile of game.projectiles){
+						drawSprite(gctx, "bullet", projectile.x, projectile.y);
+					}
+
+					if(!game.player.alive){
+						game.player.x -= game.player.vx/2;
+						game.player.y -= game.player.vy/2;
+					}
+					drawSprite(gctx, "player", game.player.x, game.player.y);
+
+
+					if(!game.player.alive){
+						document.querySelector("#dead").style.display = "";
+						setTimeout(() => {if(!game.player.alive) startLevel()}, 1000);
+						return;
+					}
+				}
+
+				document.querySelector("#playing #score").innerHTML = game.timer.toFixed(2) + "s";
+
+				if(view == "#playing") setTimeout(gameFrame, 20);
+			}
+
+			function startEditor(){
+				Object.assign(editor, {
+					key: -1,
+				 	copied: null,
+					undoStack: [],
+					redoStack: []
+				});
+				editorFrame();
+			}
+			function startLevel(){
+				game.player.alive = true;
+				game.player.x = game.player.y = 1
+				game.player.vx = game.player.vy = 0;
+				game.keys = {w:false, a:false, d:false};
+				game.timer = 0;
+				game.enemies = [];
+				game.projectiles = [];
+				game.tiles = [];
+				for(i in game.data){
+					game.tiles[i] = [];
+					for(j in game.data[i]){
+						game.tiles[i][j] = new Tile("");
+						switch(game.data[i][j].type){
+							case "":
+							case "wall":
+							case "spikes":
+							case "door":
+							case "key":
+								copyTile(game.data[i][j], game.tiles[i][j]);
+							break;
+							case "player":
+								game.player.x = Number(i);
+								game.player.y = Number(j);
+							break;
+							case "bouncer":
+							case "stretch":
+							case "cannon":
+							case "turret":
+								game.enemies.push(new Enemy(game.data[i][j].type, Number(i), Number(j), game.data[i][j].keys, game.data[i][j].rotation, game.data[i][j].active));
+							break;
+						}
+					}
+				}
+				if(browseTab == "userLevels") selectedItem.playerDeaths[currentUser.name] ? selectedItem.playerDeaths[currentUser.name]++ : selectedItem.playerDeaths[currentUser.name] = 1;
+				document.querySelector("#dead").style.display = "none";
+				gameFrame();
+			}
+			function loadLevel(levelData = selectedItem.data){
+				setView("#playing");
+				document.querySelector("#playing p").innerHTML = levelData.name;
+				game.data = levelData.tiles;
+				game.width = levelData.width;
+				game.height = levelData.height;
+				setCanvasSize(gameCanvas, game);
+				startLevel();
+			}
+			function setCanvasSize(canvas, obj){
+				game.tileSize = Math.min(canvas.parentElement.clientWidth / (obj.width + 2), canvas.parentElement.clientHeight / (obj.height + 2));
+				canvas.width = (obj.width + 2) * game.tileSize;
+				canvas.height = (obj.height + 2) * game.tileSize;
+				canvas.style.width = canvas.width + "px";
+				canvas.style.height = canvas.height + "px";
+			}
+
+
+
+
+			document.addEventListener("keydown", e => {
+				if(view == "#playing" && e.key in game.keys) game.keys[e.key] = true;
+				if(["#playing", "#building"].includes(view)){
+					if(e.key == "Escape") setView("#browsing");
+					else if(e.key == " " && browseTab == "myLevels") view == "#building" ? loadLevel(selectedItem) : setView("#building");
+					else if(e.key == 0) game.player.autoJump = !game.player.autoJump;
+					else if(view == "#building"){
+						if(e.key == "r") editor.rotation = (editor.rotation + 1) % 4;
+						else if(e.key.toLowerCase() == "k"){
+							editor.k = true;
+							mouse.shift = e.key == "K";
+							editorFrame();
+						}
+						else if(e.key == "z" && editor.undoStack.length){
+							let changes = editor.undoStack.pop();
+							changes.forEach(change => [selectedItem.tiles[change.x][change.y], change.tile] = [copyTile(change.tile), copyTile(selectedItem.tiles[change.x][change.y])]);
+							editor.redoStack.push(changes);
+							editorFrame();
+						}
+						else if(e.key == "y" && editor.redoStack.length){
+							let changes = editor.redoStack.pop();
+							changes.forEach(change => [selectedItem.tiles[change.x][change.y], change.tile] = [copyTile(change.tile), copyTile(selectedItem.tiles[change.x][change.y])]);
+							editor.undoStack.push(changes);
+							editorFrame();
+						}
+					}
+				}
+			});
+			document.addEventListener("keyup", e => {
+				if(view == "#playing" && e.key in game.keys) game.keys[e.key] = false;
+			});
+
+			let select = {};
+			let deselect = {};
+			let mouse = {x:0, y:0, left:true, right:false, shift:false};
+			document.addEventListener("mousedown", e => {
+				if(view == "#building" && document.querySelector("canvas:hover")){
+					mouse.x = e.offsetX;
+					mouse.y = e.offsetY;
+					if(e.button == 0) mouse.left = true;
+					if(e.button == 2) mouse.right = true;
+					mouse.shift = e.shiftKey;
+					deselect.clicked = true;
+					editorFrame();
+				}
+			});
+			document.addEventListener("mouseup", e => {
+				if(e.button == 0) mouse.left = false;
+				if(e.button == 2) mouse.right = false;
+				mouse.shift = e.shiftKey;
+				if(!mouse.shift) editor.key = -1;
+			});
+			document.addEventListener("mousemove", e => {
+				if(select.clickable = view == "#building" && document.querySelector("canvas:hover")){
+					mouse.x = e.offsetX;
+					mouse.y = e.offsetY;
+					deselect.clicked = false;
+					editorFrame();
+				}
+			});
+
+			window.oncontextmenu = () => false;
+
+
+			//tests
+
+			users.push(new User("test", "12345"), new User("5P3C1AL_CHARACT3R5", "321"), new User("Long Name With Spaces", "password"), new User("Boring^*Name", "green"), new User("NAME", "aaaaa"));
+			publishedLevels.push(...["abcdefgh".split(""), "a test", "Another test.", "bhIgbgBKUAYGUWt!ny-", "We1rD_ch4r$*\\>?~"].flat().map((x,i) => new PublicLevel(x, users[Math.round(Math.random()*4)].name, i, new Level(x))));
+			users[0].levels.push(new Level("Test level"), new Level("Level with a really long name"));
+			publishedLevels.forEach(level => users.slice(Math.floor(Math.random()*6)).forEach(user => level.highscores[user.name] = (Math.random()*15).toFixed(2)*2 ));
+			publishedLevels.forEach(level => users.slice(1).forEach(user => level.playerDeaths[user.name] = Math.floor(Math.random()*15) ));
+			publishedLevels.forEach(level => users.slice(3).forEach(user => level.ratings[user.name] = Math.floor(Math.random()*5 + 1) ));
+			publishedLevels.forEach(level => level.data.tiles[Math.floor(Math.random()*7)+8][14].type = "door");
+
+		</script>
+
+	</body>
+</html>
