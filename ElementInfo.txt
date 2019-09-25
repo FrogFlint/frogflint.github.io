@@ -1,0 +1,41 @@
+Elements:
+
+hydrogen h 1,-1
+helium he 0
+lithium li 1
+beryllium be 2
+boron b 3
+carbon c 4,-4
+nitrogen n -3
+oxygen o -2
+fluorine f -1
+neon ne 0
+sodium na 1
+magnesium mg 2
+aluminum al 3
+silicon si 4,-4
+phosphorus p -3
+sulphur s -2
+chlorine cl -1
+argon ar 0
+
+Polyatomic ions:
+
+ammonium NH4
+nitrate NO3
+nitrite NO2
+sulphate SO4
+chlorate ClO3
+phosphate PO4
+carbonate CO3
+bicarbonate HCO3
+hydroxide OH
+acetate C2H3O2
+
+Common substances:
+
+water H2O
+ammonia NH3
+methane CH4
+ozone O3
+salt NaCl
