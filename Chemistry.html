@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>Chemistry helper</title>
+        <style>
+            body {
+                height: 100%;
+                background-color: #D8D8D8;
+                display: flex;
+            }
+
+            .input {
+                margin: 30px;
+                padding: 15px;
+                min-height: 25px;
+                background-color: #AAAAAA;
+            }
+            span.invalid {
+                color: red;
+            }
+
+            #nameConverter, #equationBalancer {
+                width: 50%;
+                padding: 5%;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="nameConverter">
+            <div class="input" id="words" oninput="parseWords('#nameConverter #words')" contenteditable spellcheck="false">
+                H<sub>2</sub>O
+            </div>
+            <div class="input" id="symbols" oninput="convertFormulaMolecule()" contenteditable spellcheck="false" tabindex="0">
+                CO<sub>2</sub>
+            </div>
+        </div>
+        <div id="equationBalancer">
+            <div class="input" id="words" contenteditable spellcheck="false">
+                hydrochloric acid
+            </div>
+        </div>
+        <!-- superscript and subscript are <sup> and <sub>, wikipedia uses font-size: 80% -->
+
+        <script type="text/javascript">
+
+            Array.prototype.divide = function(compareFunction){
+                let result = [], next = [], remaining = Array.from(this);
+                while(remaining.length){
+                    let element = remaining.shift();
+                    next.push(element);
+                    if(!remaining.length || compareFunction(element, remaining[0])){
+                        result.push(next);
+                        next = [];
+                    }
+                }
+                return result
+            };
+            String.prototype.divide = function(compareFunction){ return this.split("").divide(compareFunction).map(s => s.join("")) };
+            const titleCase = str => str.split("").map((x,i) => i ? x.toLowerCase() : x.toUpperCase()).join("");
+            const charType = char => Number(char) >= 0 ? "number" : char.toUpperCase() != char.toLowerCase() ? "letter" : "other";
+
+            let elements = [];
+            let polyIons = [];
+            const romanNumerals = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+            const prefixes = ["mono","di","tri","tetra","penta","hexa"];  //cut off the last letter if length>3 and the base word starts with "o"
+            const stableShells = [0,2,10,18,36,54,86,118];
+
+
+
+
+            fetch("https://raw.githubusercontent.com/FrogFlint/frogflint.github.io/master/ElementInfo.txt")
+            .then(response => response.text())
+            .then(commit => {
+                let info = commit.split("\n\n").map(x => x.split("\n").map(x => x.split(" ")));
+                info[1].forEach(
+                    ([name,symbol,charges],index) =>
+                    elements[index] = new Element(
+                        titleCase(name),
+                        titleCase(symbol),
+                        charges.split(",").map(x => parseInt(x)),
+                        Number(index) + 1
+                    )
+                );
+                polyIons = info[3].map(str => ({name: str[0], formula: str[1]}));
+            });
+
+
+
+            function Element(name, symbol, charges, atomicNumber){
+                this.name = name;
+                this.symbol = symbol;
+                this.charges = charges;  //prefered ionic charges
+                this.atomicNumber = atomicNumber;
+
+                this.period = stableShells.findIndex(shellSize => shellSize >= atomicNumber);
+                this.group = atomicNumber - stableShells[this.period - 1];
+                if(this.group > 2 || !this.charges[0]) this.group = 18 - (stableShells[this.period] - atomicNumber);  //not the standard definition
+                this.isMetal = this.period > 1 && this.group < this.period + 12;
+            }
+
+
+
+
+            function convertWordMolecule(){
+                document.querySelector("#nameConverter #symbols").innerHTML = parseFormula(document.querySelector("#nameConverter #words"));
+            }
+            function convertFormulaMolecule(){
+                document.querySelector("#nameConverter #words").innerHTML = parseFormula(document.querySelector("#nameConverter #symbols"));
+            }
+
+            function parseWords(input){}
+            function parseFormula(input){
+                parts = input.innerText
+                    .divide((a,b) => charType(a) != charType(b))
+                    .map(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()));
+
+                let molecule = [];
+                //parts.forEach()
+				
+                //temporary implementation of a permanant feature (error highlighting)
+                let bracketDifference = parts.reduce((acc, str) => acc + ((str == "(") - (str == ")"))*str.length, 0);
+                let savedRange = window.getSelection().getRangeAt(0);
+                console.log(savedRange);
+                input.innerHTML = parts.flat(10).map(x => typeof x == "number" ? "<sub>" + x + "</sub>" : (!elements.map(e => e.symbol).includes(x)) ? "<span class=\"invalid\">" + x + "</span>" : x).join("");
+                /*input.focus();
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(savedRange);*/
+            }
+
+
+
+            /* Anion suffixes
+                ine -> ide
+                on ->
+                _gen ->
+                ium ->
+                orus ->
+                ic ->
+            */
+
+
+        </script>
+    </body>
+</html>
