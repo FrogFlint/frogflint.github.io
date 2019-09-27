@@ -110,20 +110,52 @@
                 document.querySelector("#nameConverter #words").innerHTML = parseFormula(document.querySelector("#nameConverter #symbols"));
             }
 
+			function parseBrackets(text){
+				let bracketDifference = text.split("").reduce((acc, str) => acc + ((str[0] == "(") - (str[0] == ")"))*str.length, 0);
+				if(bracketDifference > 0) text = text + ")".repeat( bracketDifference); else
+				if(bracketDifference < 0) text = "(".repeat(-bracketDifference) + text;
+
+				let tree = layer(text);
+			}
+			function layer(text){
+				let i = text.indexOf("(");
+				if(i < 0) return [text];
+				bracketDifference = 1;
+				for(let j = i + 1; j < text.length; j++){
+					bracketDifference += ((text[j] == "(") - (text[j] == ")"));
+					if(!bracketDifference) return [text.slice(0, i), layer(text.slice(i + 1, j)), ...layer(text.slice(j + 1))];
+				}
+			}
+			function parseFormulaLine(text){
+				//polyIons.forEach(ion => )                         //ex:  {name: "sulphate", formula: "SO4"}
+				let compound = text
+					.divide((a,b) => charType(a) != charType(b))
+                    .flatMap(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()))
+					.divide((a,b) => !(typeof a == "string" && typeof b == "number"))
+					.map(x => Array.isArray(x) ? {name: (elements.find(e => e.symbol == x[0]) || {name:"invalid"}).name, symbol: x[0], count: x[1] || 1} : x);
+
+				return compound;
+
+				//ex:  {name: "Lithium", symbol: "Li", count: 1}     or    {name: "invalid", symbol: "Mm, count: 4}
+			}
+
+
             function parseWords(input){}
             function parseFormula(input){
                 parts = input.innerText
-                    .divide((a,b) => charType(a) != charType(b))
-                    .map(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()));
+
+                /*    .divide((a,b) => charType(a) != charType(b))
+                    .map(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()));  */
 
                 let molecule = [];
                 //parts.forEach()
-				
+
                 //temporary implementation of a permanant feature (error highlighting)
-                let bracketDifference = parts.reduce((acc, str) => acc + ((str == "(") - (str == ")"))*str.length, 0);
+                let bracketDifference = parts.split("").reduce((acc, str) => acc + ((str == "(") - (str == ")")), 0);
+
                 let savedRange = window.getSelection().getRangeAt(0);
                 console.log(savedRange);
-                input.innerHTML = parts.flat(10).map(x => typeof x == "number" ? "<sub>" + x + "</sub>" : (!elements.map(e => e.symbol).includes(x)) ? "<span class=\"invalid\">" + x + "</span>" : x).join("");
+                input.innerHTML = parts.split("").flat(10).map(x => typeof x == "number" ? "<sub>" + x + "</sub>" : (!elements.map(e => e.symbol).includes(x)) ? "<span class=\"invalid\">" + x + "</span>" : x).join("");
                 /*input.focus();
                 window.getSelection().removeAllRanges();
                 window.getSelection().addRange(savedRange);*/
