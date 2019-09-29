@@ -20,16 +20,16 @@ chlorine cl -1
 argon ar 0
 potassium k 1
 calcium ca 2
-scandium sc
-titanium ti
-vanadium v 
-chromium cr 
-manganese mn 
-iron fe 
-cobalt co 
-nickel ni 
-copper cu 
-zinc zn 
+scandium sc 3
+titanium ti 4
+vanadium v 2,3,4,5
+chromium cr 2,3,6
+manganese mn 2,3,4,6,7
+iron fe 2,3
+cobalt co 2,3
+nickel ni 2
+copper cu 1,2
+zinc zn 2
 gallium ga -5
 germanium ge -4
 arsenic as -3
