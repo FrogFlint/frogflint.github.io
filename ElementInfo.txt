@@ -18,6 +18,24 @@ phosphorus p -3
 sulphur s -2
 chlorine cl -1
 argon ar 0
+potassium k 1
+calcium ca 2
+scandium sc
+titanium ti
+vanadium v 
+chromium cr 
+manganese mn 
+iron fe 
+cobalt co 
+nickel ni 
+copper cu 
+zinc zn 
+gallium ga -5
+germanium ge -4
+arsenic as -3
+selenium se -2
+bromine br -1
+krypton kr 0
 
 Polyatomic ions:
 
