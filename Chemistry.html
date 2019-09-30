@@ -32,9 +32,7 @@
             <div class="input" id="words" oninput="parseWords('#nameConverter #words')" contenteditable spellcheck="false">
                 H<sub>2</sub>O
             </div>
-            <div class="input" id="symbols" oninput="convertFormulaMolecule()" contenteditable spellcheck="false" tabindex="0">
-                CO<sub>2</sub>
-            </div>
+            <div class="input" id="symbols" oninput="convertFormulaMolecule()" contenteditable spellcheck="false" tabindex="0"></div>
         </div>
         <div id="equationBalancer">
             <div class="input" id="words" contenteditable spellcheck="false">
@@ -44,6 +42,8 @@
         <!-- superscript and subscript are <sup> and <sub>, wikipedia uses font-size: 80% -->
 
         <script type="text/javascript">
+
+			document.querySelector(".input#symbols").innerHTML = "C3H2O2(Cl6SO4)3";  //temporary
 
             Array.prototype.divide = function(compareFunction){
                 let result = [], next = [], remaining = Array.from(this);
@@ -55,16 +55,16 @@
                         next = [];
                     }
                 }
-                return result
+                return result;
             };
             String.prototype.divide = function(compareFunction){ return this.split("").divide(compareFunction).map(s => s.join("")) };
             const titleCase = str => str.split("").map((x,i) => i ? x.toLowerCase() : x.toUpperCase()).join("");
-            const charType = char => Number(char) >= 0 ? "number" : char.toUpperCase() != char.toLowerCase() ? "letter" : "other";
+            const charType = char => Number(char) >= 0 ? "number" : char && char.toUpperCase() != char.toLowerCase() ? "letter" : "other";
 
             let elements = [];
             let polyIons = [];
             const romanNumerals = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
-            const prefixes = ["mono","di","tri","tetra","penta","hexa"];  //cut off the last letter if length>3 and the base word starts with "o"
+            const prefixes = ["mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];  //cut off the last letter if length>3 and the base word starts with "o"
             const stableShells = [0,2,10,18,36,54,86,118];
 
 
@@ -96,7 +96,7 @@
 
                 this.period = stableShells.findIndex(shellSize => shellSize >= atomicNumber);
                 this.group = atomicNumber - stableShells[this.period - 1];
-                if(this.group > 2 || !this.charges[0]) this.group = 18 - (stableShells[this.period] - atomicNumber);  //not the standard definition
+                if(this.group > 2 || !this.charges[0]) this.group = 18 - (stableShells[this.period] - atomicNumber);  //not quite the standard definition
                 this.isMetal = this.period > 1 && this.group < this.period + 12;
             }
 
@@ -111,54 +111,93 @@
             }
 
 			function parseBrackets(text){
-				let bracketDifference = text.split("").reduce((acc, str) => acc + ((str[0] == "(") - (str[0] == ")"))*str.length, 0);
-				if(bracketDifference > 0) text = text + ")".repeat( bracketDifference); else
-				if(bracketDifference < 0) text = "(".repeat(-bracketDifference) + text;
+				let bracketDifference = [];
+				text.split("").reduce((acc, char, i) => bracketDifference[i] = acc + ((char == "(") - (char == ")")), 0);
+				let pre = -Math.min(0, ...bracketDifference), post = Math.max(bracketDifference.reverse()[0], 0);
+				text = "(".repeat(pre) + text + ")".repeat(post);
 
-				let tree = layer(text);
+				let tree = parseSubscripts(layer(text));
+
+
+				return [pre, post, tree];
 			}
 			function layer(text){
 				let i = text.indexOf("(");
-				if(i < 0) return [text];
+				if(i < 0) return findPolyIons(text);
 				bracketDifference = 1;
 				for(let j = i + 1; j < text.length; j++){
 					bracketDifference += ((text[j] == "(") - (text[j] == ")"));
-					if(!bracketDifference) return [text.slice(0, i), layer(text.slice(i + 1, j)), ...layer(text.slice(j + 1))];
+					if(!bracketDifference) return [...findPolyIons(text.slice(0, i)), {contents: parseSubscripts(layer(text.slice(i + 1, j)))}, ...layer(text.slice(j + 1))];//.filter(x => x.length || x.count);
 				}
 			}
-			function parseFormulaLine(text){
+			function parseFormulaLine(line){  //big changes/rewrite with most of the same bits
 				//polyIons.forEach(ion => )                         //ex:  {name: "sulphate", formula: "SO4"}
-				let compound = text
+				let compound = line
+					.flatMap(x => Array.isArray(x) ? [{contents: parseFormulaLine(x), count: 1}] : findPolyIons(x)
+						.flatMap(y => Array.isArray(y) ? [] : []))/*
 					.divide((a,b) => charType(a) != charType(b))
                     .flatMap(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()))
 					.divide((a,b) => !(typeof a == "string" && typeof b == "number"))
 					.map(x => Array.isArray(x) ? {name: (elements.find(e => e.symbol == x[0]) || {name:"invalid"}).name, symbol: x[0], count: x[1] || 1} : x);
 
+				//*/
 				return compound;
 
 				//ex:  {name: "Lithium", symbol: "Li", count: 1}     or    {name: "invalid", symbol: "Mm, count: 4}
 			}
+			const parseSubscripts = line =>  //and identify elements
+				line.divide((a,b) => typeof b != "number").map(([thing, num]) => typeof thing == "number" ? thing : Object.assign(typeof thing == "string" ?
+				{name: (elements.find(e => e.symbol == thing) || {name:"invalid"}).name, symbol: thing} : thing, {count: num || "1"}));
 
+			function findPolyIons(text){  //rename now that it calls atomSplit
+				for(let ion of polyIons){
+					for(let i = text.length - ion.formula.length; i >= 0; i--){
+						if(text.slice(i, i + ion.formula.length) == ion.formula && charType(text[i + ion.formula.length]) != "number")
+							return [...findPolyIons(text.slice(0, i)), {name: ion.name, formula: ion.formula}, ...atomSplit(text.slice(i + ion.formula.length))];//.filter(x => x.length || x.formula || typeof x == "number");
+					}
+				}
+				return atomSplit(text);
+			}
+
+			const atomSplit = str => str.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase()).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
+
+
+			let s = {
+				red: str => "<span class=\"invalid\">" + str + "</span>",
+				sub: str => "<sub>" + str + "</sub>"
+			};
+			const formulaToStyleText = formula => formula.map(x => typeof x == "number" ? s.red(s.sub(x)) :
+				(x.contents ? "(" + formulaToStyleText(x.contents) + ")" : x.name == "invalid" ? s.red(x.symbol) : x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))) +
+				(x.count === "1" ? "" : s.sub(x.count))
+			).join("");
 
             function parseWords(input){}
             function parseFormula(input){
-                parts = input.innerText
 
-                /*    .divide((a,b) => charType(a) != charType(b))
-                    .map(str => Number(str) || str.divide((a,b) => b != b.toLowerCase()));  */
+                let [preBrackets, postBrackets, molecule] = parseBrackets(input.innerText);
 
-                let molecule = [];
-                //parts.forEach()
 
-                //temporary implementation of a permanant feature (error highlighting)
-                let bracketDifference = parts.split("").reduce((acc, str) => acc + ((str == "(") - (str == ")")), 0);
+				let nodes = Array.from(input.childNodes);
 
-                let savedRange = window.getSelection().getRangeAt(0);
-                console.log(savedRange);
-                input.innerHTML = parts.split("").flat(10).map(x => typeof x == "number" ? "<sub>" + x + "</sub>" : (!elements.map(e => e.symbol).includes(x)) ? "<span class=\"invalid\">" + x + "</span>" : x).join("");
-                /*input.focus();
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(savedRange);*/
+                let sel = window.getSelection();
+				let pos = sel.focusOffset + nodes.slice(0, nodes.findIndex(node => sel.containsNode(node, true))).reduce((acc, node) => acc + (node.innerText || node.wholeText).length, 0);
+
+				let text = formulaToStyleText(molecule);
+                input.innerHTML = text.slice(preBrackets, text.length - postBrackets);
+
+				input.childNodes.forEach(node => {
+					let len = (node.innerText || node.wholeText).length;
+					if(pos < len && pos >= 0){
+						let range = document.createRange();
+						range.setStart(node, pos);
+						range.collapse(true);
+						sel.removeAllRanges();
+						sel.addRange(range);
+					}
+					pos -= len;
+				});
+
+
             }
 
 
