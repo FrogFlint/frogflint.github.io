@@ -62,8 +62,8 @@
 
             let elements = [];
             let polyIons = [];
-            const romanNumerals = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
-            const prefixes = ["mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];  //cut off the last letter if length>3 and the base word starts with "o"
+            const romanNumerals = ["","I","II","III","IV","V","VI","VII","VIII","IX","X"];
+            const prefixes = ["","mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];  //cut off the last letter if length>3 and the base word starts with "o"
             const stableShells = [0,2,10,18,36,54,86,118];
 
 
@@ -74,15 +74,15 @@
             .then(commit => {
                 let info = commit.split("\n\n").map(x => x.split("\n").map(x => x.split(" ")));
                 info[1].forEach(
-                    ([name,symbol,charges],index) =>
+                    ([name, symbol, charges], index) =>
                     elements[index] = new Element(
-                        titleCase(name),
+                        name,
                         titleCase(symbol),
                         charges.split(",").map(x => parseInt(x)),
                         Number(index) + 1
                     )
                 );
-                polyIons = info[3].map(str => ({name: str[0], formula: str[1]}));
+                polyIons = info[3].map(([name, formula, charge]) => ({name: name, formula: formula, charges: [charge]}));
             });
 
 
@@ -112,7 +112,7 @@
 				let pos = sel.focusOffset + nodes.slice(0, nodes.findIndex(node => sel.containsNode(node, true))).reduce((acc, node) => acc + (node.innerText || node.wholeText).length, 0);
 
 				let rawText = input.innerText;
-				pos -= rawText.length - (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length;
+				pos = Math.max(pos - rawText.length + (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length, 0);
                 let [preBrackets, postBrackets, molecule] = parseBrackets(rawText);
 
 
@@ -142,6 +142,7 @@
 
 
 				//display as words
+				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(molecule);
             }
 
 
@@ -194,15 +195,25 @@
 
 
 
+			const moleculeToWords = molecule => molecule.filter(x => x.name != "invalid").map(x =>
+				x.contents ?
+					moleculeToWords(x.contents) : (
+						x.formula || elements.find(e => e.name == x.name).isMetal ?
+							"" :
+							prefixes[x.count]
+					) + x.name
+			).join(" ");
 
-			/* Anion suffixes
-				ine -> ide
-				on ->
-				_gen ->
-				ium ->
-				orus ->
-				ic ->
-			*/
+
+
+            /* Anion suffixes
+                ine -> ide
+                on ->
+                _gen ->
+                ium ->
+                orus ->
+                ic ->
+            */
 
 			/* Acid suffixes (-ic)
 
