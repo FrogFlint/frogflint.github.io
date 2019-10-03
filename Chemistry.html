@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -63,7 +64,8 @@
             let elements = [];
             let polyIons = [];
             const romanNumerals = ["","I","II","III","IV","V","VI","VII","VIII","IX","X"];
-            const prefixes = ["","mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];  //cut off the last letter if length>3 and the base word starts with "o"
+            const prefixes = ["","mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];
+            const shortPrefixes = ["","mon","di","tri","tetr","pent","hex","hept","oct","non","dec"];
             const stableShells = [0,2,10,18,36,54,86,118];
 
 
@@ -195,17 +197,26 @@
 
 
 
-			const moleculeToWords = molecule => molecule.filter(x => x.name != "invalid").map(x =>
+			const moleculeToWords = molecule => molecule.filter(x => x.name != "invalid").map((x,i) =>
 				x.contents ?
 					moleculeToWords(x.contents) : (
-						x.formula || elements.find(e => e.name == x.name).isMetal ?
+						x.formula || elements.find(e => e.name == x.name).isMetal || x.count == 1 && i < molecule.length - 1 ?   //replace with charge sign once that is calculated
 							"" :
-							prefixes[x.count]
-					) + x.name
+							(x.name[0] == "o" ? shortPrefixes : prefixes)[x.count]
+					) + (
+						x.formula || elements.find(e => e.name == x.name).isMetal || i < molecule.length - 1 ?   //check for any metals before
+							x.name :
+							ide(x.name)
+					)
 			).join(" ");
 
 
-
+			function ide(name){
+				if(name.slice(-3) == "gen") return name.slice(0, -4) + "ide";
+				if(name.slice(-4) == "orus") return name.slice(0, -4) + "ide";
+				if(["ine","ium"].includes(name.slice(-3))) return name.slice(0, -3) + "ide";
+				if(["on","ic"].includes(name.slice(-2))) return name.slice(0, -2) + "ide";
+			}
             /* Anion suffixes
                 ine -> ide
                 on ->
