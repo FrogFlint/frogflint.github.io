@@ -39,16 +39,17 @@ krypton kr 0
 
 Polyatomic ions:
 
-ammonium NH4
-nitrate NO3
-nitrite NO2
-sulphate SO4
-chlorate ClO3
-phosphate PO4
-carbonate CO3
-bicarbonate HCO3
-hydroxide OH
-acetate C2H3O2
+ammonium NH4 1
+hydroxide OH -1
+nitrite NO2 -1
+nitrate NO3 -1
+chlorite ClO2 -1
+chlorate ClO3 -1
+sulphate SO4 -2
+phosphate PO4 -3
+bicarbonate HCO3 -1
+carbonate CO3 -2
+acetate C2H3O2 -1
 
 Common substances:
 
