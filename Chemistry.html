@@ -83,7 +83,7 @@
                         Number(index) + 1
                     )
                 );
-                polyIons = info[3].map(([name, formula, charge]) => ({name: name, formula: formula, charges: [charge]}));
+                polyIons = info[3].map(([name, formula, charge]) => ({name: name, formula: formula, charge: Number(charge)}));
             });
 
 
@@ -143,7 +143,7 @@
 
 
 				//display as words
-				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(molecule);
+				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(calculateCharges(molecule));
             }
 
 
@@ -196,13 +196,20 @@
 
 
 			function calculateCharges(molecule){
-				//brackets (recursion)        also give everything else an element/polyion ID in this step
-				//polyatomic ions
+				let m = molecule.map(x => x.contents ? calculateCharges(x.contents) : Object.assign(x, {ref: (x.symbol ? elements : polyIons).find(e => e.name == x.name)} || {charge: 0}));
+				for(let i in m)
+					if(m[i].formula) 
+						m[i].charge = m[i].ref.charge;
+				for(let i in m)
+					if(m.symbol == "H" && m.some(x => x.charge < 1 || x.ref.charge.join("") == "-1")
+					   m[i].charge = 1;
+						
 				//hydrogen (look for halogens or polyatomic anions)
 				//non-metals (look for metals or positive things)
 				//metals (long, complicated, deal with multi-valence and minimize overall charge)
 
 				//calculate total charge
+				console.log(molecule);
 				return molecule;
 			}
 
