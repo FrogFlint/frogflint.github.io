@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -196,6 +195,17 @@
 			).join("");
 
 
+			function calculateCharges(molecule){
+				//brackets (recursion)        also give everything else an element/polyion ID in this step
+				//polyatomic ions
+				//hydrogen (look for halogens or polyatomic anions)
+				//non-metals (look for metals or positive things)
+				//metals (long, complicated, deal with multi-valence and minimize overall charge)
+
+				//calculate total charge
+				return molecule;
+			}
+
 
 			const moleculeToWords = molecule => molecule.filter(x => x.name != "invalid").map((x,i) =>
 				x.contents ?
@@ -211,20 +221,8 @@
 			).join(" ");
 
 
-			function ide(name){
-				if(name.slice(-3) == "gen") return name.slice(0, -4) + "ide";
-				if(name.slice(-4) == "orus") return name.slice(0, -4) + "ide";
-				if(["ine","ium"].includes(name.slice(-3))) return name.slice(0, -3) + "ide";
-				if(["on","ic"].includes(name.slice(-2))) return name.slice(0, -2) + "ide";
-			}
-            /* Anion suffixes
-                ine -> ide
-                on ->
-                _gen ->
-                ium ->
-                orus ->
-                ic ->
-            */
+			const ide = name => name.slice(0, -["orus","ogen","ygen","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length) + "ide";
+
 
 			/* Acid suffixes (-ic)
 
