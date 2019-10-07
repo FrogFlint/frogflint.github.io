@@ -44,7 +44,7 @@
 
 			document.querySelector(".input#symbols").innerHTML = "C3H2O2(Cl6SO4)3";  //temporary
 
-            Array.prototype.divide = function(compareFunction){
+            Object.defineProperty(Array.prototype, "divide", {value: function(compareFunction){
                 let result = [], next = [], remaining = Array.from(this);
                 while(remaining.length){
                     let element = remaining.shift();
@@ -55,8 +55,8 @@
                     }
                 }
                 return result;
-            };
-            String.prototype.divide = function(compareFunction){ return this.split("").divide(compareFunction).map(s => s.join("")) };
+            }});
+            Object.defineProperty(String.prototype, "divide", {value: function(compareFunction){ return this.split("").divide(compareFunction).map(s => s.join("")) }});
             const titleCase = str => str.split("").map((x,i) => i ? x.toLowerCase() : x.toUpperCase()).join("");
             const charType = char => parseInt(char) >= 0 ? "number" : char && char.toUpperCase() != char.toLowerCase() ? "letter" : "other";
 
@@ -116,6 +116,8 @@
 				pos = Math.max(pos - rawText.length + (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length, 0);
                 let [preBrackets, postBrackets, molecule] = parseBrackets(rawText);
 
+				let totalCharge;
+				({contents: molecule, charge: totalCharge} = calculateCharges({contents: molecule}));  //also has .count in reaction equasions
 
 				let text = formulaToStyleText(molecule);
 				text = text.slice(preBrackets, text.length - postBrackets).split("");
@@ -143,7 +145,7 @@
 
 
 				//display as words
-				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(calculateCharges(molecule));
+				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(molecule);
             }
 
 
@@ -170,13 +172,13 @@
 			}
 			const parseSubscripts = line =>  //and identify elements
 				line.divide((a,b) => typeof b != "number").map(([thing, num]) => typeof thing == "number" ? thing : Object.assign(typeof thing == "string" ?
-				{name: (elements.find(e => e.symbol == thing) || {name:"invalid"}).name, symbol: thing} : thing, {count: num || "1"}));
+				{symbol: thing, ref: elements.find(e => e.symbol == thing) || {name:"invalid", charges: [0]}} : thing, {count: num || "1"}));
 
 			function findPolyIons(text){  //rename now that it calls atomSplit
 				for(let ion of polyIons){
 					for(let i = text.length - ion.formula.length; i >= 0; i--){
 						if(text.slice(i, i + ion.formula.length) == ion.formula && charType(text[i + ion.formula.length]) != "number")
-							return [...findPolyIons(text.slice(0, i)), {name: ion.name, formula: ion.formula}, ...atomSplit(text.slice(i + ion.formula.length))];//.filter(x => x.length || x.formula || typeof x == "number");
+							return [...findPolyIons(text.slice(0, i)), {formula: ion.formula, ref: ion}, ...atomSplit(text.slice(i + ion.formula.length))];//.filter(x => x.length || x.formula || typeof x == "number");
 					}
 				}
 				return atomSplit(text);
@@ -190,40 +192,46 @@
 				sub: str => "<sub>" + str + "</sub>"
 			};
 			const formulaToStyleText = formula => formula.map(x => typeof x == "number" ? s.red(s.sub(x)) :
-				(x.contents ? "(" + formulaToStyleText(x.contents) + ")" : x.name == "invalid" ? s.red(x.symbol) : x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))) +
+				(x.contents ? "(" + formulaToStyleText(x.contents) + ")" : x.ref.name == "invalid" ? s.red(x.symbol) : x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))) +
 				(x.count === "1" ? "" : s.sub(x.count))
 			).join("");
 
 
-			function calculateCharges(molecule){
-				let m = molecule.map(x => x.contents ? calculateCharges(x.contents) : Object.assign(x, {ref: (x.symbol ? elements : polyIons).find(e => e.name == x.name)} || {charge: 0}));
-				for(let i in m)
-					if(m[i].formula) 
+			function calculateCharges(parent){
+				let m = parent.contents.map(x => x.contents ? calculateCharges(x) : x);
+				for(let i in m){
+					if(m[i].formula)
 						m[i].charge = m[i].ref.charge;
+					if(m[i].symbol && m[i].ref.charges.length == 1 && m[i].ref.isMetal)
+						m[i].charge = m[i].ref.charges[0];
+				}
 				for(let i in m)
-					if(m.symbol == "H" && m.some(x => x.charge < 1 || x.ref.charge.join("") == "-1")
+					if(m[i].symbol && m[i].ref.charges[0] == -m[i].ref.charges[1] && m.some(x => x.charge < 0 || m[i].symbol == "H" && x.symbol && x.ref.group == 17))
 					   m[i].charge = 1;
-						
-				//hydrogen (look for halogens or polyatomic anions)
-				//non-metals (look for metals or positive things)
+				for(let i in m)
+					if(m[i].symbol && !m[i].ref.isMetal)
+						m[i].charge = m[i].ref.charges[0] * m.some(x => x.charge > 0);
 				//metals (long, complicated, deal with multi-valence and minimize overall charge)
 
+				for(let i in m)
+					if(m[i].charge == null)
+						m[i].charge = m[i].ref.charges[0];  //temp
 				//calculate total charge
-				console.log(molecule);
-				return molecule;
+				parent.charge = m.reduce((acc, x) => acc + x.charge, 0);
+				return parent;
 			}
 
 
-			const moleculeToWords = molecule => molecule.filter(x => x.name != "invalid").map((x,i) =>
+			const moleculeToWords = molecule => molecule.filter(x => !(x.symbol && x.ref.name == "invalid")).map((x,i) =>
 				x.contents ?
 					moleculeToWords(x.contents) : (
-						x.formula || elements.find(e => e.name == x.name).isMetal || x.count == 1 && i < molecule.length - 1 ?   //replace with charge sign once that is calculated
+						x.formula || x.charge || x.count == 1 && i < molecule.length - 1 ?   //replace with charge sign once that is calculated
 							"" :
-							(x.name[0] == "o" ? shortPrefixes : prefixes)[x.count]
+							(x.ref.name[0] == "o" ? shortPrefixes : prefixes)[x.count] || "poly"
 					) + (
-						x.formula || elements.find(e => e.name == x.name).isMetal || i < molecule.length - 1 ?   //check for any metals before
-							x.name :
-							ide(x.name)
+						x.formula || x.ref.isMetal || i < molecule.length - 1 ?   //check for any metals before
+							x.ref.name :
+							ide(x.ref.name)
 					)
 			).join(" ");
 
