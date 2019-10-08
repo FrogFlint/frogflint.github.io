@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -207,13 +208,21 @@
 						m[i].charge = m[i].ref.charges[0];
 				}
 				for(let i in m)
-					if(m[i].symbol && m[i].ref.charges[0] == -m[i].ref.charges[1] && m.some(x => x.charge < 0 || m[i].symbol == "H" && x.symbol && x.ref.group == 17))
+					if(m[i].symbol == "H" && m.some(x => x.charge < 0 || x.ref && x.ref.group == 17))
 					   m[i].charge = 1;
 				
 				//instead of this, start them all negative, make a filtered array with reference to just them, sort it by charge, then start cancelling until 1 or less are left
 				for(let i in m)
 					if(m[i].symbol && !m[i].ref.isMetal)
-						m[i].charge = m[i].ref.charges[0] * m.some(x => x.charge > 0);
+						m[i].charge = m[i].ref.charges[0] ;//* m.some(x => x.charge > 0);
+				let c = m.filter(x => x.charge && x.charge < 0).sort((a,b) => b.charge - a.charge);
+				while(c.length > 1){
+					if(!c[0].charge) c.shift();
+					else {
+						c[0].charge++;
+						c[1].charge++;
+					}
+				}
 
 				//metals (long, complicated, deal with multi-valence and minimize overall charge)
 				for(let i in m)
