@@ -1,11 +1,11 @@
 Elements:
 
-hydrogen h 1,-1
+hydrogen h -1
 helium he 0
 lithium li 1
 beryllium be 2
 boron b 3
-carbon c 4,-4
+carbon c -4
 nitrogen n -3
 oxygen o -2
 fluorine f -1
