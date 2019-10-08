@@ -118,6 +118,7 @@
 
 				let totalCharge;
 				({contents: molecule, charge: totalCharge} = calculateCharges({contents: molecule}));  //also has .count in reaction equasions
+				console.log(molecule);
 
 				let text = formulaToStyleText(molecule);
 				text = text.slice(preBrackets, text.length - postBrackets).split("");
@@ -171,7 +172,7 @@
 				}
 			}
 			const parseSubscripts = line =>  //and identify elements
-				line.divide((a,b) => typeof b != "number").map(([thing, num]) => typeof thing == "number" ? thing : Object.assign(typeof thing == "string" ?
+				line.divide((a,b) => typeof b != "number").map(([thing, num]) => typeof thing == "number" ? {symbol: thing, count: "1", ref: {name: "invalid", charges: [0]}} : Object.assign(typeof thing == "string" ?
 				{symbol: thing, ref: elements.find(e => e.symbol == thing) || {name:"invalid", charges: [0]}} : thing, {count: num || "1"}));
 
 			function findPolyIons(text){  //rename now that it calls atomSplit
@@ -191,7 +192,7 @@
 				red: str => "<span class=\"invalid\">" + str + "</span>",
 				sub: str => "<sub>" + str + "</sub>"
 			};
-			const formulaToStyleText = formula => formula.map(x => typeof x == "number" ? s.red(s.sub(x)) :
+			const formulaToStyleText = formula => formula.map(x => typeof x.symbol == "number" ? s.red(s.sub(x.symbol)) :
 				(x.contents ? "(" + formulaToStyleText(x.contents) + ")" : x.ref.name == "invalid" ? s.red(x.symbol) : x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))) +
 				(x.count === "1" ? "" : s.sub(x.count))
 			).join("");
@@ -208,14 +209,17 @@
 				for(let i in m)
 					if(m[i].symbol && m[i].ref.charges[0] == -m[i].ref.charges[1] && m.some(x => x.charge < 0 || m[i].symbol == "H" && x.symbol && x.ref.group == 17))
 					   m[i].charge = 1;
+				
+				//instead of this, start them all negative, make a filtered array with reference to just them, sort it by charge, then start cancelling until 1 or less are left
 				for(let i in m)
 					if(m[i].symbol && !m[i].ref.isMetal)
 						m[i].charge = m[i].ref.charges[0] * m.some(x => x.charge > 0);
-				//metals (long, complicated, deal with multi-valence and minimize overall charge)
 
+				//metals (long, complicated, deal with multi-valence and minimize overall charge)
 				for(let i in m)
 					if(m[i].charge == null)
 						m[i].charge = m[i].ref.charges[0];  //temp
+
 				//calculate total charge
 				parent.charge = m.reduce((acc, x) => acc + x.charge, 0);
 				return parent;
@@ -225,18 +229,18 @@
 			const moleculeToWords = molecule => molecule.filter(x => !(x.symbol && x.ref.name == "invalid")).map((x,i) =>
 				x.contents ?
 					moleculeToWords(x.contents) : (
-						x.formula || x.charge || x.count == 1 && i < molecule.length - 1 ?   //replace with charge sign once that is calculated
+						x.formula || x.charge || x.count == 1 && (molecule.length == 1 || i < molecule.length - 1) ?   //replace with charge sign once that is calculated
 							"" :
 							(x.ref.name[0] == "o" ? shortPrefixes : prefixes)[x.count] || "poly"
 					) + (
-						x.formula || x.ref.isMetal || i < molecule.length - 1 ?   //check for any metals before
+						x.formula || x.ref.isMetal || molecule.length == 1 || i < molecule.length - 1 ?   //check for any metals before
 							x.ref.name :
-							ide(x.ref.name)
+							replaceEnd(x.ref.name) + "ide"
 					)
 			).join(" ");
 
 
-			const ide = name => name.slice(0, -["orus","ogen","ygen","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length) + "ide";
+			const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
 
 
 			/* Acid suffixes (-ic)
