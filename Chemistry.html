@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -226,6 +227,10 @@
 				}
 
 				//metals (long, complicated, deal with multi-valence and minimize overall charge)
+				let metals = m.filter(e => e.ref.isMetal);
+				let indeces = findClosest(m.map(e => e.ref.charges.map(c => c * e.count)), m.filter(!e.ref.isMetal).reduce((acc, x) => acc + x.charge, 0));
+				indeces.forEach((x, i) => metals[i].charge = x);
+				
 				for(let i in m)
 					if(m[i].charge == null)
 						m[i].charge = m[i].ref.charges[0];  //temp
@@ -234,6 +239,14 @@
 				//parent.contents = m;
 				parent.charge = m.reduce((acc, x) => acc + x.charge, 0) * (parent.count || 1);
 				return parent;
+			}
+			function findClosest(chargeLists, remainder){
+				if(!chargeLists.length) return {indeces: [], remainder: remainder};
+				
+				let x = chargeLists[0].map(charge => findClosest(chargeLists.slice(1), charge + remainder));
+				let index = x.reduce((acc, e, i) => Math.abs(e.remainder) < Math.abs(x[acc].remainder) ? i : acc, 0);
+				
+				return {indeces: [index, ...x[index].indeces], remainder: x[index].remainder};
 			}
 
 
