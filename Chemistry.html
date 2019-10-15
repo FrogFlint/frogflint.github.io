@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -25,6 +24,11 @@
                 width: 50%;
                 padding: 5%;
             }
+			.info{
+				position: absolute;
+				top: 30%;
+				left: 45%;
+			}
 
         </style>
     </head>
@@ -32,14 +36,16 @@
         <div id="nameConverter">
             <div class="input" id="words" oninput="parseWords('#nameConverter #words')" contenteditable spellcheck="false"></div>
             <div class="input" id="symbols" oninput="convertFormulaMolecule()" contenteditable spellcheck="false" tabindex="0"></div>
-			<!-- indicators for charge and pH, button to balance charge (maybe use 0 or "?" subscript) -->
+			<div class="info">
+				charge: <span></span><br>
+				pH: <span></span>
+			</div>
         </div>
         <div id="equationBalancer">
             <div class="input" id="words" contenteditable spellcheck="false">
                 hydrochloric acid
             </div>
         </div>
-        <!-- superscript and subscript are <sup> and <sub>, wikipedia uses font-size: 80% -->
 
         <script type="text/javascript">
 
@@ -117,11 +123,10 @@
 				pos = Math.max(pos - rawText.length + (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length, 0);
                 let [preBrackets, postBrackets, molecule] = parseBrackets(rawText);
 
-				let totalCharge;
-				({contents: molecule, charge: totalCharge} = calculateCharges({contents: molecule}));  //also has .count in reaction equasions
+				molecule = calculateCharges({contents: molecule});  //also has .count in reaction equasions
 				console.log(molecule);
 
-				let text = formulaToStyleText(molecule);
+				let text = formulaToStyleText(molecule.contents);
 				text = text.slice(preBrackets, text.length - postBrackets).split("");
 				for(let brac of [["(",")"],[")","("]]){
 					for(let i = 0, diff = 0; i < text.length; i++){
@@ -146,8 +151,10 @@
 				input.lastElementChild.innerText = "";
 
 
+				//charge, pH
+				document.querySelector("#nameConverter .info span").innerText = molecule.charge;
 				//display as words
-				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(molecule);
+				document.querySelector("#nameConverter #words").innerHTML = moleculeToWords(molecule.contents);
             }
 
 
@@ -209,66 +216,66 @@
 				}
 				for(let i in m)
 					if(m[i].symbol == "H" && m.some(x => x.charge < 0 || x.ref && x.ref.group == 17))
-					   m[i].charge = m[i].count;
+					   m[i].charge = Number(m[i].count);
 
-				//instead of this, start them all negative, make a filtered array with reference to just them, sort it by charge, then start cancelling until 1 or less are left
 				for(let i in m)
-					if(m[i].symbol && !m[i].ref.isMetal)
-						m[i].charge = m[i].ref.charges[0] * m[i].count;//* m.some(x => x.charge > 0);
-				let c = m.filter(x => x.charge && x.charge < 0).sort((a,b) => a.charge - b.charge);
-				while(c.length > 1){
-					if(!c[0].charge) c.shift();
-					else if(!c[1].charge) c.splice(1, 1);
-					else {
-						c[0].charge++;
-						c[1].charge++;
+					if(m[i].symbol && !m[i].ref.isMetal && m[i].charge == null)
+						m[i].charge = m[i].ref.charges[0] * m[i].count;
+				if(!m.some(x => x.charge > 0)){
+					let c = m.filter(x => x.charge && x.charge < 0).sort((a,b) => a.charge - b.charge);
+					while(c.length > 1){
+						if(!c[0].charge) c.shift();
+						else if(!c[1].charge) c.splice(1, 1);
+						else {
+							c[0].charge++;
+							c[1].charge++;
+						}
+						if(c.length == 1 && c[0].count > 1) c[0].charge %= 2;
 					}
-					if(c.length == 1 && c[0].count > 1) c[0].charge %= 2;
 				}
 
-				//metals (long, complicated, deal with multi-valence and minimize overall charge)
-				let metals = m.filter(e => e.ref.isMetal);
-				let indeces = findClosest(m.map(e => e.ref.charges.map(c => c * e.count)), m.filter(!e.ref.isMetal).reduce((acc, x) => acc + x.charge, 0));
-				indeces.forEach((x, i) => metals[i].charge = x);
-				
-				for(let i in m)
-					if(m[i].charge == null)
-						m[i].charge = m[i].ref.charges[0];  //temp
+				let multi = m.filter(e => e.ref && e.ref.charges && e.ref.charges.length > 1);
+				let result = findClosest(multi.map(e => e.ref.charges.map(c => c * e.count)), m.filter(e => e.charge != null).reduce((acc, x) => acc + x.charge, 0));
+				result.indeces.forEach((x, i) => multi[i].charge = multi[i].ref.charges[x] * multi[i].count);
 
-				//calculate total charge
+
 				//parent.contents = m;
-				parent.charge = m.reduce((acc, x) => acc + x.charge, 0) * (parent.count || 1);
+				parent.charge = m.reduce((acc, x) => acc + x.charge, 0) * (parent.count || 1);  //or result.remainder
 				return parent;
 			}
 			function findClosest(chargeLists, remainder){
 				if(!chargeLists.length) return {indeces: [], remainder: remainder};
-				
+
 				let x = chargeLists[0].map(charge => findClosest(chargeLists.slice(1), charge + remainder));
 				let index = x.reduce((acc, e, i) => Math.abs(e.remainder) < Math.abs(x[acc].remainder) ? i : acc, 0);
-				
+
 				return {indeces: [index, ...x[index].indeces], remainder: x[index].remainder};
 			}
 
 
-			const moleculeToWords = molecule => molecule.filter(x => !(x.symbol && x.ref.name == "invalid")).map((x,i) =>
-				x.contents ?
-					moleculeToWords(x.contents) : (
-						x.formula || x.charge || x.count == 1 && (molecule.length == 1 || i < molecule.length - 1) ?   //replace with charge sign once that is calculated
-							"" :
-							(x.ref.name[0] == "o" ? shortPrefixes : prefixes)[x.count] || "poly"
-					) + (
-						x.formula || x.ref.isMetal || molecule.length == 1 || i < molecule.length - 1 ?   //check for any metals before
-							x.ref.name :
-							replaceEnd(x.ref.name) + "ide"
-					) + (
-						x.symbol && molecule.length > 1 && x.ref.isMetal && x.ref.charges.length > 1 ?
-							" (" + romanNumerals[x.charge/x.count] + ")" :
-							""
-					)
-			).join(" ");
+			const moleculeToWords = molecule => molecule.some(x => x.symbol == "H" && x.charge > 0) ?
+				molecule.filter(x => x.ref && (x.symbol != "H" || molecule.every(e => e.symbol))).map(x => extraEnd(replaceEnd(x.ref.name))).join("o") + "ic acid" :
+				molecule.filter(x => !(x.symbol && x.ref.name == "invalid")).map((x,i) =>
+					x.contents ?
+						moleculeToWords(x.contents) : (
+							x.formula || x.charge || x.count == 1 && (molecule.length == 1 || i < molecule.length - 1) ?   //replace with charge sign once that is calculated
+								"" :
+								(x.ref.name[0] == "o" ? shortPrefixes : prefixes)[x.count] || "poly"
+						) + (
+							x.formula || x.ref.isMetal || molecule.length == 1 || i < molecule.length - 1 ?   //check for any metals before
+								x.ref.name :
+								replaceEnd(x.ref.name) + "ide"
+						) + (
+							x.symbol && molecule.length > 1 && x.ref.isMetal && x.ref.charges.length > 1 ?
+								" (" + romanNumerals[x.charge/x.count] + ")" :
+								""
+						)
+				).join(" ")
+			;
 
 
 			const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
+			const extraEnd = name => name.slice(-2) == "ph" ? name + name.split("").find(c => ["o","u"].includes(c)) + "r" : name;
 
 
 			/* Acid suffixes (-ic)
