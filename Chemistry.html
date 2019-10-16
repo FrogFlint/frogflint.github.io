@@ -73,7 +73,12 @@
             const prefixes = ["","mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];
             const shortPrefixes = ["","mon","di","tri","tetr","pent","hex","hept","oct","non","dec"];
             const stableShells = [0,2,10,18,36,54,86,118];
-
+			
+			function debug(x){
+				console.log(x);
+				return x;
+			}
+			let a = /grsgh/;
 
 
 
@@ -111,7 +116,18 @@
 
 
             function convertWordMolecule(){
-                document.querySelector("#nameConverter #symbols").innerHTML = parseWords(document.querySelector("#nameConverter #words"));
+				let input = document.querySelector("#nameConverter #words");
+				let rawText = input.innerText;
+				
+				let nodes = Array.from(input.childNodes);
+                let sel = window.getSelection();
+				let pos = sel.focusOffset + nodes.slice(0, nodes.findIndex(node => sel.containsNode(node, true))).reduce((acc, node) => acc + (node.innerText || node.wholeText).length, 0);
+				pos = Math.max(pos - rawText.length + (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length, 0);
+				
+				
+				
+				
+                //document.querySelector("#nameConverter #symbols").innerHTML = parseWords(document.querySelector("#nameConverter #words"));
             }
             function convertFormulaMolecule(){
 				let input = document.querySelector("#nameConverter #symbols");
@@ -192,8 +208,8 @@
 				}
 				return atomSplit(text);
 			}
-
-			const atomSplit = str => str.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase()).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
+			
+			const atomSplit = str => (str.match(/[0-9]+|[A-Z][a-z]*/g) || []/*.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase())*/).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
 
 
 			let s = {
@@ -275,7 +291,7 @@
 
 
 			const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
-			const extraEnd = name => name.slice(-2) == "ph" ? name + name.split("").find(c => ["o","u"].includes(c)) + "r" : name;
+			const extraEnd = name => name.slice(-2) == "ph" ? name + name.match(/o|u/)[0] + "r" : name;
 
 
 			/* Acid suffixes (-ic)
