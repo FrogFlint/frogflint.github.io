@@ -209,7 +209,8 @@
 				return atomSplit(text);
 			}
 			
-			const atomSplit = str => (str.match(/[0-9]+|[A-Z][a-z]*/g) || []/*.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase())*/).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
+									   /*.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase())*/
+			const atomSplit = str => (str.match(/[0-9]+|[A-Z][a-z]*/g) || []).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
 
 
 			let s = {
@@ -274,7 +275,7 @@
 				molecule.filter(x => !(x.symbol && x.ref.name == "invalid")).map((x,i) =>
 					x.contents ?
 						moleculeToWords(x.contents) : (
-							x.formula || x.charge || x.count == 1 && (molecule.length == 1 || i < molecule.length - 1) ?   //replace with charge sign once that is calculated
+							x.formula || x.charge && molecule.some(e => e.charge > 0) || x.count == 1 && (molecule.length == 1 || i < molecule.length - 1) ?   //replace with charge sign once that is calculated
 								"" :
 								(x.ref.name[0] == "o" ? shortPrefixes : prefixes)[x.count] || "poly"
 						) + (
@@ -290,7 +291,8 @@
 			;
 
 
-			const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
+			//const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
+			const replaceEnd = name => name.match(/.*(?=.gen|orus|[ai][td]e|ium|on|ur)/g)[0];
 			const extraEnd = name => name.slice(-2) == "ph" ? name + name.match(/o|u/)[0] + "r" : name;
 
 
