@@ -34,7 +34,7 @@
     </head>
     <body>
         <div id="nameConverter">
-            <div class="input" id="words" oninput="parseWords('#nameConverter #words')" contenteditable spellcheck="false"></div>
+            <div class="input" id="words" oninput="convertWordMolecule()" contenteditable spellcheck="false"></div>
             <div class="input" id="symbols" oninput="convertFormulaMolecule()" contenteditable spellcheck="false" tabindex="0"></div>
 			<div class="info">
 				charge: <span></span><br>
@@ -73,7 +73,7 @@
             const prefixes = ["","mono","di","tri","tetra","penta","hexa","hepta","octa","nona","deca"];
             const shortPrefixes = ["","mon","di","tri","tetr","pent","hex","hept","oct","non","dec"];
             const stableShells = [0,2,10,18,36,54,86,118];
-			
+
 			function debug(x){
 				console.log(x);
 				return x;
@@ -118,15 +118,18 @@
             function convertWordMolecule(){
 				let input = document.querySelector("#nameConverter #words");
 				let rawText = input.innerText;
-				
+				let words = rawText.match(/\(?\w+\)?/g);
+
+				//complicated stuff
+
 				let nodes = Array.from(input.childNodes);
                 let sel = window.getSelection();
 				let pos = sel.focusOffset + nodes.slice(0, nodes.findIndex(node => sel.containsNode(node, true))).reduce((acc, node) => acc + (node.innerText || node.wholeText).length, 0);
 				pos = Math.max(pos - rawText.length + (rawText = rawText.split("").filter(char => charType(char) != "other" || ["(",")"].includes(char)).join("")).length, 0);
-				
-				
-				
-				
+
+
+
+
                 //document.querySelector("#nameConverter #symbols").innerHTML = parseWords(document.querySelector("#nameConverter #words"));
             }
             function convertFormulaMolecule(){
@@ -178,38 +181,51 @@
 				let bracketDifference = [];
 				text.split("").reduce((acc, char, i) => bracketDifference[i] = acc + ((char == "(") - (char == ")")), 0);
 				let pre = -Math.min(0, ...bracketDifference);
-				let post = pre + bracketDifference.reverse()[0];
+				let post = pre + bracketDifference[text.length - 1];
 				text = "(".repeat(pre) + text + ")".repeat(post);
 
-				let tree = parseSubscripts(layer(text));
-
+				let tree = parseSubscripts(layer(text, bracketDifference));
 
 				return [pre, post, tree];
 			}
-			function layer(text){
+			function layer(text, br){
 				let i = text.indexOf("(");
 				if(i < 0) return findPolyIons(text);
-				bracketDifference = 1;
-				for(let j = i + 1; j < text.length; j++){
-					bracketDifference += ((text[j] == "(") - (text[j] == ")"));
-					if(!bracketDifference) return [...findPolyIons(text.slice(0, i)), {contents: parseSubscripts(layer(text.slice(i + 1, j)))}, ...layer(text.slice(j + 1))];//.filter(x => x.length || x.count);
-				}
+				let j = br.indexOf(br[i] - 1, i);
+				return [
+					...findPolyIons(text.slice(0, i)),
+					{contents: parseSubscripts(layer(text.slice(i + 1, j), br.slice(i + 1, j)))},
+					...layer(text.slice(j + 1), br.slice(j + 1))
+				];
 			}
+
 			const parseSubscripts = line =>  //and identify elements
-				line.divide((a,b) => typeof b != "number").map(([thing, num]) => typeof thing == "number" ? {symbol: thing, count: "1", ref: {name: "invalid", charges: [0]}} : Object.assign(typeof thing == "string" ?
-				{symbol: thing, ref: elements.find(e => e.symbol == thing) || {name:"invalid", charges: [0]}} : thing, {count: num || "1"}));
+				line.divide((a,b) => typeof b != "number")
+				.map( ([thing, num]) =>
+					typeof thing == "number"
+					?	{symbol: thing, count: "1", ref: {name: "invalid", charges: [0]}}
+					:	Object.assign( typeof thing == "string"
+						?	{symbol: thing, ref: elements.find(e => e.symbol == thing) || {name:"invalid", charges: [0]}}
+						:	thing, {count: num || "1"} )
+				)
+			;
 
 			function findPolyIons(text){  //rename now that it calls atomSplit
-				for(let ion of polyIons){
-					for(let i = text.length - ion.formula.length; i >= 0; i--){
-						if(text.slice(i, i + ion.formula.length) == ion.formula && charType(text[i + ion.formula.length]) != "number")
-							return [...findPolyIons(text.slice(0, i)), {formula: ion.formula, ref: ion}, ...atomSplit(text.slice(i + ion.formula.length))];//.filter(x => x.length || x.formula || typeof x == "number");
-					}
-				}
+				for(let ion of polyIons)
+					for(let i = text.length - ion.formula.length; i >= 0; i--)
+						if(
+							text.slice(i, i + ion.formula.length) == ion.formula &&
+							charType(text[i + ion.formula.length]) != "number"
+						)
+							return [
+								...findPolyIons(text.slice(0, i)),
+								{formula: ion.formula, ref: ion},
+								...atomSplit(text.slice(i + ion.formula.length))
+							];
 				return atomSplit(text);
 			}
-			
-									   /*.divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase())*/
+
+			/*						     .divide((a,b) => charType(a) != charType(b) || b != b.toLowerCase())   */
 			const atomSplit = str => (str.match(/[0-9]+|[A-Z][a-z]*/g) || []).map(x => Number(x) || x);  //split text into numbers and strings with uppercase start
 
 
@@ -217,9 +233,18 @@
 				red: str => "<span class=\"invalid\">" + str + "</span>",
 				sub: str => "<sub>" + str + "</sub>"
 			};
-			const formulaToStyleText = formula => formula.map(x => typeof x.symbol == "number" ? s.red(s.sub(x.symbol)) :
-				(x.contents ? "(" + formulaToStyleText(x.contents) + ")" : x.ref.name == "invalid" ? s.red(x.symbol) : x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))) +
-				(x.count === "1" ? "" : s.sub(x.count))
+			const formulaToStyleText = formula => formula.map(x =>
+				typeof x.symbol == "number"
+				?	s.red(s.sub(x.symbol))
+				:	( x.contents
+					?	"(" + formulaToStyleText(x.contents) + ")"
+					:	x.ref.name == "invalid"
+						?	s.red(x.symbol)
+						:	x.symbol || formulaToStyleText(parseSubscripts(atomSplit(x.formula)))
+					) + ( x.count === "1"
+					?	""
+					:	s.sub(x.count)
+					)
 			).join("");
 
 
@@ -292,7 +317,7 @@
 
 
 			//const replaceEnd = name => name.slice(0, -["orus","ogen","ygen","ate","ite","ine","ium","on","ur"].find(x => name.slice(-x.length) == x).length);
-			const replaceEnd = name => name.match(/.*(?=.gen|orus|[ai][td]e|ium|on|ur)/g)[0];
+			const replaceEnd = name => name.match(/.*(?=.gen|orus|[ai][td]e|ium|on|ur)/)[0];
 			const extraEnd = name => name.slice(-2) == "ph" ? name + name.match(/o|u/)[0] + "r" : name;
 
 
