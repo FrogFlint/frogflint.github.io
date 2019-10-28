@@ -61,6 +61,10 @@
 			let newUnits = [[]];
 			let turn = 1;
 
+			let changes = [];
+			let animationTimer = 0;
+			let animationSpeed = 50;
+
 			function Tile(i, j){
 				this.team = this.type = 0;
 				this.moveX = this.hitX = Number(i);
@@ -98,6 +102,7 @@
 				ctx.stroke();
 				ctx.closePath();
 			}
+			const sin120 = Math.sin(Math.PI * 2/3), cos120 = Math.cos(Math.PI * 2/3);
 			function drawUnit(x, y, type, team){
 				if(type && team){
 					ctx.beginPath();
@@ -107,12 +112,22 @@
 					ctx.stroke();
 					ctx.closePath();
 
-					ctx.beginPath();
+					let dots = [];
+					if(type < 4){
+						dots.push([0, -2*(team - 1.5)]);
+						if(type > 1)
+							dots.push([sin120 * 2*(team - 1.5), -cos120 * 2*(team - 1.5)]);
+						if(type > 2)
+							dots.push([-sin120 * 2*(team - 1.5), -cos120 * 2*(team - 1.5)]);
+					}
+
 					ctx.fillStyle = "black";
-					if(type < 4)
-						ctx.arc(x + 0.5, y + 0.5, 0.1, 0, Math.PI*2);
-					ctx.fill();
-					ctx.closePath();
+					for(dot of dots){
+						ctx.beginPath();
+						ctx.arc(x + 0.5 + 0.15*dot[0], y + 0.5 + 0.15*dot[1], 0.05, 0, Math.PI*2);
+						ctx.fill();
+						ctx.closePath();
+					}
 				}
 			}
 			function drawDeployArrow(x, team){
@@ -126,8 +141,16 @@
 				if(!length) return;  //prevents math errors
 				let x3 = (x1 - x2) * armLength/length;  //fixed-length segment of the line which is rotated to form the arms
 				let y3 = (y1 - y2) * armLength/length;
-				drawPolygon([x1, y1], [x2, y2]);
-				drawPolygon([x2 + x3*cosR - y3*sinR, y2 + x3*sinR + y3*cosR], [x2, y2], [x2 + x3*cosR + y3*sinR, y2 - x3*sinR + y3*cosR]);
+				drawPolygon([x1, y1], [x2, y2]);  //draw body
+				drawPolygon([x2 + x3*cosR - y3*sinR, y2 + x3*sinR + y3*cosR], [x2, y2], [x2 + x3*cosR + y3*sinR, y2 - x3*sinR + y3*cosR]);  //draw head
+			}
+			function outlineStrokePath(color, width, drawFunc){
+				ctx.strokeStyle = "black";
+				ctx.lineWidth = (width + 2)/drawSize;
+				drawFunc();
+				ctx.strokeStyle = color;
+				ctx.lineWidth = width/drawSize;
+				drawFunc();
 			}
 
 
@@ -140,31 +163,24 @@
 				turn = 1;
 			}
 			function executeTurn(){
+				changes = [];
 				//do changes
 				for(let i in board)
 					for(let j in board[i])
 						if(board[i][j].team == turn){
-							let tile = board[i][j];
-							if(!(tile.moveX == i && tile.moveY == j)){
-								Object.assign(board[tile.moveX][tile.moveY], tile);
-								board[i][j] = new Tile(i, j);
-							}
-							if(!(tile.moveX == tile.hitX && tile.moveY == tile.hitY)){
-								if(board[tile.hitX][tile.hitY].type % 4 > 1) board[tile.hitX][tile.hitY].type--;
-								else board[tile.hitX][tile.hitY] = new Tile(tile.hitX, tile.hitY);
-							}
+							changes.push(Object.assign({x: Number(i), y: Number(j)}, board[i][j]));
+							board[i][j] = new Tile(i, j);
+
 						}
 
-
-				let deployPos = board[newUnits[turn].pos][(boardSize - 1) * (turn - 1)];
-				if(!deployPos.team || !deployPos.type){
-					deployPos.team = turn;
-					deployPos.type = newUnits[turn].type + 2;
+				let i = newUnits[turn].pos, j = (boardSize - 1) * (turn - 1);
+				if(!board[i][j].team || !board[i][j].type){
+					changes.push(Object.assign(new Tile(i, j), {x: i, y: j + 2*(turn - 1.5), type: newUnits[turn].type + 2, team: turn}));
 				}
 				//check for win
 
-				turn = 3 - turn;
 				selected.x = -1;
+				animationTimer = animationSpeed;
 				drawBoard();
 			}
 			function drawBoard(){
@@ -177,9 +193,9 @@
 							if(board[i][j].team && board[i][j].type){
 								if(board[i][j].team == turn)
 									range[board[i][j].moveX][board[i][j].moveY] = 999;
-								else if(distance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= 3.5)  //change for variable attack ranges
+								else if(distance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))  //change for variable attack ranges
 									range[i][j] = -1;
-								else if(distance(selected.x - i, selected.y - j) <= 6)  //6 is move range + attack range
+								else if(distance(selected.x - i, selected.y - j) <= (board[selected.x][selected.y].type == 4 ? 6 : 4))  //6 is move range + attack range
 									range[i][j] = -2;
 							}
 					for(let i in range)
@@ -198,7 +214,7 @@
 					drawPolygon([0, i], [boardSize, i]);
 					drawPolygon([i, 0], [i, boardSize]);
 					if(i < boardSize){
-						newUnits[turn].pos == i
+						newUnits[turn].pos == i && !animationTimer
 						?	drawUnit(i, boardSize * (turn - 1) + (turn - 1.5) - 0.5, newUnits[turn].type + 2, turn)
 						:	drawDeployArrow(i, turn);
 						drawDeployArrow(i, 3 - turn);
@@ -219,22 +235,46 @@
 					for(let j in board[i])
 						if(board[i][j].team == turn)
 							drawArrow(Number(i) + 0.5, Number(j) + 0.5, board[i][j].moveX + 0.5, board[i][j].moveY + 0.5);
-				ctx.strokeStyle = "orange";
 				for(let i in board)
 					for(let j in board[i])
 						if(board[i][j].team == turn)
-							drawArrow(board[i][j].moveX + 0.5, board[i][j].moveY + 0.5, board[i][j].hitX + 0.5, board[i][j].hitY + 0.5);
+							outlineStrokePath("orange", 4, drawArrow.bind(null, board[i][j].moveX + 0.5, board[i][j].moveY + 0.5, board[i][j].hitX + 0.5, board[i][j].hitY + 0.5));
 				ctx.strokeStyle = "black";
 				ctx.lineWidth = defaultLineWidth;
 
 				document.querySelector("#turn-end").className = colors.player[turn];
+
+				if(animationTimer){
+					animationTimer--;
+					setTimeout(drawBoard, 20);
+
+					for(unit of changes){
+						drawUnit(unit.x + (unit.moveX - unit.x) * (1 - animationTimer/animationSpeed), unit.y + (unit.moveY - unit.y) * (1 - animationTimer/animationSpeed), unit.type, unit.team);
+					}
+
+					if(!animationTimer){
+						for(unit of changes){
+							delete unit.x;
+							delete unit.y;
+							board[unit.moveX][unit.moveY] = unit;
+
+							if(!(unit.moveX == unit.hitX && unit.moveY == unit.hitY)){
+								if(board[unit.hitX][unit.hitY].type % 4 > 1) board[unit.hitX][unit.hitY].type--;
+								else board[unit.hitX][unit.hitY] = new Tile(unit.hitX, unit.hitY);
+							}
+							unit.hitX = unit.moveX;
+							unit.hitY = unit.moveY;
+						}
+						turn = 3 - turn;
+					}
+				}
 			}
 
 
 			//neural network related functions
 			function NeuralNetwork(hiddenLayers, hiddenLayerSize){
-				this.inputNeurons = new Array(boardSize**2).fill(0);
-				this.outputNeurons = new Array(boardSize**2).fill(0);
+				this.inputNeurons = new Array(boardSize**2 * 2).fill(0);
+				this.outputNeurons = new Array(boardSize**2 * 4 + 2).fill(0);
 				this.hiddenNeurons = createMatrix(hiddenLayers, hiddenLayerSize);
 
 				this.allNeurons = [this.inputNeurons, ...this.hiddenNeurons, this.outputNeurons];
@@ -248,18 +288,18 @@
 				);
 
 
-				this.run = function(outputTiles){}
-				this.mutate = function(mutationStrength){
-					[this.allNeurons, this.connections].forEachTree(
-						(value,index,source) =>
-						source[index] = randBetween(
-							Math.max(value - mutationStrength, 0),
-							Math.min(value + mutationStrength, 1)
-						)
-					)
-				}
 
 			}
+			Object.defineProperty(NeuralNetwork.prototype, "evaluate", function(inputData){});
+			Object.defineProperty(NeuralNetwork.prototype, "mutate", function(mutationChance, mutationStrength){
+				[this.allNeurons, this.connections].forEachTree(
+					(value,index,source) =>
+					source[index] = randBetween(
+						Math.max(value - mutationStrength, -1),
+						Math.min(value + mutationStrength, 1)
+					)
+				)
+			});
 
 
 			/*  user input  */
@@ -273,12 +313,12 @@
 						if(!board.flat().some(tile => tile.team && tile.type && tile.moveX == mouse.x && tile.moveY == mouse.y) && distance(mouse.x - selected.x, mouse.y - selected.y) <= 2.5){  //fighters with 1 health might be slower
 							unit.moveX = mouse.x;
 							unit.moveY = mouse.y;
-							if(board[unit.hitX][unit.hitY].team + turn != 3 || distance(unit.moveX - unit.hitX, unit.moveY - unit.hitY) > 3.5){  //add lower range for fighters
+							if(board[unit.hitX][unit.hitY].team + turn != 3 || distance(unit.moveX - unit.hitX, unit.moveY - unit.hitY) > (unit.type == 4 ? 3.5 : 1.5)){  //add lower range for fighters
 								unit.hitX = unit.moveX;
 								unit.hitY = unit.moveY;
 							}
 						}
-						else if(board[mouse.x][mouse.y].team + turn == 3 && distance(mouse.x - unit.moveX, mouse.y - unit.moveY) <= 3.5){  //also needs variable range
+						else if(board[mouse.x][mouse.y].team + turn == 3 && distance(mouse.x - unit.moveX, mouse.y - unit.moveY) <= (unit.type == 4 ? 3.5 : 1.5)){  //also needs variable range
 							unit.hitX = mouse.x;
 							unit.hitY = mouse.y;
 						}
