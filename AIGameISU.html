@@ -63,7 +63,7 @@
 
 			let changes = [];
 			let animationTimer = 0;
-			let animationSpeed = 50;
+			let animationSpeed = 20;  //50
 
 			function Tile(i, j){
 				this.team = this.type = 0;
@@ -94,6 +94,10 @@
 				}
 			});
 			const distance = (x, y) => Math.min(Math.abs(x), Math.abs(y)) * 1.5 + Math.abs(Math.abs(x) - Math.abs(y));
+
+			const sigmoid = x => x / (Math.abs(x) + 1);  //compresses number line into the interval (-1, 1)
+			const normalizedSigmoid = x => (sigmoid(2*x) + 1) / 2;  //compresses to (0, 1)
+
 			function drawPolygon(...points){
 				ctx.beginPath();
 				ctx.moveTo(points[0][0], points[0][1]);
@@ -290,16 +294,56 @@
 
 
 			}
-			Object.defineProperty(NeuralNetwork.prototype, "evaluate", function(inputData){});
-			Object.defineProperty(NeuralNetwork.prototype, "mutate", function(mutationChance, mutationStrength){
-				[this.allNeurons, this.connections].forEachTree(
-					(value,index,source) =>
-					source[index] = randBetween(
-						Math.max(value - mutationStrength, -1),
-						Math.min(value + mutationStrength, 1)
-					)
-				)
-			});
+			Object.defineProperty(NeuralNetwork.prototype, "evaluate", {value: function(inputData, outputFilter){
+				return [...this.outputNeurons.filter((x,i) => outputFilter[Math.floor(i/4)] || this.outputNeurons.length - i <= 2)];
+			}});
+			Object.defineProperty(NeuralNetwork.prototype, "mutate", {value: function(mutationChance, mutationStrength){
+				[this.allNeurons, this.connections].forEachTree((value,index,source) => {
+					if(Math.random() < mutationChance){
+						source[index] = randBetween(
+							Math.max(value - mutationStrength, source == this.connections ? -1 : 0),
+							Math.min(value + mutationStrength, 1)
+						)
+					}
+				})
+			}});
+
+			function AIturn(network){
+				if(turn == 1) flipBoard();
+
+				let simplifiedBoard = board.flat().map(tile => [turn == 1 && tile.team ? 1.5 - tile.team/2 : tile.team/2, tile.type/4]);
+				let friendly = simplifiedBoard.map(x => x[0] == 1);
+				//console.log(simplifiedBoard);
+				//console.log(friendly);
+
+				let moves = network.evaluate(simplifiedBoard.flat(), friendly);
+				console.log(moves);
+
+				for(let i in friendly)
+					if(friendly[i]){
+						let x = Math.floor(i/boardSize), y = i % boardSize;
+						//let [rx,ry] = (turn == 1 ? [boardSize - x - 1, boardSize - y - 1] : [x, y]);
+						board[x][y].moveX = fixPos(x + moves.shift()*4 - 2);
+						board[x][y].moveY = fixPos(y + moves.shift()*4 - 2);
+						board[x][y].hitX = fixPos(board[x][y].moveX + moves.shift()*6 - 3);
+						board[x][y].hitY = fixPos(board[x][y].moveY + moves.shift()*6 - 3);
+					}
+				newUnits[turn].pos = Math.floor(moves.shift() * boardSize);
+				newUnits[turn].type = Math.round(moves.shift()) + 1;
+
+				if(turn == 1) flipBoard();
+
+				drawBoard();
+			}
+			const fixPos = x => Math.max(Math.min(Math.round(x), boardSize - 1), 0);
+			function flipBoard(){
+				board.reverse().forEach(col => col.reverse());
+				board.flat().forEach(x => {
+					for(prop of ["moveX", "moveY", "hitX", "hitY"])
+						x[prop] = boardSize - x[prop] - 1;
+				});
+				newUnits[turn].pos = boardSize - newUnits[turn].pos - 1;
+			}
 
 
 			/*  user input  */
@@ -341,8 +385,18 @@
 
 				drawBoard();
 			});
+			document.addEventListener("keydown", e => {
+				if(e.key == "g" && !animationTimer){
+					AIturn(n);
+					executeTurn();
 
+					n.mutate(1, 1);  //very, very temporary
+				}
+			});
 
+			/*  for testing  */
+			let n = new NeuralNetwork(2, 2);
+			n.mutate(1, 1);
 
 			resetBoard();
 			drawBoard();
