@@ -54,7 +54,7 @@
 			const defaultLineWidth = 2/drawSize;
 			ctx.lineWidth = defaultLineWidth;
 
-			let colors = {player: [,"red","lime"], board: [""]};
+			let colors = {player: [,"red","lime"], board: ["cyan","orange","#860c00"]};
 
 			let boardSize = 10;
 			let board = [[{}]];
@@ -206,7 +206,7 @@
 						for(let j in range[i])
 							if(range[i][j] <= 2.5){
 								ctx.beginPath();
-								ctx.fillStyle = ["cyan","orange","#860c00"][-Math.min(range[i][j], 0)];  //-1 and -2 have their own colors, everything else is blue
+								ctx.fillStyle = colors.board[-Math.min(range[i][j], 0)];  //-1 and -2 have their own colors, everything else is blue
 								ctx.fillRect(i, j, 1, 1);
 								ctx.closePath();
 							}
@@ -286,22 +286,34 @@
 
 				this.allNeurons.reduce(
 					(previous, current) => {
-						this.connections.push(createMatrix(previous.length, current.length));
+						this.connections.push(createMatrix(current.length, previous.length));
 						return current;
 					}
 				);
 
-
-
 			}
 			Object.defineProperty(NeuralNetwork.prototype, "evaluate", {value: function(inputData, outputFilter){
-				return [...this.outputNeurons.filter((x,i) => outputFilter[Math.floor(i/4)] || this.outputNeurons.length - i <= 2)];
+				let currentLayer = inputData.map((x,i) => normalizedSigmoid(x + this.inputNeurons[i]));
+				for(let i in this.connections){
+					currentLayer = this.connections[i].map(
+						(targetNodeConnections, targetIndex) =>
+						normalizedSigmoid(
+							targetNodeConnections.reduce(
+								(accumulator, connectionWeight, sourceIndex) =>
+								accumulator + connectionWeight*currentLayer[sourceIndex],
+								0
+							) + this.allNeurons[Number(i) + 1][targetIndex]
+						)
+					);
+					console.log(i);
+				}
+				return currentLayer.filter((x,i) => outputFilter[Math.floor(i/4)] || this.outputNeurons.length - i <= 2);
 			}});
 			Object.defineProperty(NeuralNetwork.prototype, "mutate", {value: function(mutationChance, mutationStrength){
 				[this.allNeurons, this.connections].forEachTree((value,index,source) => {
 					if(Math.random() < mutationChance){
 						source[index] = randBetween(
-							Math.max(value - mutationStrength, source == this.connections ? -1 : 0),
+							Math.max(value - mutationStrength, -1),
 							Math.min(value + mutationStrength, 1)
 						)
 					}
@@ -317,16 +329,19 @@
 				//console.log(friendly);
 
 				let moves = network.evaluate(simplifiedBoard.flat(), friendly);
-				console.log(moves);
+				//console.log(moves);
 
 				for(let i in friendly)
 					if(friendly[i]){
 						let x = Math.floor(i/boardSize), y = i % boardSize;
-						//let [rx,ry] = (turn == 1 ? [boardSize - x - 1, boardSize - y - 1] : [x, y]);
 						board[x][y].moveX = fixPos(x + moves.shift()*4 - 2);
 						board[x][y].moveY = fixPos(y + moves.shift()*4 - 2);
 						board[x][y].hitX = fixPos(board[x][y].moveX + moves.shift()*6 - 3);
 						board[x][y].hitY = fixPos(board[x][y].moveY + moves.shift()*6 - 3);
+						//TODO: store moveXY and hitXY as float positions (outputs scaled and shifted but not rounded and fixPos()'d)
+						//then make array of references to friendly units, after giving them x,y properties
+						//give them each a distance from the rounded position and float position, then sort by that distance
+						//from closest to farthest, let each one pick the closest valid/unocupied tile to where they want to be, then set their moveXY and that BOARD tile's 'team' property
 					}
 				newUnits[turn].pos = Math.floor(moves.shift() * boardSize);
 				newUnits[turn].type = Math.round(moves.shift()) + 1;
@@ -390,12 +405,12 @@
 					AIturn(n);
 					executeTurn();
 
-					n.mutate(1, 1);  //very, very temporary
+					n.mutate(0.1, 0.1);  //very, very temporary
 				}
 			});
 
 			/*  for testing  */
-			let n = new NeuralNetwork(2, 2);
+			let n = new NeuralNetwork(5, 100);
 			n.mutate(1, 1);
 
 			resetBoard();
