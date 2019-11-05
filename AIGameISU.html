@@ -7,6 +7,60 @@
 			body {
 				background: darkgrey;
 			}
+
+			#menu {
+				width: 600px;
+				height: 600px;
+				position: absolute;
+				left: calc(50% - 300px);
+				top: calc(50% - 300px);
+				background: #cccccc;
+				border: 1px solid black;
+
+				user-select: none;
+			}
+			#greenPlayer, #redPlayer {
+				position: absolute;
+				top: 50%;
+				transform: translate(0, -50%);
+
+				width: 150px;
+				height: 40px;
+				font-size: 25px;
+				font-weight: bold;
+
+				border: 1px solid black;
+			}
+			#greenPlayer div, #redPlayer div {
+				position: absolute;
+				width: 100%;
+				text-align: center;
+				transition: 1s;
+			}
+			#greenPlayer {
+				right: 5%;
+				box-shadow: 0px 0px 18px 8px lime;
+			}
+			#redPlayer {
+				left: 5%;
+				box-shadow: 0px 0px 18px 8px red;
+			}
+			#start {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+
+				width: 76px;
+				height: 76px;
+				font-size: 35px;
+				font-weight: bolder;
+
+				outline: none;
+				border: 1px solid black;
+				background: linear-gradient(270deg, lime, #00FF0060 40%, #FF000060 60%, red);
+			}
+
 			canvas {
 				width: 600px;
 				height: 600px;
@@ -16,7 +70,6 @@
 				background: #ad590f;
 				border: 1px solid black;
 			}
-
 			#turn-end {
 				position: absolute;
 				top: 50%;
@@ -38,11 +91,29 @@
 				border-top-color: #00bd00;
 				border-left-color: #00bd00;
 			}
+
 		</style>
 	</head>
 	<body>
-		<canvas width="600" height="600"></canvas>
-		<button id="turn-end" onclick="executeTurn()">End turn</button>
+		<div id="menu">
+			<div id="redPlayer">
+				<div onclick="playerSelect(1, 0)">Human</div>
+				<div onclick="playerSelect(1, 1)">Easy AI</div>
+				<div onclick="playerSelect(1, 2)">Medium AI</div>
+				<div onclick="playerSelect(1, 3)">Hard AI</div>
+			</div>
+			<div id="greenPlayer">
+				<div onclick="playerSelect(2, 0)">Human</div>
+				<div onclick="playerSelect(2, 1)">Easy AI</div>
+				<div onclick="playerSelect(2, 2)">Medium AI</div>
+				<div onclick="playerSelect(2, 3)">Hard AI</div>
+			</div>
+			<button id="start" onclick="resetBoard()">VS</button>
+		</div>
+		<div id="game" style="display: none">
+			<canvas width="600" height="600"></canvas>
+			<button id="turn-end" onclick="executeTurn()">End turn</button>
+		</div>
 		<script>
 
 			let canvas = document.querySelector("canvas");
@@ -53,6 +124,8 @@
 
 			const defaultLineWidth = 2/drawSize;
 			ctx.lineWidth = defaultLineWidth;
+
+			let playerType = [, 0, 0];  //human, easy AI, medium AI, hard AI
 
 			let colors = {player: [,"red","lime"], board: ["cyan","orange","#860c00"]};
 
@@ -164,7 +237,12 @@
 				board = createMatrix(boardSize, boardSize, (x, y) => new Tile(x, y));  //team is 0,1,2     value is 0 (empty), 1-3 (fighter), 4 (archer)
 				newUnits = [,{pos:5, type:1}, {pos:5, type:1}];
 				selected.x = -1;
-				turn = 1;
+				turn = Math.round(Math.random()) + 1;
+
+				document.querySelector("#menu").style.display = "none";
+				document.querySelector("#game").style.display = "";
+
+				drawBoard();
 			}
 			function executeTurn(){
 				changes = [];
@@ -271,6 +349,17 @@
 						}
 						turn = 3 - turn;
 					}
+				}
+			}
+
+
+			function playerSelect(player, type){
+				playerType[player] = type;
+				let menu = document.querySelector([, "#redPlayer", "#greenPlayer"][player]);
+				for(let i in Array.from(menu.children)){
+					menu.children[i].style.top = (i - Number(type))*50 + 7.5 + "px";
+					menu.children[i].style.fontSize = 25 - (Math.abs(i - Number(type)))*3 + "px";
+					menu.children[i].style.opacity = 1 - (Math.abs(i - Number(type)))*0.1;
 				}
 			}
 
@@ -413,8 +502,8 @@
 			let n = new NeuralNetwork(5, 100);
 			n.mutate(1, 1);
 
-			resetBoard();
-			drawBoard();
+			playerSelect(1, 0);
+			playerSelect(2, 0);
 
 		</script>
 	</body>
