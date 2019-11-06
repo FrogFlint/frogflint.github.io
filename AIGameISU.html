@@ -118,11 +118,11 @@
 
 			let canvas = document.querySelector("canvas");
 			let ctx = canvas.getContext("2d");
-			let boardPos = {x:100, y:100};
-			let drawSize = 40;  //pixels
-			ctx.transform(drawSize, 0, 0, drawSize, boardPos.x, boardPos.y);  //border
+			let boardPos = {x:100, y:100};  //border
+			let drawSize = 1;  //pixels
+			ctx.transform(1, 0, 0, 1, boardPos.x, boardPos.y);
 
-			const defaultLineWidth = 2/drawSize;
+			let defaultLineWidth = 2/drawSize;
 			ctx.lineWidth = defaultLineWidth;
 
 			let playerType = [, 0, 0];  //human, easy AI, medium AI, hard AI
@@ -239,9 +239,18 @@
 				selected.x = -1;
 				turn = Math.round(Math.random()) + 1;
 
+				//temp
+				n = new NeuralNetwork(5, 100);
+				n.mutate(1, 1);
+
 				document.querySelector("#menu").style.display = "none";
 				document.querySelector("#game").style.display = "";
 
+				ctx.transform(1/drawSize, 0, 0, 1/drawSize, 0, 0);
+				drawSize = 400/boardSize;
+				defaultLineWidth = 2/drawSize;
+				ctx.lineWidth = defaultLineWidth;
+				ctx.transform(drawSize, 0, 0, drawSize, 0, 0);
 				drawBoard();
 			}
 			function executeTurn(){
@@ -499,8 +508,7 @@
 			});
 
 			/*  for testing  */
-			let n = new NeuralNetwork(5, 100);
-			n.mutate(1, 1);
+			let n;
 
 			playerSelect(1, 0);
 			playerSelect(2, 0);
