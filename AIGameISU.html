@@ -34,6 +34,7 @@
 			#greenPlayer div, #redPlayer div {
 				position: absolute;
 				width: 100%;
+				height: 100%;
 				text-align: center;
 				transition: 1s;
 			}
@@ -44,6 +45,32 @@
 			#redPlayer {
 				left: 5%;
 				box-shadow: 0px 0px 18px 8px red;
+			}
+			#boardSize {
+				display: flex;
+
+				position: absolute;
+				left: 50%;
+				top: 90%;
+				transform: translate(-50%, 0%);
+			}
+			#boardSize div {
+				width: 20%;
+				padding: 10px;
+				text-align: center;
+				font-weight: bold;
+				font-size: 20px;
+			}
+			#boardSize div:hover {
+				color: #007cff;
+			}
+			#boardSizeSelector {
+				position: absolute;
+				left: 20%;
+				height: 100%;
+				border: 1px solid black;
+				box-sizing: border-box;
+				transition: left 1s;
 			}
 			#start {
 				position: absolute;
@@ -59,6 +86,9 @@
 				outline: none;
 				border: 1px solid black;
 				background: linear-gradient(270deg, lime, #00FF0060 40%, #FF000060 60%, red);
+			}
+			#start:hover {
+				border-width: 2px;
 			}
 
 			canvas {
@@ -108,6 +138,14 @@
 				<div onclick="playerSelect(2, 2)">Medium AI</div>
 				<div onclick="playerSelect(2, 3)">Hard AI</div>
 			</div>
+			<div id="boardSize">
+				<div id="boardSizeSelector"></div>
+				<div onclick="sizeSelect(0)"><span style="color: #00000000">0</span>8</div>
+				<div onclick="sizeSelect(1)">10</div>
+				<div onclick="sizeSelect(2)">12</div>
+				<div onclick="sizeSelect(3)">16</div>
+				<div onclick="sizeSelect(4)">20</div>
+			</div>
 			<button id="start" onclick="resetBoard()">VS</button>
 		</div>
 		<div id="game" style="display: none">
@@ -118,12 +156,14 @@
 
 			let canvas = document.querySelector("canvas");
 			let ctx = canvas.getContext("2d");
+			ctx.lineCap = "square";
 			let boardPos = {x:100, y:100};  //border
 			let drawSize = 1;  //pixels
 			ctx.transform(1, 0, 0, 1, boardPos.x, boardPos.y);
 
 			let defaultLineWidth = 2/drawSize;
 			ctx.lineWidth = defaultLineWidth;
+			let arrowLength = 0.6;
 
 			let playerType = [, 0, 0];  //human, easy AI, medium AI, hard AI
 
@@ -137,6 +177,7 @@
 			let changes = [];
 			let animationTimer = 0;
 			let animationSpeed = 20;  //50
+			let animationPhase = 0;
 
 			function Tile(i, j){
 				this.team = this.type = 0;
@@ -166,7 +207,8 @@
 					)
 				}
 			});
-			const distance = (x, y) => Math.min(Math.abs(x), Math.abs(y)) * 1.5 + Math.abs(Math.abs(x) - Math.abs(y));
+			const distance = (x, y) => Math.sqrt(x*x + y*y);
+			const gridDistance = (x, y) => Math.min(Math.abs(x), Math.abs(y)) * 1.5 + Math.abs(Math.abs(x) - Math.abs(y));
 
 			const sigmoid = x => x / (Math.abs(x) + 1);  //compresses number line into the interval (-1, 1)
 			const normalizedSigmoid = x => (sigmoid(2*x) + 1) / 2;  //compresses to (0, 1)
@@ -218,7 +260,7 @@
 				if(!length) return;  //prevents math errors
 				let x3 = (x1 - x2) * armLength/length;  //fixed-length segment of the line which is rotated to form the arms
 				let y3 = (y1 - y2) * armLength/length;
-				drawPolygon([x1, y1], [x2, y2]);  //draw body
+				drawPolygon([x1, y1], [x2 + x3/5, y2 + y3/5]);  //draw body
 				drawPolygon([x2 + x3*cosR - y3*sinR, y2 + x3*sinR + y3*cosR], [x2, y2], [x2 + x3*cosR + y3*sinR, y2 - x3*sinR + y3*cosR]);  //draw head
 			}
 			function outlineStrokePath(color, width, drawFunc){
@@ -233,6 +275,14 @@
 
 			//functions for playing the game
 			const onBoard = ({x, y}) => x >= 0 && x < boardSize && y >= 0 && y < boardSize;
+			function nearestTile(x, y, func){
+				let best = {distance: 99999};
+				for(let i in board)
+					for(let j in board[i])
+						if(distance(x - i, y - j) < best.distance && func(Number(i), Number(j), board[i][j]))
+							best = {x: Number(i), y: Number(j), distance: distance(x - i, y - j)};
+				return best;
+			}
 			function resetBoard(){
 				board = createMatrix(boardSize, boardSize, (x, y) => new Tile(x, y));  //team is 0,1,2     value is 0 (empty), 1-3 (fighter), 4 (archer)
 				newUnits = [,{pos:5, type:1}, {pos:5, type:1}];
@@ -272,21 +322,22 @@
 
 				selected.x = -1;
 				animationTimer = animationSpeed;
+				animationPhase = 1;
 				drawBoard();
 			}
 			function drawBoard(){
 				ctx.clearRect(-1, -2, boardSize + 2, boardSize + 4);
 				/*  background  */
 				if(onBoard(selected)){
-					let range = createMatrix(boardSize, boardSize, (x, y) => distance(selected.x - x, selected.y - y));
+					let range = createMatrix(boardSize, boardSize, (x, y) => gridDistance(selected.x - x, selected.y - y));
 					for(let i in board)
 						for(let j in board[i])
 							if(board[i][j].team && board[i][j].type){
 								if(board[i][j].team == turn)
 									range[board[i][j].moveX][board[i][j].moveY] = 999;
-								else if(distance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))  //change for variable attack ranges
+								else if(gridDistance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))  //change for variable attack ranges
 									range[i][j] = -1;
-								else if(distance(selected.x - i, selected.y - j) <= (board[selected.x][selected.y].type == 4 ? 6 : 4))  //6 is move range + attack range
+								else if(gridDistance(selected.x - i, selected.y - j) <= (board[selected.x][selected.y].type == 4 ? 6 : 4))  //6 is move range + attack range
 									range[i][j] = -2;
 							}
 					for(let i in range)
@@ -340,23 +391,52 @@
 					setTimeout(drawBoard, 20);
 
 					for(unit of changes){
-						drawUnit(unit.x + (unit.moveX - unit.x) * (1 - animationTimer/animationSpeed), unit.y + (unit.moveY - unit.y) * (1 - animationTimer/animationSpeed), unit.type, unit.team);
+						if(animationPhase)
+							drawUnit(
+								unit.x + (unit.moveX - unit.x) * (1 - animationTimer/animationSpeed),
+								unit.y + (unit.moveY - unit.y) * (1 - animationTimer/animationSpeed),
+								unit.type,
+								unit.team
+							);
+						else {
+							drawUnit(unit.moveX, unit.moveY, unit.type, unit.team);
+							let dx = unit.hitX - unit.moveX, dy = unit.hitY - unit.moveY;
+							let d = distance(dx, dy);
+							outlineStrokePath(colors.player[turn], 2, drawArrow.bind(
+									null,
+									0.5 + unit.moveX + (dx - arrowLength * dx/d) * (1 - animationTimer/animationSpeed),
+									0.5 + unit.moveY + (dy - arrowLength * dy/d) * (1 - animationTimer/animationSpeed),
+									0.5 + unit.moveX + (dx - arrowLength * dx/d) * (1 - animationTimer/animationSpeed) + arrowLength * dx/d,
+									0.5 + unit.moveY + (dy - arrowLength * dy/d) * (1 - animationTimer/animationSpeed) + arrowLength * dy/d,
+									0.2
+							));
+							ctx.lineWidth = defaultLineWidth;
+							ctx.strokeStyle = "black";
+						}
 					}
 
 					if(!animationTimer){
-						for(unit of changes){
-							delete unit.x;
-							delete unit.y;
-							board[unit.moveX][unit.moveY] = unit;
+						if(animationPhase--)
+							animationTimer = animationSpeed;
+						else{
+							for(unit of changes){
+								delete unit.x;
+								delete unit.y;
+								board[unit.moveX][unit.moveY] = unit;
 
-							if(!(unit.moveX == unit.hitX && unit.moveY == unit.hitY)){
-								if(board[unit.hitX][unit.hitY].type % 4 > 1) board[unit.hitX][unit.hitY].type--;
-								else board[unit.hitX][unit.hitY] = new Tile(unit.hitX, unit.hitY);
+								if(board[unit.hitX][unit.hitY].team + unit.team == 3){
+									if(board[unit.hitX][unit.hitY].type % 4 > 1) board[unit.hitX][unit.hitY].type--;
+									else board[unit.hitX][unit.hitY] = new Tile(unit.hitX, unit.hitY);
+								}
+								unit.hitX = unit.moveX;
+								unit.hitY = unit.moveY;
 							}
-							unit.hitX = unit.moveX;
-							unit.hitY = unit.moveY;
+							turn = 3 - turn;
+
+							for(let unit of board.flat())
+								if(unit.team * unit.type == 0)
+									unit.team = unit.type = 0;
 						}
-						turn = 3 - turn;
 					}
 				}
 			}
@@ -370,6 +450,10 @@
 					menu.children[i].style.fontSize = 25 - (Math.abs(i - Number(type)))*3 + "px";
 					menu.children[i].style.opacity = 1 - (Math.abs(i - Number(type)))*0.1;
 				}
+			}
+			function sizeSelect(size){
+				boardSize = [8, 10, 12, 16, 20][size];
+				document.querySelector("#boardSizeSelector").style.left = size*20 + "%";
 			}
 
 
@@ -392,7 +476,7 @@
 			}
 			Object.defineProperty(NeuralNetwork.prototype, "evaluate", {value: function(inputData, outputFilter){
 				let currentLayer = inputData.map((x,i) => normalizedSigmoid(x + this.inputNeurons[i]));
-				for(let i in this.connections){
+				for(let i in this.connections)
 					currentLayer = this.connections[i].map(
 						(targetNodeConnections, targetIndex) =>
 						normalizedSigmoid(
@@ -403,8 +487,6 @@
 							) + this.allNeurons[Number(i) + 1][targetIndex]
 						)
 					);
-					console.log(i);
-				}
 				return currentLayer.filter((x,i) => outputFilter[Math.floor(i/4)] || this.outputNeurons.length - i <= 2);
 			}});
 			Object.defineProperty(NeuralNetwork.prototype, "mutate", {value: function(mutationChance, mutationStrength){
@@ -422,27 +504,53 @@
 				if(turn == 1) flipBoard();
 
 				let simplifiedBoard = board.flat().map(tile => [turn == 1 && tile.team ? 1.5 - tile.team/2 : tile.team/2, tile.type/4]);
-				let friendly = simplifiedBoard.map(x => x[0] == 1);
+				let friendly = simplifiedBoard.map(x => x[0] == 1 && x[1]);
 				//console.log(simplifiedBoard);
 				//console.log(friendly);
 
 				let moves = network.evaluate(simplifiedBoard.flat(), friendly);
 				//console.log(moves);
 
+				let units = [];
 				for(let i in friendly)
 					if(friendly[i]){
 						let x = Math.floor(i/boardSize), y = i % boardSize;
-						board[x][y].moveX = fixPos(x + moves.shift()*4 - 2);
-						board[x][y].moveY = fixPos(y + moves.shift()*4 - 2);
-						board[x][y].hitX = fixPos(board[x][y].moveX + moves.shift()*6 - 3);
-						board[x][y].hitY = fixPos(board[x][y].moveY + moves.shift()*6 - 3);
-						//TODO: store moveXY and hitXY as float positions (outputs scaled and shifted but not rounded and fixPos()'d)
-						//then make array of references to friendly units, after giving them x,y properties
-						//give them each a distance from the rounded position and float position, then sort by that distance
-						//from closest to farthest, let each one pick the closest valid/unocupied tile to where they want to be, then set their moveXY and that BOARD tile's 'team' property
+						board[x][y].moveX = x + moves.shift()*4 - 2;
+						board[x][y].moveY = y + moves.shift()*4 - 2;
+						board[x][y].hitX = board[x][y].moveX + moves.shift()*6 - 3;
+						board[x][y].hitY = board[x][y].moveY + moves.shift()*6 - 3;
+						board[x][y].x = x;
+						board[x][y].y = y;
+						units.push(board[x][y]);
 					}
-				newUnits[turn].pos = Math.floor(moves.shift() * boardSize);
+				newUnits[turn].pos = moves.shift() * boardSize - 0.5;
 				newUnits[turn].type = Math.round(moves.shift()) + 1;
+				let addedUnit = {moveX: newUnits[turn].pos, moveY: (boardSize - 1) * (turn - 1), x: Math.round(newUnits[turn].pos), y: (boardSize - 1) * (turn - 1)};
+				units.push(addedUnit);
+
+				for(let unit of units) unit.team = 0;
+
+				for(let unit of units)
+					unit.priority = distance(unit.moveX - fixPos(unit.moveX), unit.moveY - fixPos(unit.moveY)) + Math.random()/100;  //randomness is small enough to only affect ties
+				units.sort((a,b) => a.priority - b.priority);
+				for(let unit of units){
+					let nearest = nearestTile(unit.moveX, unit.moveY, (x, y, tile) => (unit == addedUnit ? (y == unit.moveY) : (gridDistance(x - unit.x, y - unit.y) <= 2.5)) && !(tile.team || tile.type));
+					({x: unit.moveX, y: unit.moveY} = (nearest.distance < 999 ? nearest : unit));
+					board[unit.moveX][unit.moveY].team = turn;
+				}
+				for(let unit of units){
+					let nearest = nearestTile(unit.hitX, unit.hitY, (x, y, tile) => unit != addedUnit && gridDistance(x - unit.moveX, y - unit.moveY) <= (unit.type == 4 ? 3.5 : 1.5) && tile.team + turn == 3 && tile.type);
+					({x: unit.hitX, y: unit.hitY} = (nearest.distance < 999 ? nearest : {x: unit.moveX, y: unit.moveY}));
+				}
+
+				for(let unit of units){
+					delete unit.x;
+					delete unit.y;
+					delete unit.priority;
+					board[unit.moveX][unit.moveY].team = 0;
+					unit.team = turn;
+				}
+				newUnits[turn].pos = addedUnit.moveX;
 
 				if(turn == 1) flipBoard();
 
@@ -467,15 +575,15 @@
 				if(onBoard(mouse)){
 					if(selected.x != -1){
 						let unit = board[selected.x][selected.y];
-						if(!board.flat().some(tile => tile.team && tile.type && tile.moveX == mouse.x && tile.moveY == mouse.y) && distance(mouse.x - selected.x, mouse.y - selected.y) <= 2.5){  //fighters with 1 health might be slower
+						if(!board.flat().some(tile => tile.team && tile.type && tile.moveX == mouse.x && tile.moveY == mouse.y) && gridDistance(mouse.x - selected.x, mouse.y - selected.y) <= 2.5){  //fighters with 1 health might be slower
 							unit.moveX = mouse.x;
 							unit.moveY = mouse.y;
-							if(board[unit.hitX][unit.hitY].team + turn != 3 || distance(unit.moveX - unit.hitX, unit.moveY - unit.hitY) > (unit.type == 4 ? 3.5 : 1.5)){  //add lower range for fighters
+							if(board[unit.hitX][unit.hitY].team + turn != 3 || gridDistance(unit.moveX - unit.hitX, unit.moveY - unit.hitY) > (unit.type == 4 ? 3.5 : 1.5)){  //add lower range for fighters
 								unit.hitX = unit.moveX;
 								unit.hitY = unit.moveY;
 							}
 						}
-						else if(board[mouse.x][mouse.y].team + turn == 3 && distance(mouse.x - unit.moveX, mouse.y - unit.moveY) <= (unit.type == 4 ? 3.5 : 1.5)){  //also needs variable range
+						else if(board[mouse.x][mouse.y].team + turn == 3 && gridDistance(mouse.x - unit.moveX, mouse.y - unit.moveY) <= (unit.type == 4 ? 3.5 : 1.5)){  //also needs variable range
 							unit.hitX = mouse.x;
 							unit.hitY = mouse.y;
 						}
@@ -499,11 +607,13 @@
 				drawBoard();
 			});
 			document.addEventListener("keydown", e => {
-				if(e.key == "g" && !animationTimer){
-					AIturn(n);
-					executeTurn();
-
-					n.mutate(0.1, 0.1);  //very, very temporary
+				if(!animationTimer){
+				 	if(e.key == "g" || e.key == "h")
+						AIturn(n);
+					if(e.key == "g"){
+						executeTurn();
+						n.mutate(0.1, 0.1);  //very, very temporary
+					}
 				}
 			});
 
