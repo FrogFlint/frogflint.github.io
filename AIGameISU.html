@@ -8,7 +8,7 @@
 				background: darkgrey;
 			}
 
-			#menu {
+			#menu, #files {
 				width: 600px;
 				height: 600px;
 				position: absolute;
@@ -85,10 +85,45 @@
 
 				outline: none;
 				border: 1px solid black;
+				border-radius: 3px;
 				background: linear-gradient(270deg, lime, #00FF0060 40%, #FF000060 60%, red);
 			}
 			#start:hover {
 				border-width: 2px;
+			}
+			#toFiles {
+				position: absolute;
+				left: 50%;
+				top: 5%;
+				transform: translate(-50%, 0%);
+				/*border-style: none;*/
+			}
+
+			#files {
+				display: flex;
+			}
+			#files>div {
+				width: 40%;
+				margin: 5%;
+				box-sizing: border-box;
+			}
+			#upload, #download {
+				background: #bbbbbb;
+				border: 1px solid darkgray;
+				padding: 3%;
+			}
+			#upload input {
+				margin-bottom: 20px;
+			}
+			#upload input[type="text"] {
+				background: #dddddd;
+				border-color: #e8e8e8;
+				padding: 2px;
+			}
+			#upload button {
+				font-size: 20px;
+				padding: 7px;
+				margin-top: 20px;
 			}
 
 			canvas {
@@ -121,23 +156,36 @@
 				border-top-color: #00bd00;
 				border-left-color: #00bd00;
 			}
+			#gameSpeed {
+				position: absolute;
+				top: 50%;
+				right: 50%;
+				transform: translate(calc(50% - 250px), -50%);
+				user-select: none;
+			}
+			#gameSpeed div {
+				width: 100%;
+				text-align: center;
+				padding: 8px;
+				box-sizing: border-box;
+			}
+			#gameSpeed div:hover {
+				color: #006cff;
+			}
+			#gameSpeedSelector {
+				position: absolute;
+				height: 25%;
+				top: 0%;
+				border: 1px solid black;
+				transition: 1s;
+			}
 
 		</style>
 	</head>
 	<body>
 		<div id="menu">
-			<div id="redPlayer">
-				<div onclick="playerSelect(1, 0)">Human</div>
-				<div onclick="playerSelect(1, 1)">Easy AI</div>
-				<div onclick="playerSelect(1, 2)">Medium AI</div>
-				<div onclick="playerSelect(1, 3)">Hard AI</div>
-			</div>
-			<div id="greenPlayer">
-				<div onclick="playerSelect(2, 0)">Human</div>
-				<div onclick="playerSelect(2, 1)">Easy AI</div>
-				<div onclick="playerSelect(2, 2)">Medium AI</div>
-				<div onclick="playerSelect(2, 3)">Hard AI</div>
-			</div>
+			<div id="redPlayer"></div>
+			<div id="greenPlayer"></div>
 			<div id="boardSize">
 				<div id="boardSizeSelector"></div>
 				<div onclick="sizeSelect(0)"><span style="color: #00000000">0</span>8</div>
@@ -147,11 +195,28 @@
 				<div onclick="sizeSelect(4)">20</div>
 			</div>
 			<button id="start" onclick="resetBoard()">VS</button>
+			<button id="toFiles" onclick="setView('files')">Custom Networks</div>
 		</div>
-		<div id="game" style="display: none">
+		<div id="files">
+			<div id="download"></div>
+			<div id="upload">
+				<input id="uploadName" type="text" placeholder="Network name"/>
+				<input id="uploadFile" type="file" accept=".txt"/>
+				<button onclick="uploadNetwork()">Add Network</button>
+			</div>
+		</div>
+		<div id="game">
 			<canvas width="600" height="600"></canvas>
 			<button id="turn-end" onclick="executeTurn()">End turn</button>
+			<div id="gameSpeed">
+				<div id="gameSpeedSelector"></div>
+				<div onclick="speedSelect(0)">slow</div>
+				<div onclick="speedSelect(1)">medium</div>
+				<div onclick="speedSelect(2)">fast</div>
+				<div onclick="speedSelect(3)">instant</div>
+			</div>
 		</div>
+
 		<script>
 
 			let canvas = document.querySelector("canvas");
@@ -165,18 +230,24 @@
 			ctx.lineWidth = defaultLineWidth;
 			let arrowLength = 0.6;
 
-			let playerType = [, 0, 0];  //human, easy AI, medium AI, hard AI
+			let playerType = [, 0, 0];
+			let currentNetworks = [, null, null];  //networks are stored as text until they are used
 
+			let validBoardSizes = [8, 10, 12, 16, 20];
+			let networks = {}, playerNames = {};
+			for(size of validBoardSizes)
+				networks[size] = [], playerNames[size] = ["Human"];
 			let colors = {player: [,"red","lime"], board: ["cyan","orange","#860c00"]};
 
 			let boardSize = 10;
 			let board = [[{}]];
 			let newUnits = [[]];
 			let turn = 1;
+			let responseTurn = false;
 
 			let changes = [];
 			let animationTimer = 0;
-			let animationSpeed = 20;  //50
+			let animationSpeed = 20;
 			let animationPhase = 0;
 
 			function Tile(i, j){
@@ -188,9 +259,6 @@
 			let mouse = {x:0, y:0};
 			let selected = {x:0, y:0};
 
-
-			let networks = [];
-			function snapNetworks(){}
 
 
 
@@ -222,7 +290,7 @@
 				ctx.closePath();
 			}
 			const sin120 = Math.sin(Math.PI * 2/3), cos120 = Math.cos(Math.PI * 2/3);
-			function drawUnit(x, y, type, team){
+			function drawUnit(x, y, type, team, counterSymbol = false){
 				if(type && team){
 					ctx.beginPath();
 					ctx.arc(x + 0.5, y + 0.5, 0.38, 0, Math.PI*2);
@@ -246,6 +314,15 @@
 						ctx.arc(x + 0.5 + 0.15*dot[0], y + 0.5 + 0.15*dot[1], 0.05, 0, Math.PI*2);
 						ctx.fill();
 						ctx.closePath();
+					}
+
+					if(counterSymbol){
+						outlineStrokePath(colors.board[1], 3, () => {
+							drawPolygon([x + 0.5, y + 0.3], [x + 0.5, y + 0.55]);
+							drawPolygon([x + 0.5, y + 0.7], [x + 0.5, y + 0.71]);
+						});
+						ctx.lineWidth = defaultLineWidth;
+						ctx.strokeStyle = "black";
 					}
 				}
 			}
@@ -273,8 +350,13 @@
 			}
 
 
-			//functions for playing the game
+			/*  functions for playing the game  */
 			const onBoard = ({x, y}) => x >= 0 && x < boardSize && y >= 0 && y < boardSize;
+			const canCounterAttack = (x, y) => {
+				if(!(board[x][y].type % 4)) return false;
+				enemies = board.flat().filter(tile => tile.team + board[x][y].team == 3);
+				return enemies.some(tile => gridDistance(tile.moveX - x, tile.moveY - y) <= 1.5) && !enemies.some(tile => tile.hitX == x && tile.hitY == y);
+			};
 			function nearestTile(x, y, func){
 				let best = {distance: 99999};
 				for(let i in board)
@@ -289,12 +371,10 @@
 				selected.x = -1;
 				turn = Math.round(Math.random()) + 1;
 
-				//temp
-				n = new NeuralNetwork(5, 100);
-				n.mutate(1, 1);
+				currentNetworks[1] = playerType[1] ? newNetworkFromText(networks[boardSize][playerType[1] - 1]) : null;
+				currentNetworks[2] = playerType[2] == playerType[1] ? currentNetworks[1] : playerType[2] ? newNetworkFromText(networks[boardSize][playerType[2] - 1]) : null;
 
-				document.querySelector("#menu").style.display = "none";
-				document.querySelector("#game").style.display = "";
+				setView("game");
 
 				ctx.transform(1/drawSize, 0, 0, 1/drawSize, 0, 0);
 				drawSize = 400/boardSize;
@@ -305,19 +385,18 @@
 			}
 			function executeTurn(){
 				changes = [];
-				//do changes
 				for(let i in board)
 					for(let j in board[i])
 						if(board[i][j].team == turn){
-							changes.push(Object.assign({x: Number(i), y: Number(j)}, board[i][j]));
+							changes.push(Object.assign(board[i][j], {x: Number(i), y: Number(j)}));
 							board[i][j] = new Tile(i, j);
 
 						}
 
 				let i = newUnits[turn].pos, j = (boardSize - 1) * (turn - 1);
-				if(!board[i][j].team || !board[i][j].type){
+				if(!board[i][j].team || !board[i][j].type)
 					changes.push(Object.assign(new Tile(i, j), {x: i, y: j + 2*(turn - 1.5), type: newUnits[turn].type + 2, team: turn}));
-				}
+
 				//check for win
 
 				selected.x = -1;
@@ -335,14 +414,17 @@
 							if(board[i][j].team && board[i][j].type){
 								if(board[i][j].team == turn)
 									range[board[i][j].moveX][board[i][j].moveY] = 999;
-								else if(gridDistance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))  //change for variable attack ranges
+								else if(gridDistance(board[selected.x][selected.y].moveX - i, board[selected.x][selected.y].moveY - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))
 									range[i][j] = -1;
-								else if(gridDistance(selected.x - i, selected.y - j) <= (board[selected.x][selected.y].type == 4 ? 6 : 4))  //6 is move range + attack range
-									range[i][j] = -2;
+								else{
+									let inter = nearestTile(i, j, (x, y, tile) => tile.team + turn != 3 && gridDistance(selected.x - x, selected.y - y) <= 2.5);
+									if(gridDistance(inter.x - i, inter.y - j) <= (board[selected.x][selected.y].type == 4 ? 3.5 : 1.5))
+										range[i][j] = -2;
+								}
 							}
 					for(let i in range)
 						for(let j in range[i])
-							if(range[i][j] <= 2.5){
+							if(range[i][j] <= 2.5 && !(board[selected.x][selected.y].hitX == i && board[selected.x][selected.y].hitY == j)){
 								ctx.beginPath();
 								ctx.fillStyle = colors.board[-Math.min(range[i][j], 0)];  //-1 and -2 have their own colors, everything else is blue
 								ctx.fillRect(i, j, 1, 1);
@@ -351,7 +433,6 @@
 
 				}
 
-				ctx.beginPath();
 				for(let i = 0; i <= boardSize; i++){
 					drawPolygon([0, i], [boardSize, i]);
 					drawPolygon([i, 0], [i, boardSize]);
@@ -363,14 +444,15 @@
 					}
 				}
 				if(onBoard(selected)){
+					ctx.beginPath();
 					ctx.strokeRect(selected.x, selected.y, 1, 1);
+					ctx.closePath();
 				}
-				ctx.closePath();
 
 				/*  board contents  */
 				for(let i in board)
 					for(let j in board[i])
-						drawUnit(Number(i), Number(j), board[i][j].type, board[i][j].team);
+						drawUnit(Number(i), Number(j), board[i][j].type, board[i][j].team, canCounterAttack(i, j) && board[i][j].team + turn == 3);
 
 				ctx.lineWidth = 4/drawSize;
 				for(let i in board)
@@ -416,7 +498,7 @@
 					}
 
 					if(!animationTimer){
-						if(animationPhase--)
+						if(animationPhase-- && changes.some(unit => unit.hitX != unit.moveX || unit.hitY != unit.moveY))
 							animationTimer = animationSpeed;
 						else{
 							for(unit of changes){
@@ -442,6 +524,14 @@
 			}
 
 
+			/*  HTML functions  */
+			function setView(id){
+				document.querySelectorAll("body>div").forEach(
+					e => e.style.display = "none"
+				);
+				document.querySelector("body>div#" + id)
+					.style.display = "";
+			}
 			function playerSelect(player, type){
 				playerType[player] = type;
 				let menu = document.querySelector([, "#redPlayer", "#greenPlayer"][player]);
@@ -451,40 +541,73 @@
 					menu.children[i].style.opacity = 1 - (Math.abs(i - Number(type)))*0.1;
 				}
 			}
-			function sizeSelect(size){
-				boardSize = [8, 10, 12, 16, 20][size];
-				document.querySelector("#boardSizeSelector").style.left = size*20 + "%";
+			function sizeSelect(index){
+				size = validBoardSizes[index];
+
+				if(true || playerNames[boardSize].join() != playerNames[size].join())
+					document.querySelectorAll("#redPlayer, #greenPlayer").forEach(
+						(el, i) =>
+						el.innerHTML = playerNames[size].map((name, j) => "<div onclick=\"playerSelect(" + (Number(i) + 1) + ", " + j + ")\">" + name.match(/\w|\s/g).join("") + "</div>").join("\n")
+					)
+
+				boardSize = size;
+				document.querySelector("#boardSizeSelector").style.left = index*20 + "%";
+				for(player of [1, 2])
+					playerSelect(player, playerType[player] in playerNames[size] ? playerType[player] : 0);
+			}
+			function speedSelect(speed){
+				animationSpeed = [20, 10, 5, 1][speed];
+				document.querySelector("#gameSpeedSelector").style.top = speed*25 + "%";
+			}
+			function uploadNetwork(){
+				let name = document.querySelector("#uploadName");
+				let file = document.querySelector("#uploadFile");
+				if(file.files.length){
+					let f = file.files[0];
+					f.text().then(text => text.split(/\n\s?\n/).forEach(networkText => addNetwork(networkText, name.value)));
+
+					setView("menu");
+					sizeSelect(validBoardSizes.indexOf(boardSize));
+				}
 			}
 
+			function addNetwork(text, name){
+				let size = Math.round(Math.sqrt(text.split("\n")[0].split(",").length / 2));
+				networks[size].push(text);
+				playerNames[size].push(name);
+			}
+			function newNetworkFromText(text){
+				let data = text.split("\n").map(x => x.split(",").map(Number));
+				let length = (data.length - 1) / 2 + 1;
+				return new NeuralNetwork(data.slice(0, length), data.slice(length));
+			}
 
-			//neural network related functions
-			function NeuralNetwork(hiddenLayers, hiddenLayerSize){
-				this.inputNeurons = new Array(boardSize**2 * 2).fill(0);
-				this.outputNeurons = new Array(boardSize**2 * 4 + 2).fill(0);
-				this.hiddenNeurons = createMatrix(hiddenLayers, hiddenLayerSize);
+			/*  neural network related functions  */
+			function NeuralNetwork(nodes, connections){
+				this.inputNeurons = nodes[0];
+				this.outputNeurons = nodes[nodes.length - 1];
 
-				this.allNeurons = [this.inputNeurons, ...this.hiddenNeurons, this.outputNeurons];
-				this.connections = [];
-
-				this.allNeurons.reduce(
-					(previous, current) => {
-						this.connections.push(createMatrix(current.length, previous.length));
-						return current;
-					}
+				this.allNeurons = nodes;
+				this.connections = connections.map(
+					(layer, i) =>
+					createMatrix(
+						nodes[Number(i) + 1].length,
+						nodes[i].length,
+						(x, y, row) => layer[x*row.length + Number(y)]
+					)
 				);
-
 			}
 			Object.defineProperty(NeuralNetwork.prototype, "evaluate", {value: function(inputData, outputFilter){
-				let currentLayer = inputData.map((x,i) => normalizedSigmoid(x + this.inputNeurons[i]));
+				let currentLayer = inputData.map((x,i) => /*normalizedSigmoid*/(x + this.inputNeurons[i])/2);
 				for(let i in this.connections)
 					currentLayer = this.connections[i].map(
-						(targetNodeConnections, targetIndex) =>
+						(nodeConnections, j) =>
 						normalizedSigmoid(
-							targetNodeConnections.reduce(
-								(accumulator, connectionWeight, sourceIndex) =>
-								accumulator + connectionWeight*currentLayer[sourceIndex],
+							nodeConnections.reduce(
+								(acc, weight, k) =>
+								acc + weight*currentLayer[k],
 								0
-							) + this.allNeurons[Number(i) + 1][targetIndex]
+							) + this.allNeurons[Number(i) + 1][j]
 						)
 					);
 				return currentLayer.filter((x,i) => outputFilter[Math.floor(i/4)] || this.outputNeurons.length - i <= 2);
@@ -503,8 +626,8 @@
 			function AIturn(network){
 				if(turn == 1) flipBoard();
 
-				let simplifiedBoard = board.flat().map(tile => [turn == 1 && tile.team ? 1.5 - tile.team/2 : tile.team/2, tile.type/4]);
-				let friendly = simplifiedBoard.map(x => x[0] == 1 && x[1]);
+				let simplifiedBoard = board.flat().map(tile => [[, [0, 1, -1], [0, -1, 1]][turn][tile.team], tile.type/2 - 1]);
+				let friendly = simplifiedBoard.map(x => x[0] == 1 && x[1] > -1);
 				//console.log(simplifiedBoard);
 				//console.log(friendly);
 
@@ -523,15 +646,15 @@
 						board[x][y].y = y;
 						units.push(board[x][y]);
 					}
-				newUnits[turn].pos = moves.shift() * boardSize - 0.5;
+				newUnits[turn].pos = moves.shift() * (boardSize - 1);
 				newUnits[turn].type = Math.round(moves.shift()) + 1;
-				let addedUnit = {moveX: newUnits[turn].pos, moveY: (boardSize - 1) * (turn - 1), x: Math.round(newUnits[turn].pos), y: (boardSize - 1) * (turn - 1)};
+				let addedUnit = {moveX: newUnits[turn].pos, moveY: 0};
 				units.push(addedUnit);
 
-				for(let unit of units) unit.team = 0;
-
-				for(let unit of units)
-					unit.priority = distance(unit.moveX - fixPos(unit.moveX), unit.moveY - fixPos(unit.moveY)) + Math.random()/100;  //randomness is small enough to only affect ties
+				for(let unit of units){
+					unit.team = 0;
+					unit.priority = distance(unit.moveX - fixPos(unit.moveX), unit.moveY - fixPos(unit.moveY));
+				}
 				units.sort((a,b) => a.priority - b.priority);
 				for(let unit of units){
 					let nearest = nearestTile(unit.moveX, unit.moveY, (x, y, tile) => (unit == addedUnit ? (y == unit.moveY) : (gridDistance(x - unit.x, y - unit.y) <= 2.5)) && !(tile.team || tile.type));
@@ -558,11 +681,10 @@
 			}
 			const fixPos = x => Math.max(Math.min(Math.round(x), boardSize - 1), 0);
 			function flipBoard(){
-				board.reverse().forEach(col => col.reverse());
-				board.flat().forEach(x => {
+				board.reverse().forEach(col => col.reverse().forEach(tile => {
 					for(prop of ["moveX", "moveY", "hitX", "hitY"])
-						x[prop] = boardSize - x[prop] - 1;
-				});
+						tile[prop] = boardSize - tile[prop] - 1;
+				}));
 				newUnits[turn].pos = boardSize - newUnits[turn].pos - 1;
 			}
 
@@ -608,20 +730,29 @@
 			});
 			document.addEventListener("keydown", e => {
 				if(!animationTimer){
-				 	if(e.key == "g" || e.key == "h")
-						AIturn(n);
-					if(e.key == "g"){
-						executeTurn();
-						n.mutate(0.1, 0.1);  //very, very temporary
+					if(playerType[turn]){
+					 	if(e.key == "g" || e.key == "h")
+							AIturn(currentNetworks[turn]);
+						if(e.key == "g")
+							executeTurn();
 					}
+
+					if(e.key == "Escape")
+						setView("menu");
 				}
 			});
 
-			/*  for testing  */
-			let n;
-
-			playerSelect(1, 0);
-			playerSelect(2, 0);
+			/*  retrieve the pre-generated training data from github pages  */
+			fetch("https://raw.githubusercontent.com/FrogFlint/frogflint.github.io/master/DefaultNetworksTrainingData.txt")
+	            .then(response => response.text())
+	            .then(commit => commit.split(/\n\s?\n/).forEach((networkText, i) => addNetwork(networkText, ["Easy AI", "Medium AI", "Hard AI"][i % 3])))
+				.then(() => {
+					sizeSelect(1);
+					playerSelect(1, 0);
+					playerSelect(2, 0);
+					setView("menu");
+				})
+			;
 
 		</script>
 	</body>
