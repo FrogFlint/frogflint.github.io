@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en" dir="ltr">
 	<head>
 		<meta charset="utf-8">
@@ -692,7 +692,7 @@
 					f.text().then(text => text.split(/\n\s?\n/).forEach(networkText => addNetwork(networkText, name.value)));
 
 					setView("menu");
-					sizeSelect(validBoardSizes.indexOf(boardSize) + 1, true);
+					setTimeout(() => sizeSelect(validBoardSizes.indexOf(boardSize), true), 10);
 				}
 			}
 			function downloadNetwork(type){
@@ -731,7 +731,7 @@
 				);
 			}
 			Object.defineProperty(NeuralNetwork.prototype, "evaluate", {value: function(inputData, outputFilter){
-				let currentLayer = inputData.map((x,i) => /*normalizedSigmoid*/(x + this.inputNeurons[i])/2);
+				let currentLayer = inputData.map((x,i) => x + this.inputNeurons[i]);
 				for(let i in this.connections)
 					currentLayer = this.connections[i].map(
 						(nodeConnections, j) =>
@@ -832,7 +832,7 @@
 				drawBoard();
 			}
 			function autoTurn(){
-				if(playerType[turn] && autoRunAI && !animationTimer && !animationPhase){
+				if(playerType[turn] && autoRunAI && !animationTimer && animationPhase < 1){
 					AIturn(currentNetworks[turn]);
 					executeTurn();
 				}
