@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 	<head>
@@ -178,6 +179,9 @@
 			}
 			#highscores td {
 				vertical-align: top;
+			}
+			#highscores tr:hover {
+				background: #c0c0c0;
 			}
 			#browsing>div + div {
 				position: inherit;
@@ -523,7 +527,7 @@
 				buttons[0].onclick = {
 					userLevels: () => loadLevel(),
 					myLevels: () => { setView("#building"); setCanvasSize(editorCanvas, selectedItem); startEditor(); },
-					users: () => { document.querySelector("#itemSearch input").value = item.name; setBrowseTab("userLevels", sortType, "author") }
+					users: () => { document.querySelector("#itemSearch input").value = item.name; setBrowseTab("userLevels", sortType, "author"); }
 				}[browseTab];
 				buttons[1].style.display = "";
 				buttons[1].innerHTML = {
@@ -588,7 +592,18 @@
 					let scoreboard = document.querySelector("#highscores");
 					scoreboard.style.display = "";
 					let scores = Object.entries(item.highscores).sort((a,b) => a[1] - b[1]);
-					scoreboard.children[0].innerHTML = scores.map(([name, score], position) => "<tr><td>" + (position- -1) + ". " + name + "</td><td>" + score.toFixed(2) + "s</td></tr>").join("");
+					scoreboard.firstElementChild.innerHTML = scores.map(
+						([name, score], position) =>
+						"<tr><td>" + (position- -1) + ". " + name + "</td><td>" + score.toFixed(2) + "s</td></tr>"
+					).join("");
+					if(scores.length)
+						Array.from(scoreboard.firstElementChild.firstElementChild.children).forEach(
+							(el, i) =>
+							el.onclick = () => {
+								game.replay = Array.from(item.replays[scores[i][0]]);
+								loadLevel(true);
+							}
+						);
 				}
 			}
 
@@ -650,6 +665,7 @@
 				this.data = data;
 
 				this.highscores = {};
+				this.replays = {};
 				this.playerDeaths = {};
 				this.ratings = {};  //1 to 5
 
@@ -690,6 +706,8 @@
 				},
 				tileSize: 10,
 				keys: {w:false, a:false, d:false},
+				replay: [],
+				isReplay: false,
 				timer: 0,
 			};
 			let editor = {
@@ -967,6 +985,9 @@
 					gctx.fillRect(0, 0, (game.width + 2) * game.tileSize, (game.height + 2) * game.tileSize);
 					game.timer += 0.02;
 
+					if(game.isReplay) Object.assign(game.keys, game.replay.shift());
+					else game.replay.push(Object.assign({}, game.keys));
+
 
 					if(game.keys.a && game.player.vx > -0.25) game.player.vx -= game.player.accel * (game.player.onGround || 0.7);
 					if(game.keys.d && game.player.vx <  0.25) game.player.vx += game.player.accel * (game.player.onGround || 0.7);
@@ -1125,8 +1146,10 @@
 					){
 						if(browseTab == "myLevels") setView("#building");
 						else{
-							if(selectedItem.highscores[currentUser.name]) selectedItem.highscores[currentUser.name] = Math.min(selectedItem.highscores[currentUser.name], game.timer);
-							else selectedItem.highscores[currentUser.name] = game.timer;
+							if(!game.isReplay){
+								selectedItem.highscores[currentUser.name] = Math.min(selectedItem.highscores[currentUser.name] || game.timer, game.timer);
+								selectedItem.replays[currentUser.name] = game.replay;
+							}
 							setView("#browsing");
 							selectItem();
 						}
@@ -1206,11 +1229,13 @@
 				});
 				editorFrame();
 			}
-			function startLevel(){
+			function startLevel(replay = false){
 				game.player.alive = true;
 				game.player.x = game.player.y = 1
 				game.player.vx = game.player.vy = 0;
 				game.keys = {w:false, a:false, d:false};
+				game.isReplay = replay;
+				if(!replay) game.replay = [];
 				game.timer = 0;
 				game.enemies = [];
 				game.projectiles = [];
@@ -1244,14 +1269,14 @@
 				document.querySelector("#dead").style.display = "none";
 				gameFrame();
 			}
-			function loadLevel(levelData = selectedItem.data){
+			function loadLevel(replay = false, levelData = selectedItem.data){
 				setView("#playing");
 				document.querySelector("#playing p").innerHTML = levelData.name;
 				game.data = levelData.tiles;
 				game.width = levelData.width;
 				game.height = levelData.height;
 				setCanvasSize(gameCanvas, game);
-				startLevel();
+				startLevel(replay);
 			}
 			function setCanvasSize(canvas, obj){
 				game.tileSize = Math.min(canvas.parentElement.clientWidth / (obj.width + 2), canvas.parentElement.clientHeight / (obj.height + 2));
@@ -1268,7 +1293,7 @@
 				if(view == "#playing" && e.key in game.keys) game.keys[e.key] = true;
 				if(["#playing", "#building"].includes(view)){
 					if(e.key == "Escape") setView("#browsing");
-					else if(e.key == " " && browseTab == "myLevels") view == "#building" ? loadLevel(selectedItem) : setView("#building");
+					else if(e.key == " " && browseTab == "myLevels") view == "#building" ? loadLevel(false, selectedItem) : setView("#building");
 					else if(e.key == 0) game.player.autoJump = !game.player.autoJump;
 					else if(view == "#building"){
 						if(e.key == "r") editor.rotation = (editor.rotation + 1) % 4;
@@ -1333,10 +1358,15 @@
 			users.push(new User("test", "12345"), new User("5P3C1AL_CHARACT3R5", "321"), new User("Long Name With Spaces", "password"), new User("Boring^*Name", "green"), new User("NAME", "aaaaa"));
 			publishedLevels.push(...["abcdefgh".split(""), "a test", "Another test.", "bhIgbgBKUAYGUWt!ny-", "We1rD_ch4r$*\\>?~"].flat().map((x,i) => new PublicLevel(x, users[Math.round(Math.random()*4)].name, i, new Level(x))));
 			users[0].levels.push(new Level("Test level"), new Level("Level with a really long name"));
-			publishedLevels.forEach(level => users.slice(Math.floor(Math.random()*6)).forEach(user => level.highscores[user.name] = (Math.random()*15).toFixed(2)*2 ));
-			publishedLevels.forEach(level => users.slice(1).forEach(user => level.playerDeaths[user.name] = Math.floor(Math.random()*15) ));
-			publishedLevels.forEach(level => users.slice(3).forEach(user => level.ratings[user.name] = Math.floor(Math.random()*5 + 1) ));
-			publishedLevels.forEach(level => level.data.tiles[Math.floor(Math.random()*7)+8][14].type = "door");
+			publishedLevels.forEach(level => {
+				users.slice(Math.floor(Math.random()*6)).forEach(user => {
+					level.highscores[user.name] = (Math.random()*15).toFixed(2)*2;
+					level.replays[user.name] = new Array(10000).fill(0).map(() => ({w:false, a:false, d:true}));
+				});
+				users.slice(1).forEach(user => level.playerDeaths[user.name] = Math.floor(Math.random()*15));
+				users.slice(3).forEach(user => level.ratings[user.name] = Math.floor(Math.random()*5 + 1));
+				level.data.tiles[Math.floor(Math.random()*7)+8][14].type = "door";
+			});
 
 		</script>
 
