@@ -7,7 +7,7 @@
 
 		<style>
 			body {
-				background: #202020;
+				background: #303030;
 			}
 			body > div {
 				position: absolute;
@@ -34,6 +34,9 @@
 				width: 75%;
 				height: 100%;
 			}
+			/*#cellTypes circle {
+				user-drag:
+			}*/
 			#design .sidebar {
 				width: 25%;
 				padding-left: 30px;
@@ -105,13 +108,14 @@
 	<body>
 
 		<div id="design">
-			<div id="cellTypes">
-				<svg></svg>
-			</div>
+			<svg id="cellTypes"></svg>
 			<div class="sidebar">
 				<div id="cellTypeName" contenteditable></div>
+				<div id="cellTypeColor"></div>
 				<div id="rules"></div>
-				<button onclick="resetGrid()">Start simulation</button>
+				<button onclick="newCellType()">New cell type</button>
+				<button onclick="deleteCellType(selectedCellType)">Delete cell type</button>
+				<br><br><button onclick="resetGrid()">Start simulation</button>
 			</div>
 		</div>
 		<div id="run" style="display: none">
@@ -120,12 +124,12 @@
 			</div>
 			<div class="sidebar">
 				<div id="controls">
-					<button>Play</button>
-					<button>Step</button>
+					<button onclick="controlFunctions[0]()">Play</button>
+					<button onclick="timeStep()">Step</button>
 					<span id="stepCounter">0 iterations</span>
-					<br><input type="range" min=1 max=100>Play speed</input>
-					<br><input type="checkbox" checked=true>Show grid</input>
-					<br><input type="checkbox">Show empty grid</input>
+					<br><input type="range" min=1 max=100 onchange="controlFunctions[1]()">Play speed</input>
+					<br><input type="checkbox" checked=true onchange="controlFunctions[2]()">Show grid</input>
+					<br><input type="checkbox" onchange="controlFunctions[3]()">Show empty grid</input>
 					<br><br><button onclick="setView('design')">Edit rules</button>
 				</div>
 				<div id="selectCellType"></div>
@@ -140,6 +144,8 @@
 			let cellBordersCSS = document.getElementById("cellBorders");
 			let controls = document.getElementById("controls");
 			let cellTypeSelector = document.getElementById("selectCellType");
+			let cellTypeOptions = document.querySelector("#design .sidebar");
+			let cellTypeSVG = document.getElementById("cellTypes");
 
 			let cellSize = 50;  //px
 			let displayWidth = 20;
@@ -158,24 +164,62 @@
 			let time = 0;
 			let paused = true;
 			let speed = 100;  //ms per frame
-			let selectedCellType = 1;  //change to 0
-			let mouse = {left:false, right:false, x:0, y:0, dx:0, dy:0};
+			let selectedCellType = -1;
+			let mouse = {left:false, right:false, shift:false, x:0, y:0, dx:0, dy:0};
 			let camera = {x:0, y:0, zoom:1, zoomF:1.0};
 
 
-			function CellType(){
-				this.color = "#202020";
-				this.name = "new cell type";
-				this.rules = [];
-				this.rulePriority = range(cellTypes.length);
+			class CellType{
+				constructor(){
+					this.color = "#202020";
+					this.name = "new cell type";
+					this.rules = [];
+					this.rulePriority = range(cellTypes.length);
 
-				this.x = 0;  //may be unnecessary
-				this.y = 0;
+					this.x = cellTypeSVG.clientWidth/2;
+					this.y = cellTypeSVG.clientHeight/2;
+				}
 			}
-			function CellRule(){
-				this.text = 0;
-				this.clauses = [[[{}]]];
+			class CellRule{
+				constructor(){
+					this.text = "";
+					this.clauses = [[[{}]]];
+				}
+
 			}
+
+
+			function newCellType(){
+				typeNumber = cellTypes.length;
+
+				cellTypes.forEach(type => {
+					type.rules.push(new CellRule());
+					type.rulePriority.push(typeNumber);
+				});
+				cellTypes.push(new CellType());
+
+				cellTypeSVG.innerHTML +=
+					"<circle id='cellType-" + typeNumber +
+					"' r=25 cx=" + cellTypeSVG.clientWidth/2 +
+					" cy=" + cellTypeSVG.clientHeight/2 +
+					" fill='#202020' stroke='black'></circle>";
+				editCellType(typeNumber);
+			}
+			function deleteCellType(type){
+				//
+				cellTypes.slice(type, 1);
+			}
+			function editCellType(type){
+				if(selectedCellType >= 0)
+					cellTypeCircle(selectedCellType).setAttribute("stroke", "black");
+				selectedCellType = type;
+				if(type < 0)
+					return;
+				cellTypeCircle(type).setAttribute("stroke", "white");
+
+
+			}
+			const cellTypeCircle = type => document.getElementById("cellType-" + type);
 
 
 			function setView(id){
@@ -203,17 +247,14 @@
 				else{
 					gridDisplay.innerHTML = range(displayHeight + 1).map(
 						j =>
-						range(displayWidth + 1 - Math.floor(camera.x), -Math.floor(camera.x)).some(row => row in grid && grid[row][j - Math.floor(camera.y)])
-						?	"<div class='gridRow' style='top:" + j*cellSize + "px'>\n" +
-							range(displayWidth + 1).map(
-								i =>
-								grid[i - Math.floor(camera.x)] && grid[i - Math.floor(camera.x)][j - Math.floor(camera.y)]
-								?	"<div class='cell cellType-" +
-									(grid[i - Math.floor(camera.x)] ? grid[i - Math.floor(camera.x)][j - Math.floor(camera.y)] || 0 : 0) +
-									"' style='left:" + i*cellSize + "px'></div>"
-								:	""
-							).join("\n") + "\n</div>"
-						:	""
+						range(displayWidth + 1).map(
+							i =>
+							grid[i - Math.floor(camera.x)] && grid[i - Math.floor(camera.x)][j - Math.floor(camera.y)]
+							?	"<div class='cell cellType-" +
+								(grid[i - Math.floor(camera.x)][j - Math.floor(camera.y)] || 0) +
+								"' style='left:" + i*cellSize + "px;top:" + j*cellSize + "px'></div>"
+							:	""
+						).join("\n")
 					).join("\n");
 				}
 
@@ -300,8 +341,18 @@
 				zoomUpdate();
 				createDisplayGrid();
 
-				cellTypeSelector.innerHTML = cellTypes.map((type, i) => "<div style='background:" + type.color + "' onclick='selectCellType(" + i + ")'></div>");
+				cellTypeSelector.innerHTML = cellTypes.map((type, i) => "<div style='background:" + type.color + "' onclick='selectCellType(" + i + ")'></div>").join("");
 				selectCellType(1);
+				controls.children[0].innerText = "Play";
+				controls.children[2].innerText = "0 iterations";
+
+				gridContainer.style.background = cellTypes[0].color;
+			}
+
+			function rowIsEmpty(x){
+				for(let i in grid[x])
+					return false;
+				return true;
 			}
 
 
@@ -311,19 +362,24 @@
 			const multiSplit = (str, delims) => delims.length ? str.split(delims[0]).map(sub => multiSplit(sub, delims.slice(1))) : str;
 			document.oncontextmenu = () => false;
 
-			gridContainer.addEventListener("mousedown", evt => {
-				if(evt.button == 0) mouse.left  = true;
-				if(evt.button == 2) mouse.right = true;
+			let mouseEventHandlers = [
+				["mousedown", evt => {
+					if(evt.button == 0) mouse.left  = true;
+					if(evt.button == 2) mouse.right = true;
 
-				onMouseEvent(evt);
-			});
-			gridContainer.addEventListener("mouseup", evt => {
-				if(evt.button == 0) mouse.left  = false;
-				if(evt.button == 2) mouse.right = false;
+					onMouseEvent(evt);
+				}],
+				["mouseup", evt => {
+					if(evt.button == 0) mouse.left  = false;
+					if(evt.button == 2) mouse.right = false;
 
-				onMouseEvent(evt);
-			});
-			gridContainer.addEventListener("mousemove", onMouseEvent);
+					onMouseEvent(evt);
+				}],
+				["mousemove", onMouseEvent]
+			];
+			for(let el of [gridContainer, cellTypeSVG])
+				for(let [eventType, handler] of mouseEventHandlers)
+					el.addEventListener(eventType, handler);
 			gridContainer.addEventListener("wheel", evt => {
 				camera.zoomF = Math.max(Math.min(camera.zoomF - evt.wheelDelta/150, 15), 0);
 				camera.zoom = Math.round(camera.zoomF);
@@ -336,62 +392,103 @@
 
 				createDisplayGrid();
 			});
+			document.addEventListener("keydown", evt => {
+				if(view == "run"){
+					if(evt.keyCode == 32) controlFunctions[0]();
+					else if(evt.key == "s") timeStep();
+					else if(evt.key == "escape") setView("design");
+					else if((evt.key - 1) in cellTypes) selectCellType(evt.key - 1);
+				}
+			});
 
 			function onMouseEvent(evt){
 				mouse.dx = evt.clientX - mouse.x;
 				mouse.dy = evt.clientY - mouse.y;
 				mouse.x = evt.clientX;
 				mouse.y = evt.clientY;
+				mouse.shift = evt.shiftKey;
 
-				if(mouse.right){
-					camera.x += mouse.dx / cellSize;
-					camera.y += mouse.dy / cellSize;
-					camera.xc = Math.floor(camera.x);
-					camera.yc = Math.floor(camera.y);
-				}
+				if(view == "run"){
+					if(mouse.right){
+						camera.x += mouse.dx / cellSize;
+						camera.y += mouse.dy / cellSize;
+						camera.xc = Math.floor(camera.x);
+						camera.yc = Math.floor(camera.y);
+					}
 
-				let x = Math.floor(mouse.x / cellSize - camera.x) + 1;  //+1 is for buffer cells that are partially cut off
-				let y = Math.floor(mouse.y / cellSize - camera.y) + 1;
+					let x = Math.floor(mouse.x / cellSize - camera.x) + 1;  //+1 is for buffer cells that are partially cut off
+					let y = Math.floor(mouse.y / cellSize - camera.y) + 1;
 
-				if(mouse.left){
-					if(selectedCellType == 0){
-						if(x in grid){
-							delete grid[x][y];
-							if(!grid[x].length)
-								delete grid[x];
+					if(mouse.left){
+						if(selectedCellType == 0){
+							if(x in grid){
+								delete grid[x][y];
+								if(rowIsEmpty(x))
+									delete grid[x];
+							}
+						}
+						else{
+							if(!grid[x])
+								grid[x] = [];
+							grid[x][y] = selectedCellType;
 						}
 					}
-					else{
-						if(!grid[x])
-							grid[x] = [];
-						grid[x][y] = selectedCellType;
-					}
-				}
 
-				if(!showGrid)
-					createDisplayGrid();
-				else if(mouse.right)
-					moveDisplayGrid();
-				else if(mouse.left)
-					setDisplayCell(x + Math.floor(camera.x), y + Math.floor(camera.y), selectedCellType);
+					if(!showGrid)
+						createDisplayGrid();
+					else if(mouse.right)
+						moveDisplayGrid();
+					else if(mouse.left)
+						setDisplayCell(x + Math.floor(camera.x), y + Math.floor(camera.y), selectedCellType);
+				}
+				else{
+					let closest = -1, d = 25;
+					for(let i in cellTypes){
+						let dist = Math.sqrt((mouse.x - mouse.dx - cellTypes[i].x)**2 + (mouse.y - mouse.dy - cellTypes[i].y)**2);
+						if(dist <= 25 && dist <= d){
+							closest = Number(i);
+							d = dist;
+						}
+					}
+
+					if(closest >= 0){
+						let circle = cellTypeCircle(closest);
+						if(mouse.right){
+							cellTypes[closest].x += mouse.dx;
+							cellTypes[closest].y += mouse.dy;
+							circle.setAttribute("cx", cellTypes[closest].x);
+							circle.setAttribute("cy", cellTypes[closest].y);
+						}
+						else if(mouse.left){
+							if(mouse.shift){ }
+							else{
+								editCellType(closest);
+							}
+						}
+					}
+					else if(mouse.left)
+						editCellType(-1);
+				}
 			}
 
 
 
-			[
+			let controlFunctions = [
 				() => {
 					paused = !paused;
 					if(!paused) timeStep();
 					controls.children[0].innerText = paused ? "Play" : "Stop";
 				},
-				timeStep,,,
-				() => speed = 1000 / controls.children[4].value,,
+				() => speed = 1000 / controls.children[4].value,
 				() => {
 					showCellBorders = !showCellBorders;
 					cellBordersCSS.innerHTML = showCellBorders ? ".cell{border:1px solid #303030}" : "";
-				},,
-				() => {}
-			].forEach((func, i) => controls.children[i][i < 2 ? "onclick" : "oninput"] = func);
+				},
+				() => {
+					showGrid = !showGrid;
+					createDisplayGrid();
+				}
+			];
 
 			//  temp setup
 			for(let i = 0; i < 0; i++){
@@ -400,9 +497,10 @@
 				grid[row][Math.floor(Math.random()*displayHeight)] = 1;
 			}
 
-			cellTypes[0] = new CellType();
-			cellTypes[1] = new CellType();
+			newCellType();
+			newCellType();
 			cellTypes[1].color = "gold";
+			cellTypeCircle(1).setAttribute("fill", "gold");
 
 			const GameOfLifeRule = ([current, dead, alive]) => Number(alive == 3 || current && alive == 2);
 			//const SquareSnowflakeRule = ([current, dead, alive]) => Number((current || alive) == 1);
