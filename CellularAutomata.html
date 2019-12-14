@@ -34,12 +34,41 @@
 				width: 75%;
 				height: 100%;
 			}
-			/*#cellTypes circle {
-				user-drag:
-			}*/
 			#design .sidebar {
 				width: 25%;
-				padding-left: 30px;
+				padding: 2%;
+			}
+			#cellTypeName {
+				color: white;
+				font-size: 20px;
+			}
+			#rules {
+				position: absolute;
+				width: 80%;
+				top: 20%;
+			}
+			#rules > div {
+				display: flex;
+				width: 100%;
+				height: 30px;
+				border: 1px solid gray;
+				background: #202020;
+			}
+			#rules > div > div:first-child {
+				width: 30px;
+				height: 30px;
+				border-right: 1px solid gray;
+			}
+			#rules > div > div:last-child {
+				width: calc(100% - 30px);
+				height: 30px;
+				right: 0%;
+				color: white;
+				font-size: 20px;
+			}
+			#buttons {
+				position: absolute;
+				bottom: 5%;
 			}
 
 			#run .sidebar {
@@ -110,12 +139,14 @@
 		<div id="design">
 			<svg id="cellTypes"></svg>
 			<div class="sidebar">
-				<div id="cellTypeName" contenteditable></div>
-				<div id="cellTypeColor"></div>
+				<div id="cellTypeName" oninput="cellTypes[selectedCellType].name = cellTypeOptions.children[0].innerText" contenteditable></div>
+				<div id="cellTypeColor"><input type="color"></input></div>
 				<div id="rules"></div>
-				<button onclick="newCellType()">New cell type</button>
-				<button onclick="deleteCellType(selectedCellType)">Delete cell type</button>
-				<br><br><button onclick="resetGrid()">Start simulation</button>
+				<div id="buttons">
+					<button onclick="newCellType()">New cell type</button>
+					<button onclick="deleteCellType(selectedCellType)">Delete cell type</button>
+					<br><br><button onclick="resetGrid()">Start simulation</button>
+				</div>
 			</div>
 		</div>
 		<div id="run" style="display: none">
@@ -125,7 +156,7 @@
 			<div class="sidebar">
 				<div id="controls">
 					<button onclick="controlFunctions[0]()">Play</button>
-					<button onclick="timeStep()">Step</button>
+					<button onclick="if(paused)timeStep()">Step</button>
 					<span id="stepCounter">0 iterations</span>
 					<br><input type="range" min=1 max=100 onchange="controlFunctions[1]()">Play speed</input>
 					<br><input type="checkbox" checked=true onchange="controlFunctions[2]()">Show grid</input>
@@ -145,6 +176,7 @@
 			let controls = document.getElementById("controls");
 			let cellTypeSelector = document.getElementById("selectCellType");
 			let cellTypeOptions = document.querySelector("#design .sidebar");
+			let cellTypeRules = cellTypeOptions.children[2];
 			let cellTypeSVG = document.getElementById("cellTypes");
 
 			let cellSize = 50;  //px
@@ -173,19 +205,57 @@
 				constructor(){
 					this.color = "#202020";
 					this.name = "new cell type";
-					this.rules = [];
-					this.rulePriority = range(cellTypes.length);
+					this.id = cellTypes.length;
+					this.rules = range(this.id + 1).map(i => new CellRule);
+					this.rulePriority = range(this.id + 1);
 
 					this.x = cellTypeSVG.clientWidth/2;
 					this.y = cellTypeSVG.clientHeight/2;
+				}
+				nextType(totals){
+					for(let i of this.rulePriority)
+						if(this.rules[i].check(...totals))
+							return i;
+					return this.id;
 				}
 			}
 			class CellRule{
 				constructor(){
 					this.text = "";
-					this.clauses = [[[{}]]];
+					this.check = () => false;
 				}
-
+				parse(){
+					if(this.text == ""){
+						this.check = () => false;
+						return;
+					}
+					let clauses = multiSplit(this.text, ["|","&","=",",","-","+",/f*(?=\.)/]);
+					eval("this.check = (...args) => " + multiJoin(
+						clauses,
+						[
+							"||",
+							"&&",
+							"&",
+							s => s.search(/[^|]\|[^|]/) == -1 ? s : "("+s+")",
+							"|",
+							a => a.length > 1 ? "Math.max(2*("+(a[1] || bit[8])+")-("+(a[0] || bit[0])+"),0)" : a[0],
+							false,
+							s => s ? s.match(/^args\[\d+]$/) ? "bit["+s+"]" : "(bit["+s+"]||0)" : s,
+							"+",
+							"*",
+							n => n[0] == "." ? "args["+n.slice(1)+"]" : n
+						].map(x => x ? [preEvaluate, x] : x).flat()
+					));
+				}
+			}
+			const bit = [1, 2, 4, 8, 16, 32, 64, 128, 256];
+			const preEvaluate = str => {
+				if(str.search("args") == -1 && str){
+					let r = "";
+					eval("r = " + str + ";");
+					return r + "";
+				}
+				return str;
 			}
 
 
@@ -202,7 +272,7 @@
 					"<circle id='cellType-" + typeNumber +
 					"' r=25 cx=" + cellTypeSVG.clientWidth/2 +
 					" cy=" + cellTypeSVG.clientHeight/2 +
-					" fill='#202020' stroke='black'></circle>";
+					" fill='#202020' stroke='black' stroke-width=2></circle>";
 				editCellType(typeNumber);
 			}
 			function deleteCellType(type){
@@ -216,8 +286,24 @@
 				if(type < 0)
 					return;
 				cellTypeCircle(type).setAttribute("stroke", "white");
+				cellTypeCircle(type).setAttribute("fill", cellTypes[type].color);
 
-
+				cellTypeOptions.children[0].innerText = cellTypes[type].name;
+				cellTypeOptions.children[1].firstChild.value = cellTypes[type].color;
+				cellTypeOptions.children[1].firstChild.oninput = () => {
+					cellTypes[type].color = cellTypeOptions.children[1].firstChild.value;
+					editCellType(type);
+				};
+				cellTypeRules.innerHTML = cellTypes[type].rules.map(
+					(rule, i) =>
+					"<div><div style='width: 30px; height: 30px; background: " +
+					cellTypes[i].color +
+					"'></div><div contenteditable></div></div>"
+				).join("");
+				Array.from(cellTypeRules.children).forEach((el, i) => {
+					el.lastChild.innerText = cellTypes[type].rules[i].text;
+					el.lastChild.oninput = () => cellTypes[type].rules[i].text = el.innerText;
+				});
 			}
 			const cellTypeCircle = type => document.getElementById("cellType-" + type);
 
@@ -272,9 +358,9 @@
 					let x, y;
 					if(!(dx == 0 && dy == 0) || forceDraw)
 						for(let i in grid)
-							if(inRange(x = i - -Math.floor(camera.x), 0, displayWidth) || inRange(x - dx, 0, displayWidth))
+							if(inRange(x = +i + Math.floor(camera.x), 0, displayWidth) || inRange(x - dx, 0, displayWidth))
 								for(let j in grid[i])
-									if(inRange(y = j - -Math.floor(camera.y), 0, displayHeight) || inRange(y - dy, 0, displayHeight)){
+									if(inRange(y = +j + Math.floor(camera.y), 0, displayHeight) || inRange(y - dy, 0, displayHeight)){
 										if(inRange(x, 0, displayWidth) && inRange(y, 0, displayHeight))
 											setDisplayCell(x, y, grid[i][j]);
 										if(inRange(x - dx, 0, displayWidth) && inRange(y - dy, 0, displayHeight))
@@ -295,10 +381,10 @@
 				countGrid = [];
 				for(let i in grid)
 					for(let j in grid[i]){
-						for(let x of [i - 1, i, i - -1]){
+						for(let x of [i - 1, i, +i + 1]){
 							if(!(x in countGrid))
 								countGrid[x] = [];
-							for(let y of [j - 1, j, j - -1]){
+							for(let y of [j - 1, j, +j + 1]){
 								if(!(y in countGrid[x]))
 									countGrid[x][y] = [0, 8].concat(new Array(cellTypes.length - 1).fill(0));
 								if(!(x == i && y == j)){
@@ -313,7 +399,7 @@
 				grid = [];
 				for(let i in countGrid)
 					for(let j in countGrid[i]){
-						let type = GameOfLifeRule(countGrid[i][j]);  //change to arbitrary rule
+						let type = cellTypes[countGrid[i][j][0]].nextType(countGrid[i][j].slice(1));
 						if(type){
 							if(!(i in grid))
 								grid[i] = [];
@@ -347,6 +433,8 @@
 				controls.children[2].innerText = "0 iterations";
 
 				gridContainer.style.background = cellTypes[0].color;
+				cellColorsCSS.innerHTML = cellTypes.map((type, i) => ".cellType-" + i + "{background:" + type.color + ";}").join("\n");
+				cellTypes.forEach(type => type.rules.forEach(rule => rule.parse()));
 			}
 
 			function rowIsEmpty(x){
@@ -360,6 +448,13 @@
 			const inRange = (val, min, max) => min <= val && val <= max;
 			const mod = (num, base) => num - Math.floor(num / base) * base;
 			const multiSplit = (str, delims) => delims.length ? str.split(delims[0]).map(sub => multiSplit(sub, delims.slice(1))) : str;
+			const multiJoin = (arr, opers) => {
+				if(!opers.length) return arr;
+				if(typeof opers[0] == "function")
+					return opers[0](multiJoin(arr, opers.slice(1)));
+				arr = arr.map(x => multiJoin(x, opers.slice(1)));
+				return opers[0] === false ? arr : arr.join(opers[0]);
+			}
 			document.oncontextmenu = () => false;
 
 			let mouseEventHandlers = [
@@ -395,7 +490,7 @@
 			document.addEventListener("keydown", evt => {
 				if(view == "run"){
 					if(evt.keyCode == 32) controlFunctions[0]();
-					else if(evt.key == "s") timeStep();
+					else if(evt.key == "s" && paused) timeStep();
 					else if(evt.key == "escape") setView("design");
 					else if((evt.key - 1) in cellTypes) selectCellType(evt.key - 1);
 				}
@@ -499,11 +594,14 @@
 
 			newCellType();
 			newCellType();
-			cellTypes[1].color = "gold";
+			cellTypes[0].x = 300;
+			cellTypes[1].color = "#FFD700";  //gold
+			cellTypeCircle(0).setAttribute("cx", "300");
 			cellTypeCircle(1).setAttribute("fill", "gold");
-
-			const GameOfLifeRule = ([current, dead, alive]) => Number(alive == 3 || current && alive == 2);
-			//const SquareSnowflakeRule = ([current, dead, alive]) => Number((current || alive) == 1);
+			cellTypes[0].rules[1].text = ".1=3";
+			cellTypes[1].rules[0].text = ".1=-1,4-";
+			editCellType(1);
+			
 
 		</script>
 
