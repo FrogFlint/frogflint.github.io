@@ -37,27 +37,52 @@
 			#design .sidebar {
 				width: 25%;
 				padding: 2%;
+				display: flex;
 			}
 			#cellTypeName {
 				color: white;
 				font-size: 20px;
+				padding: 5px;
+				height: fit-content;
+				outline: none;
+				border-radius: 2px;
+			}
+			#cellTypeColor {
+				position: absolute;
+				right: 10%;
 			}
 			#rules {
 				position: absolute;
 				width: 80%;
 				top: 20%;
+				max-height: 349px;
+				overflow-x: hidden;
+				overflow-y: scroll;
+				border: 1px solid gray;
+				/*box-sizing: border-box;*/
 			}
 			#rules > div {
 				display: flex;
-				width: 100%;
+				position: relative;
+				width: calc(100% + 2px);
 				height: 30px;
+
 				border: 1px solid gray;
+				margin: -1px;
+				margin-bottom: 0px;
+
 				background: #202020;
+				box-sizing: border-box;
+			}
+			#rules > div:last-child {
+				margin-bottom: -1px;
 			}
 			#rules > div > div:first-child {
-				width: 30px;
-				height: 30px;
+				width: 28px;
+				height: 28px;
+				margin-top: 0px;
 				border-right: 1px solid gray;
+				box-sizing: border-box;
 			}
 			#rules > div > div:last-child {
 				width: calc(100% - 30px);
@@ -65,6 +90,22 @@
 				right: 0%;
 				color: white;
 				font-size: 20px;
+			}
+			::-webkit-scrollbar {
+				display: none;
+			}
+			#textSave {
+				position: absolute;
+				top: 75%;
+				color: white;
+			}
+			#textSave input {
+				margin-top: 3px;
+				padding: 2px;
+				color: white;
+				background: #303030;
+				border: 1px solid grey;
+				outline: none;
 			}
 			#buttons {
 				position: absolute;
@@ -91,15 +132,15 @@
 				margin: 8%;
 				border: 1px solid white;
 			}
-			#grid-container {
+			#grid {
 				position: relative;
-				overflow: hidden;
+				/*overflow: hidden;*/
 				width: 80%;
 				height: 100%;
 
 				user-select: none;
 			}
-			#grid {
+			/*#grid {
 				position: absolute;
 				left: 0%;
 				top: 0%;
@@ -114,23 +155,13 @@
 
 				position: absolute;
 				top: 0px;
-			}
+			}*/
 		</style>
 
-		<style id="cellSize">
-			.cell {
-				width: 50px;
-				height: 50px;
+		<style id="nameUnderlineColor">
+			#cellTypeName:focus {
+				border-bottom: 2px groove lime;
 			}
-		</style>
-		<style id="cellBorders">
-			.cell {
-				border: 1px solid #303030;
-			}
-		</style>
-		<style id="cellColors">
-			.cellType-0 { background: #101010; }
-			.cellType-1 { background: gold; }
 		</style>
 
 	</head>
@@ -142,6 +173,10 @@
 				<div id="cellTypeName" oninput="cellTypes[selectedCellType].name = cellTypeOptions.children[0].innerText" contenteditable></div>
 				<div id="cellTypeColor"><input type="color"></input></div>
 				<div id="rules"></div>
+				<div id="textSave">
+					Import/export as text<br>
+					<input type="text" onfocus="saveDesignAsText()" oninput="loadDesignFromText(textSaveBox.value)" onblur="textSaveBox.value=''"></input>
+				</div>
 				<div id="buttons">
 					<button onclick="newCellType()">New cell type</button>
 					<button onclick="deleteCellType(selectedCellType)">Delete cell type</button>
@@ -150,9 +185,7 @@
 			</div>
 		</div>
 		<div id="run" style="display: none">
-			<div id="grid-container">
-				<div id="grid"></div>
-			</div>
+			<canvas id="grid"></canvas>
 			<div class="sidebar">
 				<div id="controls">
 					<button onclick="controlFunctions[0]()">Play</button>
@@ -168,16 +201,18 @@
 		</div>
 
 		<script>
-			let gridContainer = document.getElementById("grid-container");  ///  HTML elements
-			let gridDisplay = document.getElementById("grid");
-			let cellColorsCSS = document.getElementById("cellColors");
-			let cellSizeCSS = document.getElementById("cellSize");
-			let cellBordersCSS = document.getElementById("cellBorders");
+			//let gridContainer = document.getElementById("grid-container");
+			let gridDisplay = document.getElementById("grid");  ///  HTML elements
+			let ctx = gridDisplay.getContext("2d");
+			//let cellColorsCSS = document.getElementById("cellColors");
+			//let cellSizeCSS = document.getElementById("cellSize");
+			//let cellBordersCSS = document.getElementById("cellBorders");
 			let controls = document.getElementById("controls");
 			let cellTypeSelector = document.getElementById("selectCellType");
 			let cellTypeOptions = document.querySelector("#design .sidebar");
-			let cellTypeRules = cellTypeOptions.children[2];
+			let cellTypeRules = document.getElementById("rules");
 			let cellTypeSVG = document.getElementById("cellTypes");
+			let textSaveBox = document.querySelector("#textSave input");
 
 			let cellSize = 50;  //px
 			let displayWidth = 20;
@@ -197,20 +232,29 @@
 			let paused = true;
 			let speed = 100;  //ms per frame
 			let selectedCellType = -1;
+
 			let mouse = {left:false, right:false, shift:false, x:0, y:0, dx:0, dy:0};
 			let camera = {x:0, y:0, zoom:1, zoomF:1.0};
-
+			let draggingRule = -1;
+			let draggingRuleY = 0;
 
 			class CellType{
-				constructor(){
-					this.color = "#202020";
-					this.name = "new cell type";
+				constructor(
+					name = "new cell type",
+					color = "#202020",
+					priority = range(+cellTypes.length + 1),
+					rules = new Array(+cellTypes.length + 1).fill(""),
+					x = 1/2,
+					y = 1/2
+				){
+					this.name = name;
+					this.color = color;
 					this.id = cellTypes.length;
-					this.rules = range(this.id + 1).map(i => new CellRule);
-					this.rulePriority = range(this.id + 1);
+					this.rulePriority = priority;
+					this.rules = rules.map(text => new CellRule(text));
 
-					this.x = cellTypeSVG.clientWidth/2;
-					this.y = cellTypeSVG.clientHeight/2;
+					this.x = x * cellTypeSVG.clientWidth;
+					this.y = y * cellTypeSVG.clientHeight;
 				}
 				nextType(totals){
 					for(let i of this.rulePriority)
@@ -220,18 +264,22 @@
 				}
 			}
 			class CellRule{
-				constructor(){
-					this.text = "";
-					this.check = () => false;
+				constructor(text = ""){
+					this.text = text;
+					//this.check = () => false;
+					this.parse();
 				}
 				parse(){
+					this.text = this.text.filter(/[&|\d.+=,-]/g);
+
 					if(this.text == ""){
 						this.check = () => false;
 						return;
 					}
-					let clauses = multiSplit(this.text, ["|","&","=",",","-","+",/f*(?=\.)/]);
+
+					let clauses = multiSplit(this.text, ["|","&","=",",","-","+",/(?=\.)/]);  //change to lookahead (?>=
 					eval("this.check = (...args) => " + multiJoin(
-						clauses,
+						clauses,  //maybe just define clauses here
 						[
 							"||",
 							"&&",
@@ -245,7 +293,7 @@
 							"*",
 							n => n[0] == "." ? "args["+n.slice(1)+"]" : n
 						].map(x => x ? [preEvaluate, x] : x).flat()
-					));
+					) + ";");
 				}
 			}
 			const bit = [1, 2, 4, 8, 16, 32, 64, 128, 256];
@@ -280,12 +328,11 @@
 				cellTypes.slice(type, 1);
 			}
 			function editCellType(type){
-				if(selectedCellType >= 0)
-					cellTypeCircle(selectedCellType).setAttribute("stroke", "black");
 				selectedCellType = type;
+				for(let i in cellTypes)
+					cellTypeCircle(i).setAttribute("stroke", i == type ? "white" : "black");
 				if(type < 0)
 					return;
-				cellTypeCircle(type).setAttribute("stroke", "white");
 				cellTypeCircle(type).setAttribute("fill", cellTypes[type].color);
 
 				cellTypeOptions.children[0].innerText = cellTypes[type].name;
@@ -294,18 +341,36 @@
 					cellTypes[type].color = cellTypeOptions.children[1].firstChild.value;
 					editCellType(type);
 				};
-				cellTypeRules.innerHTML = cellTypes[type].rules.map(
-					(rule, i) =>
-					"<div><div style='width: 30px; height: 30px; background: " +
+				cellTypeRules.innerHTML = cellTypes[type].rulePriority.map(
+					i =>
+					"<div style='transform:translate(0px,0px)'><div style='background: " +
 					cellTypes[i].color +
 					"'></div><div contenteditable></div></div>"
 				).join("");
 				Array.from(cellTypeRules.children).forEach((el, i) => {
-					el.lastChild.innerText = cellTypes[type].rules[i].text;
-					el.lastChild.oninput = () => cellTypes[type].rules[i].text = el.innerText;
+					el.lastChild.innerText = cellTypes[type].rules[cellTypes[type].rulePriority[i]].text;
+					el.lastChild.oninput = () => cellTypes[type].rules[cellTypes[type].rulePriority[Array.from(cellTypeRules.children).indexOf(el)]].text = el.innerText;
+
+					el.onmousedown = evt => {
+						if(evt.button == 2){
+							draggingRule = Array.from(cellTypeRules.children).indexOf(el);
+							draggingRuleY = evt.offsetY;
+						}
+					}
+
 				});
 			}
+			function redrawCellTypes(){
+				cellTypeSVG.innerHTML = cellTypes.map((type, i) =>
+					"<circle id='cellType-" + i +
+					"' r=25 cx=" + type.x +
+					" cy=" + type.y +
+					" fill='" + type.color +
+					"' stroke='black' stroke-width=2></circle>"
+				).join("");
+			}
 			const cellTypeCircle = type => document.getElementById("cellType-" + type);
+			const cellTypeArrow = (from, to) => document.getElementById("cellType-" + from + "-" + to);
 
 
 			function setView(id){
@@ -317,7 +382,26 @@
 				selectedCellType = type;
 				Array.from(cellTypeSelector.children).forEach((el, i) => el.style.borderColor = i == type ? "#E0E0E0" : "#080808");
 			}
-			function createDisplayGrid(){
+			function drawGrid(){
+				ctx.clearRect(0, 0, gridDisplay.width, gridDisplay.height);
+				for(let i in grid)
+					if(i >= camera.x - 1 && i <= camera.x + displayWidth)
+						for(let j in grid[i])
+							if(j >= camera.y - 1 && j <= camera.y + displayWidth){
+								ctx.beginPath();
+								ctx.fillStyle = cellTypes[grid[i][j]].color;
+								ctx.fillRect(
+									Math.round((i - camera.x)*cellSize),
+									Math.round((j - camera.y)*cellSize),
+									Math.round((i - camera.x + 1)*cellSize) - Math.round((i - camera.x)*cellSize),
+									Math.round((j - camera.y + 1)*cellSize) - Math.round((j - camera.y)*cellSize)
+								);
+								ctx.closePath();
+							}
+
+			}
+
+			/*function createDisplayGrid(){//
 				if(showGrid){
 					gridDisplay.innerHTML = range(displayHeight + 1).map(
 						j =>
@@ -346,7 +430,7 @@
 
 				moveDisplayGrid();
 			}
-			function moveDisplayGrid(forceDraw = false){
+			function moveDisplayGrid(forceDraw = false){//
 				gridDisplay.style.left = Math.round((mod(camera.x, 1) - 1)*cellSize) + "px";
 				gridDisplay.style.top =  Math.round((mod(camera.y, 1) - 1)*cellSize) + "px";
 
@@ -368,28 +452,37 @@
 									}
 				}
 			}
-			function setDisplayCell(x, y, type){
+			function setDisplayCell(x, y, type){//
 				gridDisplay.children[y].children[x].classList = "cell cellType-" + type;
 			}
-
+			*/
 			function zoomUpdate(){
-				cellSize = Math.round(50 / (1.2 ** camera.zoom));
-				displayWidth = Math.ceil(gridContainer.clientWidth / cellSize);
-				displayHeight = Math.ceil(gridContainer.clientHeight / cellSize);
+				cellSize = /*Math.round*/(50 / (1.2 ** camera.zoom));
+				displayWidth = Math.ceil(gridDisplay.clientWidth / cellSize);
+				displayHeight = Math.ceil(gridDisplay.clientHeight / cellSize);
 			}
+
 			function timeStep(){
+				let emptyCount = new Array(cellTypes.length + 1).fill(0);
+				emptyCount[1] = 8;
+
+				//store array of which cells were changed last round
+
 				countGrid = [];
 				for(let i in grid)
 					for(let j in grid[i]){
 						for(let x of [i - 1, i, +i + 1]){
 							if(!(x in countGrid))
 								countGrid[x] = [];
+							let row = countGrid[x];
 							for(let y of [j - 1, j, +j + 1]){
-								if(!(y in countGrid[x]))
-									countGrid[x][y] = [0, 8].concat(new Array(cellTypes.length - 1).fill(0));
+								if(!(y in row)){
+									row[y] = emptyCount.slice(0);
+								}
+								let cell = row[y];
 								if(!(x == i && y == j)){
-									countGrid[x][y][grid[i][j] + 1]++;
-									countGrid[x][y][1]--;
+									++cell[grid[i][j] + 1];
+									--cell[1];
 								}
 							}
 						}
@@ -406,8 +499,7 @@
 							grid[i][j] = type;
 						}
 					}
-				if(!showGrid)
-					createDisplayGrid();
+				drawGrid();
 
 				if(view == "run" && !paused)
 					setTimeout(timeStep, speed);
@@ -425,15 +517,19 @@
 
 				setView("run");
 				zoomUpdate();
-				createDisplayGrid();
+				//createDisplayGrid();
+				gridDisplay.width  = gridDisplay.clientWidth;
+				gridDisplay.height = gridDisplay.clientHeight;
+				gridDisplay.style.backgroundColor = cellTypes[0].color;
+				drawGrid();
 
 				cellTypeSelector.innerHTML = cellTypes.map((type, i) => "<div style='background:" + type.color + "' onclick='selectCellType(" + i + ")'></div>").join("");
 				selectCellType(1);
 				controls.children[0].innerText = "Play";
 				controls.children[2].innerText = "0 iterations";
 
-				gridContainer.style.background = cellTypes[0].color;
-				cellColorsCSS.innerHTML = cellTypes.map((type, i) => ".cellType-" + i + "{background:" + type.color + ";}").join("\n");
+				//gridContainer.style.background = cellTypes[0].color;
+				//cellColorsCSS.innerHTML = cellTypes.map((type, i) => ".cellType-" + i + "{background:" + type.color + ";}").join("\n");
 				cellTypes.forEach(type => type.rules.forEach(rule => rule.parse()));
 			}
 
@@ -455,7 +551,51 @@
 				arr = arr.map(x => multiJoin(x, opers.slice(1)));
 				return opers[0] === false ? arr : arr.join(opers[0]);
 			}
+			Object.defineProperty(Array.prototype, "swap", {value: function(i, j){
+				let temp = this[i];
+				this[i] = this[j];
+				this[j] = temp;
+				return this;
+			}});
+			Object.defineProperty(Array.prototype, "moveBefore", {value: function(i, j){
+				this.splice(j - (i < j), 0, this.splice(i, 1)[0]);
+				return this;
+			}});
+			Object.defineProperty(String.prototype, "filter", {value: function(regex){
+				return (this.match(regex) || []).join("");
+			}})
 			document.oncontextmenu = () => false;
+
+
+			function saveDesignAsText(){
+				textSaveBox.value = "<<" + cellTypes.map(type => [
+					type.name.filter(/[^;]+/g),
+					type.color.slice(1),
+					(type.x / cellTypeSVG.clientWidth ).toString().match(/\d+$/).toString().slice(0, 4),
+					(type.y / cellTypeSVG.clientHeight).toString().match(/\d+$/).toString().slice(0, 4),
+					type.rulePriority.map((x, i) => x == i ? "" : x).join(),
+					...type.rules.map(rule => rule.text || " ")
+				].join("\\")).join(";") + ">>";
+			}
+			function loadDesignFromText(text){
+				cellTypes = [];
+				text.slice(2, -2).split(";").map(newType => newType.split("\\")).forEach(
+					([name, color, x, y, priority, ...rules]) => {
+						console.log(priority);
+						cellTypes.push(new CellType(
+							name,
+							"#" + color,
+							priority.split(",").map((x, i) => +(x || i)),
+							rules,
+							"0." + x,
+							"0." + y
+						));
+					}
+				);
+				redrawCellTypes();
+				editCellType(1);
+			}
+
 
 			let mouseEventHandlers = [
 				["mousedown", evt => {
@@ -472,20 +612,25 @@
 				}],
 				["mousemove", onMouseEvent]
 			];
-			for(let el of [gridContainer, cellTypeSVG])
+			function getMouseInputFrom(el){
 				for(let [eventType, handler] of mouseEventHandlers)
 					el.addEventListener(eventType, handler);
-			gridContainer.addEventListener("wheel", evt => {
-				camera.zoomF = Math.max(Math.min(camera.zoomF - evt.wheelDelta/150, 15), 0);
-				camera.zoom = Math.round(camera.zoomF);
+			}
 
-				camera.x -= mouse.x/cellSize;
-				camera.y -= mouse.y/cellSize;
-				zoomUpdate();
+			getMouseInputFrom(gridDisplay);
+			getMouseInputFrom(cellTypeSVG);
+			getMouseInputFrom(cellTypeOptions);
+			gridDisplay.addEventListener("wheel", evt => {
+				camera.zoomF = Math.max(Math.min(camera.zoomF - evt.wheelDelta/150, 30), 0);
+				camera.zoom = /*Math.round*/(camera.zoomF);
+
 				camera.x += mouse.x/cellSize;
 				camera.y += mouse.y/cellSize;
+				zoomUpdate();
+				camera.x -= mouse.x/cellSize;
+				camera.y -= mouse.y/cellSize;
 
-				createDisplayGrid();
+				drawGrid();
 			});
 			document.addEventListener("keydown", evt => {
 				if(view == "run"){
@@ -505,14 +650,14 @@
 
 				if(view == "run"){
 					if(mouse.right){
-						camera.x += mouse.dx / cellSize;
-						camera.y += mouse.dy / cellSize;
+						camera.x -= mouse.dx / cellSize;
+						camera.y -= mouse.dy / cellSize;
 						camera.xc = Math.floor(camera.x);
 						camera.yc = Math.floor(camera.y);
 					}
 
-					let x = Math.floor(mouse.x / cellSize - camera.x) + 1;  //+1 is for buffer cells that are partially cut off
-					let y = Math.floor(mouse.y / cellSize - camera.y) + 1;
+					let x = Math.floor(mouse.x / cellSize + camera.x);
+					let y = Math.floor(mouse.y / cellSize + camera.y);
 
 					if(mouse.left){
 						if(selectedCellType == 0){
@@ -529,14 +674,16 @@
 						}
 					}
 
-					if(!showGrid)
+					/*if(!showGrid)
 						createDisplayGrid();
 					else if(mouse.right)
 						moveDisplayGrid();
 					else if(mouse.left)
-						setDisplayCell(x + Math.floor(camera.x), y + Math.floor(camera.y), selectedCellType);
+						setDisplayCell(x + Math.floor(camera.x), y + Math.floor(camera.y), selectedCellType);*/
+					if(mouse.left || mouse.right)
+						drawGrid();
 				}
-				else{
+				else if(evt.target == cellTypeSVG || evt.target.parentElement == cellTypeSVG){
 					let closest = -1, d = 25;
 					for(let i in cellTypes){
 						let dist = Math.sqrt((mouse.x - mouse.dx - cellTypes[i].x)**2 + (mouse.y - mouse.dy - cellTypes[i].y)**2);
@@ -555,7 +702,9 @@
 							circle.setAttribute("cy", cellTypes[closest].y);
 						}
 						else if(mouse.left){
-							if(mouse.shift){ }
+							if(mouse.shift){
+								//add type to selected rule, might need weird anti-deselection code
+							}
 							else{
 								editCellType(closest);
 							}
@@ -563,6 +712,44 @@
 					}
 					else if(mouse.left)
 						editCellType(-1);
+				}
+				else{
+					if(draggingRule >= 0){
+						if(mouse.right){
+							let translateY = Math.max(Math.min(mouse.y - cellTypeRules.offsetTop - draggingRule*29 - draggingRuleY, (cellTypes.length - draggingRule - 1)*29), -draggingRule*29);
+							//console.log(Math.abs(translateY) >= 16);
+							//console.log(draggingRule);
+							if(Math.abs(translateY) > 16){
+								Object.assign(cellTypeRules.children[draggingRule].style, {
+									transform: "",
+									zIndex: ""
+								});
+
+								let newPriority = draggingRule + Math.round(translateY / 29);
+								console.log(newPriority);
+								cellTypes[selectedCellType].rulePriority.moveBefore(draggingRule, newPriority + (newPriority > draggingRule));
+								cellTypeRules.children[newPriority][draggingRule > newPriority ? "before" : "after"](cellTypeRules.children[draggingRule]);
+
+								translateY -= (newPriority - draggingRule) * 29;
+								draggingRule = newPriority;
+							}
+
+							Object.assign(cellTypeRules.children[draggingRule].style, {
+								transform: "translate(0px," + translateY + "px)",
+								zIndex: 10000
+							});
+							//cellTypeRules.style.borderBottom = draggingRule == cellTypes.length - 1 ? "1px solid gray" : "1px solid transparent";
+						}
+						else{
+							Array.from(cellTypeRules.children).forEach(el => {
+								el.style.transform = "";
+								el.style.zIndex = "";
+								//el.style.borderTop = "";
+							});
+							//cellTypeRules.style.borderBottom = "none";
+							draggingRule = -1;
+						}
+					}
 				}
 			}
 
@@ -585,23 +772,13 @@
 				}
 			];
 
-			//  temp setup
-			for(let i = 0; i < 0; i++){
-				let row = Math.floor(Math.random()*displayWidth);
-				if(!grid[row]) grid[row] = [];
-				grid[row][Math.floor(Math.random()*displayHeight)] = 1;
-			}
 
-			newCellType();
-			newCellType();
-			cellTypes[0].x = 300;
-			cellTypes[1].color = "#FFD700";  //gold
-			cellTypeCircle(0).setAttribute("cx", "300");
-			cellTypeCircle(1).setAttribute("fill", "gold");
-			cellTypes[0].rules[1].text = ".1=3";
-			cellTypes[1].rules[0].text = ".1=-1,4-";
+			//default (Conway's Game of Life)
+			cellTypes.push(new CellType("Dead" , undefined, [0, 1], ["", ".1=3"]    , 1/4));
+			cellTypes.push(new CellType("Alive", "#FFD700", [0, 1], [".1=-1,4-", ""], 3/4));
+			redrawCellTypes();
 			editCellType(1);
-			
+
 
 		</script>
 
