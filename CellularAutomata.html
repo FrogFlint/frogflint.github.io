@@ -33,6 +33,7 @@
 				top: 0%;
 				width: 75%;
 				height: 100%;
+				font-weight: bold;
 			}
 			#design .sidebar {
 				width: 25%;
@@ -377,13 +378,54 @@
 				});
 			}
 			function redrawCellTypes(){
-				cellTypeSVG.innerHTML = cellTypes.map((type, i) =>
-					"<circle id='cellType-" + i +
+				cellTypeSVG.innerHTML = multiJoin(swapAxes(cellTypes.map((type, j) => [
+					["<circle id='cellType-" + j +
 					"' r=25 cx=" + type.x +
 					" cy=" + type.y +
 					" fill='" + type.color +
-					"' stroke='black' stroke-width=2></circle>"
-				).join("");
+					"' stroke='black' stroke-width=2></circle>"],
+
+					...swapAxes(type.rules.map((rule, i) => {
+						if(rule.text == "" || distance(type.x - cellTypes[i].x, type.y - cellTypes[i].y) <= 100)
+							return ["", ""];
+						let angle = Math.atan((cellTypes[i].y - type.y) / (cellTypes[i].x - type.x)) + (type.x < cellTypes[i].x ? Math.PI : 0);
+						return ["<path stroke='#777777' stroke-width=5 d='M" +
+							(type.x - 45*Math.cos(angle)) +
+							"," +
+							(type.y - 45*Math.sin(angle)) +
+							"L" +
+							(cellTypes[i].x + 45*Math.cos(angle)) +
+							"," +
+							(cellTypes[i].y + 45*Math.sin(angle)) +
+							"'></path><path fill='#777777' d='M" +
+							(cellTypes[i].x + 35*Math.cos(angle)) +
+							"," +
+							(cellTypes[i].y + 35*Math.sin(angle)) +
+							"L" +
+							(cellTypes[i].x + 35*Math.cos(angle) - 20*Math.cos(angle - 35)) +
+							"," +
+							(cellTypes[i].y + 35*Math.sin(angle) - 20*Math.sin(angle - 35)) +
+							"L" +
+							(cellTypes[i].x + 35*Math.cos(angle) - 20*Math.cos(angle + 35)) +
+							"," +
+							(cellTypes[i].y + 35*Math.sin(angle) - 20*Math.sin(angle + 35)) +
+							"Z'></path>",
+
+							"<text fill='#ffffff' x=" +
+							(cellTypes[i].x + 60*Math.cos(angle)) +
+							" y=" +
+							(cellTypes[i].y + 60*Math.sin(angle)) +
+							" transform='rotate(" +
+							angle * 180/Math.PI +
+							"," +
+							(cellTypes[i].x + 60*Math.cos(angle)) +
+							"," +
+							(cellTypes[i].y + 60*Math.sin(angle)) +
+							") translate(0, -10)'>" +
+							rule.text +
+							"</text>"];
+					}))
+				])), ["", "", ""]);
 			}
 			const cellTypeCircle = type => document.getElementById("cellType-" + type);
 			const cellTypeArrow = (from, to) => document.getElementById("cellType-" + from + "-" + to);
@@ -552,6 +594,7 @@
 			const range = (max, min = 0) => new Array(max - min).fill(0).map((x,i) => i + min);
 			const inRange = (val, min, max) => min <= val && val <= max;
 			const mod = (num, base) => num - Math.floor(num / base) * base;
+			const distance = (x, y) => Math.sqrt(x*x + y*y);
 			const multiSplit = (str, delims) => delims.length ? str.split(delims[0]).map(sub => multiSplit(sub, delims.slice(1))) : str;
 			const multiJoin = (arr, opers) => {
 				if(!opers.length) return arr;
@@ -560,6 +603,7 @@
 				arr = arr.map(x => multiJoin(x, opers.slice(1)));
 				return opers[0] === false ? arr : arr.join(opers[0]);
 			}
+			const swapAxes = matrix => matrix[0].map((_,i) => matrix.map(x => x[i]));
 			Object.defineProperty(Array.prototype, "swap", {value: function(i, j){
 				let temp = this[i];
 				this[i] = this[j];
@@ -589,8 +633,7 @@
 			function loadDesignFromText(text){
 				cellTypes = [];
 				text.slice(2, -2).split(";").map(newType => newType.split("/")).forEach(
-					([name, color, x, y, priority, ...rules]) => {
-						console.log(priority);
+					([name, color, x, y, priority, ...rules]) =>
 						cellTypes.push(new CellType(
 							name,
 							"#" + color,
@@ -598,8 +641,7 @@
 							rules,
 							"0." + x,
 							"0." + y
-						));
-					}
+						))
 				);
 				redrawCellTypes();
 				editCellType(1);
@@ -701,8 +743,9 @@
 						if(mouse.right){
 							cellTypes[closest].x += mouse.dx;
 							cellTypes[closest].y += mouse.dy;
-							circle.setAttribute("cx", cellTypes[closest].x);
-							circle.setAttribute("cy", cellTypes[closest].y);
+							//circle.setAttribute("cx", cellTypes[closest].x);
+							//circle.setAttribute("cy", cellTypes[closest].y);
+							redrawCellTypes();
 						}
 						else if(mouse.left){
 							if(mouse.shift){
@@ -777,10 +820,10 @@
 				],
 				[
 					"Wireworld",
-					"<<Background/202020/1348/3508/,,,/ / / / ;" +
-					"Wire/FFD700/4397/3477/,,,/ / /.2=1-2/ ;" +
-					"Electron head/15ffdc/7360/3386/,,,/ / / /1;" +
-					"Electron tail/ff2222/7331/4923/,,,/ /1/ / >>"
+					"<<Background/202020/2469/6719/,,,/ / / / ;" +
+					"Wire/FFD700/2689/3157/,,,/ / /.2=1-2/ ;" +
+					"Electron head/15ffdc/7233/3172/,,,/ / / /1;" +
+					"Electron tail/ff2222/7204/5805/,,,/ /1/ / >>"
 				]
 			];
 
