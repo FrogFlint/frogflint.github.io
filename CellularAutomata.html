@@ -35,6 +35,12 @@
 				height: 100%;
 				font-weight: bold;
 			}
+			#cellTypes span {
+				/*position: absolute;
+				left: 0px;
+				top: 0px;*/
+				color: white;
+			}
 			#design .sidebar {
 				width: 25%;
 				padding: 2%;
@@ -89,8 +95,24 @@
 				width: calc(100% - 30px);
 				height: 30px;
 				right: 0%;
+				overflow-x: visible;
+				overflow-y: hidden;
+				white-space: nowrap;
 				color: white;
 				font-size: 20px;
+			}
+			.typedBox {
+				display: inline-block;
+				width: 15px;
+				height: 15px;
+				border: 1px solid white;
+				margin: 2px;
+				font-size: 5px;
+				transform: translate(0%, -50%);
+			}
+			svg .typedBox {
+				width: 10px;
+				height: 10px;
 			}
 			::-webkit-scrollbar {
 				display: none;
@@ -145,22 +167,6 @@
 
 				user-select: none;
 			}
-			/*#grid {
-				position: absolute;
-				left: 0%;
-				top: 0%;
-			}
-			.gridRow {
-				display: flex;
-				position: absolute;
-				left: 0px;
-			}
-			.cell {
-				box-sizing: border-box;
-
-				position: absolute;
-				top: 0px;
-			}*/
 		</style>
 
 		<style id="nameUnderlineColor">
@@ -208,8 +214,6 @@
 						<br><input type="radio" name="cellHighlight" onchange="showHighlight = 1" checked>selected</input>
 						<br><input type="radio" name="cellHighlight" onchange="showHighlight = 2">row + column</input>
 					</div>
-					<!--  <br><input type="checkbox" checked=true onchange="controlFunctions[2]()">Show grid</input>
-					<br><input type="checkbox" onchange="controlFunctions[3]()">Show empty grid</input>  -->
 					<br><br><button onclick="setView('design')">Edit rules</button>
 				</div>
 				<div id="selectCellType"></div>
@@ -217,12 +221,8 @@
 		</div>
 
 		<script>
-			//let gridContainer = document.getElementById("grid-container");
 			let gridDisplay = document.getElementById("grid");  ///  HTML elements
 			let ctx = gridDisplay.getContext("2d");
-			//let cellColorsCSS = document.getElementById("cellColors");
-			//let cellSizeCSS = document.getElementById("cellSize");
-			//let cellBordersCSS = document.getElementById("cellBorders");
 			let controls = document.getElementById("controls");
 			let cellTypeSelector = document.getElementById("selectCellType");
 			let cellTypeOptions = document.querySelector("#design .sidebar");
@@ -240,11 +240,10 @@
 			let showHighlight = 1;
 
 			let cellTypes = [];  ///  design
-			//let selectedCell = 0;   //uses the same variable selectedCellType
-			//let selectedConnection = -1;
 
 			let grid = [[]]; ///  run
 			let countGrid = [[[]]];
+			let gridChanges = [[]];
 			let time = 0;
 			let paused = true;
 			let speed = 100;  //ms per frame
@@ -312,6 +311,19 @@
 						].map(x => x ? [preEvaluate, x] : x).flat()
 					) + ";");
 				}
+				toStyleText(){
+					return this.text.replace(
+						/\.\d+/g,
+						type =>
+						type.slice(1) in cellTypes
+						?	"<div class='typedBox' style='background-color:" +
+							cellTypes[type.slice(1)].color +
+							"'>" +
+							type +
+							"</div>"
+						:	type
+					);
+				}
 			}
 			const bit = [1, 2, 4, 8, 16, 32, 64, 128, 256];
 			function preEvaluate(str){
@@ -365,8 +377,16 @@
 					"'></div><div contenteditable></div></div>"
 				).join("");
 				Array.from(cellTypeRules.children).forEach((el, i) => {
-					el.lastChild.innerText = cellTypes[type].rules[cellTypes[type].rulePriority[i]].text;
-					el.lastChild.oninput = () => cellTypes[type].rules[cellTypes[type].rulePriority[Array.from(cellTypeRules.children).indexOf(el)]].text = el.innerText;
+					el.lastChild.innerHTML = cellTypes[type].rules[cellTypes[type].rulePriority[i]].toStyleText();
+					el.lastChild.oninput = () => {
+						let rule = cellTypes[type].rules[cellTypes[type].rulePriority[Array.from(cellTypeRules.children).indexOf(el)]];
+						rule.text = el.lastChild.innerText;
+						let pos = getCaretPos(el.lastChild);
+						el.lastChild.innerHTML = rule.toStyleText() + "<span>Selectable</span>";
+						setCaretPos(el.lastChild, pos);
+						el.lastChild.lastElementChild.innerText = "";
+						redrawCellTypes();
+					}
 
 					el.onmousedown = evt => {
 						if(evt.button == 2){
@@ -411,19 +431,19 @@
 							(cellTypes[i].y + 35*Math.sin(angle) - 20*Math.sin(angle + 35)) +
 							"Z'></path>",
 
-							"<text fill='#ffffff' x=" +
+							"<foreignobject x=" +
 							(cellTypes[i].x + 60*Math.cos(angle)) +
 							" y=" +
 							(cellTypes[i].y + 60*Math.sin(angle)) +
-							" transform='rotate(" +
+							" width=10000 height=20 transform='rotate(" +
 							angle * 180/Math.PI +
-							"," +
+							" " +
 							(cellTypes[i].x + 60*Math.cos(angle)) +
-							"," +
+							" " +
 							(cellTypes[i].y + 60*Math.sin(angle)) +
-							") translate(0, -10)'>" +
-							rule.text +
-							"</text>"];
+							") translate(0 -25)'><span>" +
+							rule.toStyleText() +
+							"</span></foreignobject>"];
 					}))
 				])), ["", "", ""]);
 			}
@@ -442,25 +462,32 @@
 			}
 			function drawGrid(){
 				ctx.clearRect(0, 0, gridDisplay.width, gridDisplay.height);
-				ctx.strokeStyle = "#0a0a0a";
+
+				let drawQueue = cellTypes.map(() => []);
 				for(let i in grid)
 					if(i >= camera.x - 1 && i <= camera.x + displayWidth)
 						for(let j in grid[i])
 							if(j >= camera.y - 1 && j <= camera.y + displayWidth){
-								ctx.beginPath();
-								ctx.fillStyle = cellTypes[grid[i][j]].color;
-								ctx.rect(
-									Math.round((i - camera.x)*cellSize),
-									Math.round((j - camera.y)*cellSize),
-									Math.round((i - camera.x + 1)*cellSize) - Math.round((i - camera.x)*cellSize),
-									Math.round((j - camera.y + 1)*cellSize) - Math.round((j - camera.y)*cellSize)
-								);
-								ctx.fill();
-								if(showGrid == 1 && camera.zoom <= 11)
-									ctx.stroke();
-								ctx.closePath();
+								drawQueue[grid[i][j]].push([+i, +j]);
 							}
 
+				ctx.strokeStyle = "#0a0a0a";
+				for(type in drawQueue){
+					ctx.fillStyle = cellTypes[type].color;
+					ctx.beginPath();
+					for(let [x, y] of drawQueue[type]){
+						ctx.rect(
+							drawAtX(x),
+							drawAtY(y),
+							drawAtX(x + 1) - drawAtX(x),
+							drawAtY(y + 1) - drawAtY(y)
+						);
+					}
+					ctx.fill();
+					if(showGrid == 1 && camera.zoom <= 11  && x in gridChanges && y in gridChanges[x])
+						ctx.stroke();
+					ctx.closePath();
+				}
 
 				if(showGrid == 2 && camera.zoom <= 11){
 					for(let i = 0; i <= displayWidth; i++){
@@ -506,6 +533,8 @@
 					ctx.closePath();
 				}
 			}
+			const drawAtX = x => Math.round((x - camera.x)*cellSize);
+			const drawAtY = y => Math.round((y - camera.y)*cellSize);
 
 			function zoomUpdate(){
 				cellSize = /*Math.round*/(50 / (1.2 ** camera.zoom));
@@ -517,39 +546,46 @@
 				let emptyCount = new Array(cellTypes.length + 1).fill(0);
 				emptyCount[1] = 8;
 
-				//store array of which cells were changed last round
+				for(let i in gridChanges)
+					for(let j in gridChanges[i]){
+						let type = (grid[i] || [])[j] || 0;
+						let cell = gridChanges[i][j] = emptyCount.slice(0);
+						for(let x = i - 1; x <= +i + 1; ++x)
+							if(x in grid)
+								for(let y = j - 1; y <= +j + 1; ++y)
+									if(y in grid[x]){
+										++cell[grid[x][y] + 1];
+										--cell[1];
+									}
+						--cell[type + 1];
+						++cell[1];
 
-				countGrid = [];
-				for(let i in grid)
-					for(let j in grid[i]){
-						for(let x of [i - 1, i, +i + 1]){
-							if(!(x in countGrid))
-								countGrid[x] = [];
-							let row = countGrid[x];
-							for(let y of [j - 1, j, +j + 1]){
-								if(!(y in row)){
-									row[y] = emptyCount.slice(0);
-								}
-								let cell = row[y];
-								if(!(x == i && y == j)){
-									++cell[grid[i][j] + 1];
-									--cell[1];
-								}
+						cell[0] = type;
+					}
+
+				let newGridChanges = [];
+
+				for(let i in gridChanges)
+					for(let j in gridChanges[i]){
+						let count = gridChanges[i][j];
+						let type = cellTypes[count[0]].nextType(count.slice(1));
+						if(type != count[0]){
+							if(type){
+								if(!(i in grid))
+									grid[i] = [];
+								grid[i][j] = type;
 							}
+							else{
+								if(i in grid)
+									delete grid[i][j];
+								if(rowIsEmpty(i))
+									delete grid[i];
+							}
+							addChanged(newGridChanges, i, j);
 						}
-						countGrid[i][j][0] = grid[i][j];
 					}
+				gridChanges = newGridChanges;
 
-				grid = [];
-				for(let i in countGrid)
-					for(let j in countGrid[i]){
-						let type = cellTypes[countGrid[i][j][0]].nextType(countGrid[i][j].slice(1));
-						if(type){
-							if(!(i in grid))
-								grid[i] = [];
-							grid[i][j] = type;
-						}
-					}
 				drawGrid();
 
 				if(view == "run" && !paused)
@@ -588,6 +624,15 @@
 				for(let i in grid[x])
 					return false;
 				return true;
+			}
+			function addChanged(arr, x, y){
+				for(let i = x - 1; i <= +x + 1; ++i){
+					if(!(i in arr))
+						arr[i] = [];
+					for(let j = y - 1; j <= +y + 1; ++j){
+						arr[i][j] = true;
+					}
+				}
 			}
 
 
@@ -667,6 +712,36 @@
 				for(let event of mouseEventHandlers)
 					el.addEventListener(...event);
 			}
+			function getCaretPos(el){
+				let nodes = Array.from(el.childNodes);
+                let sel = window.getSelection();
+				return sel.focusOffset + nodes.slice(0,
+						nodes.findIndex(
+							node =>
+							sel.containsNode(node, true)
+						)
+					).reduce(
+						(acc, node) =>
+						acc + (node.innerText || node.wholeText).length,
+						0
+					);
+			}
+			function setCaretPos(el, pos){
+				let sel = window.getSelection();
+				let caretNode;
+				el.childNodes.forEach(node => {
+					if(!caretNode){
+						let len = (node.innerText || node.wholeText).length;
+						pos < len  ?  caretNode = node  :  pos -= len;
+					}
+				});
+				let range = document.createRange();
+				range.setStart(caretNode, pos);
+				range.collapse(true);
+				sel.removeAllRanges();
+				sel.addRange(range);
+				//el.lastElementChild.innerText = "";
+			}
 
 			getMouseInputFrom(gridDisplay);
 			getMouseInputFrom(cellTypeSVG);
@@ -723,6 +798,7 @@
 								grid[x] = [];
 							grid[x][y] = selectedCellType;
 						}
+						addChanged(gridChanges, x, y);
 					}
 
 					if(mouse.left || mouse.right || showHighlight)
