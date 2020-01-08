@@ -242,15 +242,15 @@
 			let cellTypes = [];  ///  design
 
 			let grid = [[]]; ///  run
-			let countGrid = [[[]]];
 			let gridChanges = [[]];
+			let lastGridChanges = [[]];
 			let time = 0;
 			let paused = true;
 			let speed = 100;  //ms per frame
 			let selectedCellType = -1;
 
 			let mouse = {left:false, right:false, shift:false, x:0, y:0, dx:0, dy:0};
-			let camera = {x:0, y:0, zoom:1, zoomF:1.0};
+			let camera = {x:0, y:0, zoom:1, zoomF:1.0, updateDraw: true};
 			let draggingRule = -1;
 			let draggingRuleY = 0;
 
@@ -461,15 +461,29 @@
 				Array.from(cellTypeSelector.children).forEach((el, i) => el.style.borderColor = i == type ? "#E0E0E0" : "#080808");
 			}
 			function drawGrid(){
-				ctx.clearRect(0, 0, gridDisplay.width, gridDisplay.height);
 
 				let drawQueue = cellTypes.map(() => []);
-				for(let i in grid)
-					if(i >= camera.x - 1 && i <= camera.x + displayWidth)
-						for(let j in grid[i])
-							if(j >= camera.y - 1 && j <= camera.y + displayWidth){
-								drawQueue[grid[i][j]].push([+i, +j]);
-							}
+				if(camera.updateDraw){
+					ctx.clearRect(0, 0, gridDisplay.width, gridDisplay.height);
+					for(let i in grid)
+						if(i >= camera.x - 1 && i <= camera.x + displayWidth){
+							let row = grid[i];
+							for(let j in row)
+								if(j >= camera.y - 1 && j <= camera.y + displayWidth)
+									drawQueue[row[j]].push([+i, +j]);
+						}
+				}
+				else
+					for(let i in lastGridChanges)
+						if(i >= camera.x - 1 && i <= camera.x + displayWidth){
+							let row = lastGridChanges[i];
+							for(let j in row)
+								if(j >= camera.y - 1 && j <= camera.y + displayWidth){
+									let type = (grid[i] || [])[j] || 0;
+									if(type != row[j][0])
+										drawQueue[type].push([+i, +j]);
+								}
+						}
 
 				ctx.strokeStyle = "#0a0a0a";
 				for(type in drawQueue){
@@ -532,6 +546,8 @@
 					}
 					ctx.closePath();
 				}
+
+				camera.updateDraw = false;
 			}
 			const drawAtX = x => Math.round((x - camera.x)*cellSize);
 			const drawAtY = y => Math.round((y - camera.y)*cellSize);
@@ -540,6 +556,7 @@
 				cellSize = /*Math.round*/(50 / (1.2 ** camera.zoom));
 				displayWidth = Math.ceil(gridDisplay.clientWidth / cellSize);
 				displayHeight = Math.ceil(gridDisplay.clientHeight / cellSize);
+				camera.updateDraw = true;
 			}
 
 			function timeStep(){
@@ -551,12 +568,14 @@
 						let type = (grid[i] || [])[j] || 0;
 						let cell = gridChanges[i][j] = emptyCount.slice(0);
 						for(let x = i - 1; x <= +i + 1; ++x)
-							if(x in grid)
+							if(x in grid){
+								let row = grid[x];
 								for(let y = j - 1; y <= +j + 1; ++y)
-									if(y in grid[x]){
-										++cell[grid[x][y] + 1];
+									if(y in row){
+										++cell[row[y] + 1];
 										--cell[1];
 									}
+							}
 						--cell[type + 1];
 						++cell[1];
 
@@ -584,6 +603,7 @@
 							addChanged(newGridChanges, i, j);
 						}
 					}
+				lastGridChanges = gridChanges;
 				gridChanges = newGridChanges;
 
 				drawGrid();
@@ -595,7 +615,6 @@
 			}
 			function resetGrid(){
 				grid = [];
-				countGrid = [];
 				time = 0;
 				paused = true;
 				selectedCellType = 0; //temp
@@ -604,7 +623,6 @@
 
 				setView("run");
 				zoomUpdate();
-				//createDisplayGrid();
 				gridDisplay.width  = gridDisplay.clientWidth;
 				gridDisplay.height = gridDisplay.clientHeight;
 				gridDisplay.style.backgroundColor = cellTypes[0].color;
@@ -615,8 +633,6 @@
 				controls.children[0].innerText = "Play";
 				controls.children[2].innerText = "0 iterations";
 
-				//gridContainer.style.background = cellTypes[0].color;
-				//cellColorsCSS.innerHTML = cellTypes.map((type, i) => ".cellType-" + i + "{background:" + type.color + ";}").join("\n");
 				cellTypes.forEach(type => type.rules.forEach(rule => rule.parse()));
 			}
 
@@ -629,9 +645,9 @@
 				for(let i = x - 1; i <= +x + 1; ++i){
 					if(!(i in arr))
 						arr[i] = [];
-					for(let j = y - 1; j <= +y + 1; ++j){
-						arr[i][j] = true;
-					}
+					for(let j = y - 1; j <= +y + 1; ++j)
+						if(!(j in arr[i]))
+							arr[i][j] = true;
 				}
 			}
 
@@ -799,10 +815,13 @@
 							grid[x][y] = selectedCellType;
 						}
 						addChanged(gridChanges, x, y);
+						addChanged(lastGridChanges, x, y);  //maybe
 					}
 
-					if(mouse.left || mouse.right || showHighlight)
+					if(mouse.left || mouse.right || showHighlight){
+						camera.updateDraw = true;
 						drawGrid();
+					}
 				}
 				else if(evt.target == cellTypeSVG || evt.target.parentElement == cellTypeSVG){
 					let closest = -1, d = 25;
@@ -819,8 +838,6 @@
 						if(mouse.right){
 							cellTypes[closest].x += mouse.dx;
 							cellTypes[closest].y += mouse.dy;
-							//circle.setAttribute("cx", cellTypes[closest].x);
-							//circle.setAttribute("cy", cellTypes[closest].y);
 							redrawCellTypes();
 						}
 						else if(mouse.left){
