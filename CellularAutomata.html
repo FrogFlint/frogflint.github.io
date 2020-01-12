@@ -543,7 +543,7 @@
 							ctxg.closePath();
 						}
 					}
-					else if(showHighlight >= 1 && camera.zoom > 11)
+					else if(showHighlight >= 1 && (showGrid == 0 || camera.zoom > 11))
 						clearCanvas(ctxg);
 
 
