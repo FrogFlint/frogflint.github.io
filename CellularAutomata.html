@@ -207,11 +207,11 @@
 					<button onclick="if(paused)timeStep()">Step</button>
 					<span id="stepCounter">0 iterations</span>
 					<br><input type="range" min=1 max=100 onchange="controlFunctions[1]()">Play speed</input>
-					<br><div class="textSave">
+					<br><br><div class="textSave">
 						Import/export as text<br>
 						<input type="text" onfocus="saveDrawingAsText()" oninput="loadDrawingFromText(textSaveBox2.value)" onblur="textSaveBox2.value=''"></input>
 					</div>
-					<br><br><button onclick="viewOptions.style.display = viewOptions.style.display == 'none' ? '' : 'none'">Display options</button>
+					<br><button onclick="viewOptions.style.display = viewOptions.style.display == 'none' ? '' : 'none'">Display options</button>
 					<div id="viewOptions" onclick="camera.updateDraw = true; setTimeout(drawGrid, 1)" style="display:none">
 						<br>Cell borders
 						<br><input type="radio" name="cellBorders" onchange="showGrid = 0">none</input>
@@ -784,6 +784,10 @@
 							if(data[q][i][j].length)
 								grid[x][j * quadrantSign[q][1]] = +data[q][i][j];
 					}
+
+				for(let i in grid)
+					for(let j in grid[i])
+						addChanged(gridChanges, i, j);
 				camera.updateDraw = true;
 				drawGrid();
 			}
