@@ -1,263 +1,462 @@
 <!DOCTYPE html>
-<html>
-
-<head>
-
-	<style>
-		* {
-			padding: 0;
-			margin: 0;
-		}
-		
-		canvas {
-			background: black;
-			display: block;
-			margin: 0 auto;
-		}
-	</style>
-
-<title>Snek</title>
-</head>
-
-<body>
-	
-	<canvas id="myCanvas" width="710" height="630">   </canvas>
-	
-	<body style="background-color:black;">
-		
-		<SCRIPT LANGUAGE="JavaScript">
-			
-			var canvas = document.getElementById("myCanvas");
-			var ctx = canvas.getContext("2d");
-			
-			
-			var temp1 = 0;
-			var temp2 = 0;
-			
-			
-			var scale = 20;
-			var boardSize = {x:Math.floor((canvas.width-10)/scale),y:Math.floor((canvas.height-30)/scale)}
-			
-			var frame = 0;
-			var speed = 4;
-			
-			var score = 1;
-			var highScore = getCookie("Highscore");
-			if(!(highScore > 0)){highScore = 0;}
-			
-			var head = {
-				x:0,
-				y:0,
-				direction:"",
-				lastDirection:"",
-				dead:false
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Snek(s)</title>
+		<style type="text/css">
+			body {
+				background: black;
 			}
-			var tailCount = 0;
-			var foodCount = 0;
-			
-			var tile = [[]];
-			var index1 = 0;
-			var index2 = 0;
-			
-			
-			
-			
-			
-			//========================================================================
-			
-			
-			for(index1 = 0; index1 < boardSize.x; index1++){
-				tile[index1] = [];
-				for(index2 = 0; index2 < boardSize.x; index2++){
-					
-					tile[index1][index2] = {
-						tail:0,
-						food:false
-					}
-				}
+			#grid {
+				position: absolute;
+				left: 50%;  transform: translate(-50%, 0);
+				top: 3%;
+				width: 80%;
+				height: 85%;
+				/*background: #101010;
+				border: 2px solid gray;*/
 			}
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			
-			function setCookie(name, value, days) {
-				var d = new Date;
+			#scoreBar {
+				position: absolute;
+				left: 0%;
+				top: 90%;
+				width: 100%;
+				height: 5%;
+
+				display: flex;
+				justify-content: space-evenly;
+
+				color: white;
+				font-size: 20px;
+			}
+			#scoreBar > div {
+				width: 14%;
+				text-align: center;
+			}
+
+			#menu {
+				position: absolute;
+				left: 30%;
+				top: 15%;
+				width: 40%;
+				height: 60%;
+
+				border: 1px solid white;
+				color: white;
+			}
+			#menu > div {
+				width: 100%;
+				height: 50%;
+				display: flex;
+			    justify-content: space-evenly;
+				transform: translate(0%, calc(50% - 35px));
+			}
+			#menu > div > div {
+				width: 70px;
+				height: 70px;
+				background: #303030;
+				border: 1px solid white;
+				text-align: center;
+			}
+			#menu > div:first-child > div {
+				width: 90px;
+				height: 90px;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="grid"></canvas>
+		<div id="scoreBar">
+			<div style="color: lime"></div>
+			<div style="color: lime"></div>
+			<div style="color: lime"></div>
+			<div></div>
+			<div style="color: cyan"></div>
+			<div style="color: cyan"></div>
+			<div style="color: cyan"></div>
+		</div>
+		<div id="menu">
+			<div>
+				<div onclick="setMode(0)">Singleplayer</div>
+				<div onclick="setMode(1)">Multiplayer AI</div>
+				<div onclick="setMode(2)">Multiplayer PvP</div>
+			</div>
+			<div>
+				<div onclick="reloadGrid(15, '40%', 80, 1)">Small</div>
+				<div onclick="reloadGrid(15, ''   , 70, 2)">Medium</div>
+				<div onclick="reloadGrid(25, '40%', 40, 3)">Large</div>
+				<div onclick="reloadGrid(25, ''   , 30, 4)">Wide</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			let menu = document.getElementById("menu");
+			let scoreBar = document.getElementById("scoreBar");
+			let canvas = document.getElementById("grid");
+			let ctx = canvas.getContext("2d");
+			ctx.translate(1, 1);
+
+			let tileSize = 50, width = 20, height = 30, maxFood = 3, foodValue = 3;
+			let playerMode = 2;  //singleplayer, PvP, PvAI
+			let running = false, extraBot = false, restart = 0, runSpeed = 30;
+			let players = [1,2], highscores = [[0], [0], [0, 0]], wins = [0, 0];
+			let userInput = [0,0,0,0,0,0,0,0], controls = [38, 40, 37, 39, 87, 83, 65, 68, 80, 186, 76, 222];
+			let convertDirection = [["y", -1], ["y", 1], ["x", -1], ["x", 1]], backwards = [1, 0, 3, 2];
+			let grid = [[]];
+
+
+
+			function setCookie(name, value, days = 365){
+				let d = new Date;
 				d.setTime(d.getTime() + 24*60*60*1000*days);
 				document.cookie = name + "=" + value + ";path=/;expires=" + d.toGMTString();
 			}
-			
-			function getCookie(name) {
-				var v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+			function getCookie(name){
+				let v = document.cookie.match("(^|;) ?" + name + "=([^;]*)(;|$)");
 				return v ? v[2] : null;
 			}
-			
-			
-			
-			
-			
-			
-			//========================================================================
-			function draw() {
-			
-				ctx.clearRect(0, 0, canvas.width, canvas.height);
-				
-				
-				document.addEventListener("keydown", keyDownHandler, false);
-				
-				function keyDownHandler(e) {
-					if((e.keyCode == 87 || e.keyCode == 38) && head.lastDirection != "down" ){head.direction = "up";}
-					if((e.keyCode == 83 || e.keyCode == 40) && head.lastDirection != "up"   ){head.direction = "down";}
-					if((e.keyCode == 65 || e.keyCode == 37) && head.lastDirection != "right"){head.direction = "left";}
-					if((e.keyCode == 68 || e.keyCode == 39) && head.lastDirection != "left" ){head.direction = "right";}
+
+			class Player {
+				constructor(x, y){
+					this.x = x;
+					this.y = y;
+					this.direction = 0;  //up, down, left, right
+					this.score = 3;
+					this.dead = false;
 				}
-				
-				
-				
-				
-				frame = (frame + 1) % speed;
-				if(frame == 0 && head.dead == false){
-					if(head.direction == "up"   ){head.y --;}
-					if(head.direction == "down" ){head.y ++;}
-					if(head.direction == "left" ){head.x --;}
-					if(head.direction == "right"){head.x ++;}
-					head.lastDirection = head.direction;
+			}
+			class GridSquare {
+				constructor(){
+					this.player = 0;
+					this.value = 0;  //empty, player 1, player 2, food
 				}
-				
-				if(head.x < 0
-				|| head.y < 0
-				|| head.x >= boardSize.x
-				|| head.y >= boardSize.y
-				|| (tile[head.x][head.y].tail > 0 && head.direction != "" && frame == 0)
-				){
-					head.dead = true;
-					head.direction = "";
-				}
-				
-				
-				
-				
-				if(head.dead == false){
-					if(tile[head.x][head.y].food == true){tile[head.x][head.y].food = false; score ++;}
-					tile[head.x][head.y].tail = (score + 1);
-				}
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				//==============================================================================================================
-				
-				ctx.beginPath();
-				ctx.rect(0, 0, 710, 610);
-				ctx.fillStyle = "darkGray";
-				ctx.fill();
-				ctx.closePath();
-				
-				
-				
-				
-				tailCount = 0;
-				foodCount = 0;
-				
-				for(index1 = 0;index1 < boardSize.x;index1 ++){
-					for(index2 = 0;index2 < boardSize.y;index2 ++){
-						
-						
-						if (tile[index1][index2].tail > 0){if(frame == 0){tile[index1][index2].tail --;} tailCount++;}
-						if (tile[index1][index2].food == true){
-							foodCount ++;
-							if(head.dead == true){tile[index1][index2].food = false;}
+			}
+
+			function reloadGrid(gridHeight, gridWidth, speed, food){
+				height = gridHeight;
+				canvas.style.width = gridWidth;
+				runSpeed = speed;
+				maxFood = food;
+
+				tileSize = Math.floor((canvas.clientHeight - 2) / height);
+				width = Math.floor((canvas.clientWidth - 2) / tileSize);
+				grid = new Array(width).fill(0).map(
+					_ => new Array(height).fill(0).map(
+						_ => new GridSquare
+					)
+				);
+
+				canvas.width = canvas.clientWidth;
+				canvas.height = canvas.clientHeight;
+				menu.style.display = "none";
+
+				running = true;
+				startGame();
+			}
+			function startGame(){
+				if(!running)
+					return;
+				for(square of grid.flat())
+					square.player = square.value = 0;
+				players = playerMode ? [new Player(2, 2), new Player(width - 3, height - 3)] : [new Player(Math.floor(width/2), 3)];
+				players[0].direction = 1;
+
+				for(let i = 0; i < maxFood; ++i)
+					addFood();
+				frame();
+			}
+			function frame(){
+				for(square of grid.flat())
+					if(square.player % 3 && (!restart || players[square.player - 1].dead))
+						if(!--square.value)
+							square.player = 0;
+
+				if(!restart){
+					let lastDir = players.map(player => player.direction);
+					for(let d = 0; d < 4; ++d){
+						if(
+							(userInput[d] || userInput[d + 8] || playerMode < 2 && userInput[d + 4]) &&
+							!(userInput[backwards[d]] || userInput[backwards[d] + 8] || playerMode < 2 && userInput[backwards[d] + 4]) &&
+							convertDirection[d][0] != convertDirection[lastDir[0]][0]
+						)
+							players[0].direction = d;
+						if(
+							playerMode == 2 &&
+							userInput[d + 4] &&
+							!userInput[backwards[d] + 4] &&
+							convertDirection[d][0] != convertDirection[lastDir[1]][0]
+						)
+							players[1].direction = d;
+					}
+					for(let d in userInput)
+						if(userInput[d] == 1)
+							userInput[d] = 0;
+
+					if(extraBot && !players[0].dead)
+						runAIplayer(0);
+					if(playerMode == 1 && !players[1].dead)
+						runAIplayer(1);
+
+					for(player of players){
+						player[convertDirection[player.direction][0]] += convertDirection[player.direction][1];
+						if(!(
+							player.x in grid &&
+							player.y in grid[player.x] &&
+							!(grid[player.x][player.y].player % 3)
+						))
+							player.dead = true;
+					}
+
+					if(playerMode && players[0].x == players[1].x && players[0].y == players[1].y)
+						players[0].dead = players[1].dead = true;
+
+					for(let i in players)
+						if(!players[i].dead){
+							let square = grid[players[i].x][players[i].y];
+							if(square.player == 3){
+								players[i].score += foodValue;
+								for(let tile of grid.flat())
+									if(tile.player == +i + 1)
+										tile.value += foodValue;
+								setTimeout(addFood, 1);
+							}
+							if(square.player % 3)
+								player.dead = 0;
+							else{
+								square.player = +i + 1;
+								square.value = players[i].score;
+							}
 						}
-						
-						
-						
-						
+				}
+
+
+
+				draw();
+
+
+				if(running){
+					if(restart == 2){
+						restart = 0;
+						startGame();
+					}
+					else{
+						if(restart == 0 && (players[0].dead || playerMode && players[1].dead)){
+							if(playerMode)
+								for(let i in players)
+									if(!players[i].dead && players[1 - i].dead)
+										++wins[i];
+
+							for(let i in players)
+								if(highscores[playerMode][i] < players[i].score)
+									highscores[playerMode][i] = players[i].score;
+
+							setCookie("SnekHighscores", highscores.flat().join());
+
+							restart = 1;
+							setTimeout(() => restart = 2, 2000);
+						}
+						setTimeout(frame, runSpeed);
+					}
+				}
+			}
+			function draw(){
+				ctx.beginPath();
+				ctx.fillStyle = "#101010";
+				ctx.fillRect(0, 0, width*tileSize, height*tileSize);
+				ctx.closePath();
+
+				for(let i in grid)
+					for(let j in grid[i])
+						if(grid[i][j].player){
+							let type = grid[i][j].player;
+							ctx.beginPath();
+							ctx.fillStyle = type == 3
+						 	?	"red"
+							:	"hsl(" +
+								[,120,180][type] +
+								"deg, 100%, " +
+								(
+									50 -
+									2*(players[type - 1].score - grid[i][j].value) *
+									20/Math.max(20, players[type - 1].score)
+								) +
+								"%)"
+							;
+							ctx.fillRect(i * tileSize, j * tileSize, tileSize, tileSize);
+							ctx.closePath();
+						}
+
+				ctx.strokeStyle = "#101010";
+				ctx.lineWidth = Math.floor(tileSize * 1/9)*2;
+				ctx.lineCap = "round";
+				for(let i in grid)
+					for(let j in grid[i]){
+						let leftBorder = i == 0 ||
+							grid[i][j].player != grid[i - 1][j].player ||
+							grid[i][j].player % 3 > 0 &&
+							Math.abs(grid[i][j].value - grid[i - 1][j].value) > 1;
+						let topBorder = j == 0 ||
+							grid[i][j].player != grid[i][j - 1].player ||
+							grid[i][j].player % 3 > 0 &&
+							Math.abs(grid[i][j].value - grid[i][j - 1].value) > 1;
+
+						if(leftBorder){
+							ctx.beginPath();
+							ctx.moveTo(i * tileSize, j * tileSize);
+							ctx.lineTo(i * tileSize, (+j + 1) * tileSize);
+							ctx.stroke();
+							ctx.closePath();
+						}
+						if(topBorder){
+							ctx.beginPath();
+							ctx.moveTo(i * tileSize, j * tileSize);
+							ctx.lineTo((+i + 1) * tileSize, j * tileSize);
+							ctx.stroke();
+							ctx.closePath();
+						}
+
+					}
+				ctx.beginPath();
+				ctx.moveTo(0, height * tileSize);
+				ctx.lineTo(width * tileSize, height * tileSize);
+				ctx.lineTo(width * tileSize, 0);
+				ctx.stroke();
+				ctx.closePath();
+
+				let eyeSize = 0.12;
+				let eyeDistance = 0.15;
+				ctx.fillStyle = "black";
+				for(player of players)
+					if(!player.dead){
+						let point = {x: 0, y: 0};
+						point[convertDirection[player.direction][0]] = convertDirection[player.direction][1];
 						ctx.beginPath();
-						ctx.rect(index1*scale + 5, index2*scale + 5, scale, scale);
-						
-						ctx.fillStyle = "black";
-						if(head.x == index1 && head.y == index2 && head.dead == false){ctx.fillStyle = "#00ff00";}
-						else if(tile[index1][index2].tail > 0){ctx.fillStyle = "#00" + (250 - 10*(score - tile[index1][index2].tail)).toString(16) + "00";
-							if(score > 14){ctx.fillStyle = "#00" + (250 - (Math.round(140/score))*(score - tile[index1][index2].tail)).toString(16) + "00";}}
-						else if(tile[index1][index2].food == true){ctx.fillStyle = "#FF0000";}
-							
-							
-						ctx.fill();
+						ctx.fillRect(
+							(player.x + 0.5 + (point.x ||  1) * eyeDistance - eyeSize/2)*tileSize,
+							(player.y + 0.5 + (point.y ||  1) * eyeDistance - eyeSize/2)*tileSize,
+							eyeSize*tileSize,
+							eyeSize*tileSize
+						);
+						ctx.fillRect(
+							(player.x + 0.5 + (point.x || -1) * eyeDistance - eyeSize/2)*tileSize,
+							(player.y + 0.5 + (point.y || -1) * eyeDistance - eyeSize/2)*tileSize,
+							eyeSize*tileSize,
+							eyeSize*tileSize
+						);
 						ctx.closePath();
-						
 					}
-					
-				}
-				
-				while(foodCount == 0){
-					temp1 = Math.floor(Math.random() * boardSize.x);
-					temp2 = Math.floor(Math.random() * boardSize.y);
-					if(tile[temp1][temp2].tail == 0 && !(temp1 == head.x && temp2 == head.y)){
-						tile[temp1][temp2].food = true;
-						foodCount++;
+
+
+				scoreBar.children[0].innerText = "highscore: " + highscores[playerMode][0];
+				scoreBar.children[1].innerText = "score: " + players[0].score;
+				scoreBar.children[2].innerText = playerMode ? "wins: " + wins[0] : "";
+				scoreBar.children[4].innerText = playerMode ? "wins: " + wins[1] : "";
+				scoreBar.children[5].innerText = playerMode ? "score: " + players[1].score : "";
+				scoreBar.children[6].innerText = playerMode == 2 ? "highscore: " + highscores[playerMode][1] : "";
+			}
+
+			function setMode(mode){
+				if(mode != playerMode)
+					wins = [0, 0];
+				playerMode = mode;
+				Array.from(menu.firstElementChild.children).forEach((el, i) => el.style.borderColor = i == playerMode ? "lime" : "");
+			}
+			function addFood(){
+				for(let tries = 0; tries < 500; ++tries){
+					let x = Math.floor(Math.random() * (width - 2)) + 1;
+					let y = Math.floor(Math.random() * (height - 2)) + 1;
+					if(grid[x][y].player == 0){
+						grid[x][y].player = 3;
+						return;
 					}
 				}
-				
-				
-				
-				
-				if(head.dead == true && tailCount == 0){
-					head.dead = false;
-					if(score > highScore){highScore = score;}
-					setCookie('Highscore',highScore,365);
-					score = 1;
-					
-					head.x = 0;
-					head.y = 0;
-					head.direction = "";
+			}
+			function runAIplayer(bot){
+				let distanceGrid = grid.map(row => row.map(() => 999));
+				distanceGrid[players[bot].x][players[bot].y] = 0;
+
+				let changed = true;
+				while(changed){
+					changed = false;
+					for(let i in distanceGrid)
+						for(let j in distanceGrid[i])
+							for(let [x, y] of [[0, -1], [0, 1], [-1, 0], [1, 0]])
+								if(
+									(+i + x + 1) % (width + 1) &&
+									(+j + y + 1) % (height + 1) &&
+									distanceGrid[+i + x][+j + y] + 1 < distanceGrid[i][j] &&
+									(grid[i][j].player % 3 == 0 || grid[i][j].value <= distanceGrid[+i + x][+j + y])
+								){
+									distanceGrid[i][j] = distanceGrid[+i + x][+j + y] + 1;
+									changed = true;
+								}
+
 				}
-				
-				
-				
-				
-				
-				
-				
-				ctx.font = "15px Arial";
-		    	ctx.fillStyle = "#ffffff";
-		    	ctx.textAlign = "left";
-				ctx.fillText("Score: " + score, 10, canvas.height - 5);
-		    	ctx.textAlign = "right";
-				ctx.fillText("Highscore: " + highScore, canvas.width - 30, canvas.height - 5);
-				
-				
-				
-				
-				
-				
-				
-       			setTimeout(draw, 10);
-			}    
-			draw();
-			
-		</SCRIPT>
-		
+
+				let closestFood = {distance: 999, x: -1, y: 0};
+				for(let i in distanceGrid)
+					for(let j in distanceGrid[i])
+						if(grid[i][j].player == 3 && distanceGrid[i][j] < closestFood.distance)
+							closestFood = {distance: distanceGrid[i][j], x: +i, y: +j};
+
+				///
+
+				if(closestFood.distance < 999){
+					let x = closestFood.x, y = closestFood.y;
+					while(distanceGrid[x][y] > 1){
+						for(let adj of [[0, -1], [0, 1], [-1, 0], [1, 0]])
+							if(
+								(x + adj[0]) in distanceGrid &&
+								(y + adj[1]) in distanceGrid[x + adj[0]] &&
+								distanceGrid[x][y] - distanceGrid[x + adj[0]][y + adj[1]] == 1
+							){
+								x += adj[0];
+								y += adj[1];
+								break;
+							}
+					}
+
+					if(x < players[bot].x && grid[players[bot].x - 1][players[bot].y].player % 3 == 0)
+						players[bot].direction = 2;
+					else if(x > players[bot].x && grid[players[bot].x + 1][players[bot].y].player % 3 == 0)
+						players[bot].direction = 3;
+					else if(y < players[bot].y && grid[players[bot].x][players[bot].y - 1].player % 3 == 0)
+						players[bot].direction = 0;
+					else if(y > players[bot].y && grid[players[bot].x][players[bot].y + 1].player % 3 == 0)
+						players[bot].direction = 1;
+				}
+			}
+
+
+			document.addEventListener("keydown", e => {
+				for(let i in controls)
+					if(e.keyCode == controls[i] && !userInput[i])
+						userInput[i] = 2;
+				if(e.keyCode == 89)
+					extraBot = !extraBot;
+				if(e.keyCode == 85)
+					runSpeed = 1;
+				if(e.key == "Escape"){
+					running = false;
+					menu.style.display = "";
+				}
+			});
+			document.addEventListener("keyup", e => {
+				for(let i in controls)
+					if(e.keyCode == controls[i] && userInput[i])
+						userInput[i] = 1 - (
+							playerMode == 2
+							?	userInput.slice(...[0, 4].slice(+i > 3))
+						 	:	userInput
+						).includes(2);
+			});
+
+
+			//setup
+			let hs = (getCookie("SnekHighscores") || "0,0,0,0").split(",");
+			highscores = [[hs[0]], [hs[1]], [hs[2], hs[3]]];
+			setMode(0);
+
+
+		</script>
 	</body>
-	
 </html>
