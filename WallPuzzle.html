@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Not really minesweeper</title>
+		<style type="text/css">
+			body {
+				background: gray;
+			}
+
+			.center {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+			}
+
+			#menu {
+				padding: 20px;
+				border: 1px solid #202020;
+			}
+			#menu #game-sizes {
+				display: flex;
+			}
+			#menu #game-sizes > div {
+				width: 50px;
+				height: 50px;
+				margin: 20px;
+				padding: 5px;
+				text-align: center;
+				background: darkgray;
+				border: 1px solid #202020;
+			}
+
+			#game-canvas {
+				width: 70%;
+				height: 80%;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="menu" class="center">
+			<div id="game-sizes">
+				<div onclick="start(5, 5)">5x5</div>
+				<div onclick="start(9, 5)">9x5</div>
+				<div onclick="start(10, 10)">10x10</div>
+				<div onclick="start(20, 10)">20x10</div>
+				<div onclick="start(35, 20)">35x20</div>
+			</div>
+		</div>
+		<canvas id="game-canvas" class="center" style="display: none"></canvas>
+		<div id="game-over" class="center" style = "display: none">
+			<center>You won!</center>
+		</div>
+		<script type="text/javascript">
+			let menu = document.getElementById("menu")
+			let gameOver = document.getElementById("game-over")
+			let canvas = document.getElementById("game-canvas")
+			let ctx = canvas.getContext("2d")
+
+			let view = "menu"
+			let width = height = tileSize = 0
+			let canvasMargin = {left: 0, top: 0}
+			let targetGrid = [[]]
+			let grid = [[]]
+			let verticalWalls = [[]]
+			let horizontalWalls = [[]]
+
+			let hoverX = hoverY = -1
+			let hoverVertical = false
+
+
+			function start(w = width, h = height){
+				width = w
+				height = h
+				view = "game"
+
+				menu.style.display = gameOver.style.display = "none"
+				canvas.style.display = ""
+				canvas.width  = canvas.clientWidth
+				canvas.height = canvas.clientHeight
+
+				tileSize = Math.floor(Math.min((canvas.width - 10) / width, (canvas.height - 10) / height))
+				canvasMargin.left = Math.floor((canvas.width  -  width*tileSize)/2)
+				canvasMargin.top  = Math.floor((canvas.height - height*tileSize)/2)
+
+				targetGrid       = matrix(width, height, 0)
+				grid             = matrix(width, height, 0)
+				verticalWalls    = matrix(width - 1, height, () => Math.random() < 0.5)
+				horizontalWalls  = matrix(width, height - 1, () => Math.random() < 0.5)
+				updateGrid(targetGrid)
+				//verticalWalls    = matrix(width - 1, height, () => Math.random() < 0.5)
+				//horizontalWalls  = matrix(width, height - 1, () => Math.random() < 0.5)
+				verticalWalls  .forEach(col => col.fill(false))
+				horizontalWalls.forEach(row => row.fill(false))
+
+				draw()
+			}
+			function updateGrid(g = grid){
+				for(let i of range(width))
+					for(let j of range(height)){
+						g[i][j] = 0
+						for(let x = i - 1;   x in verticalWalls      && !verticalWalls  [x][j];   x--) g[i][j]++
+						for(let x = i    ;   x in verticalWalls      && !verticalWalls  [x][j];   x++) g[i][j]++
+						for(let y = j - 1;   y in horizontalWalls[i] && !horizontalWalls[i][y];   y--) g[i][j]++
+						for(let y = j    ;   y in horizontalWalls[i] && !horizontalWalls[i][y];   y++) g[i][j]++
+					}
+			}
+			function draw(){
+				ctx.clearRect(0, 0, canvas.width, canvas.height)
+				//grid
+				updateGrid()
+
+				let walls = hoverVertical ? verticalWalls : horizontalWalls
+				if(hoverX in walls && hoverY in walls[hoverX]){
+					ctx.strokeStyle = "#A0A0A0"
+					ctx.lineWidth = Math.round(tileSize * 0.15)
+					ctx.lineCap = "round"
+					if(hoverVertical)
+						lineSegment(hoverX + 1, hoverY, hoverX + 1, hoverY + 1)
+					else
+						lineSegment(hoverX, hoverY + 1, hoverX + 1, hoverY + 1)
+				}
+
+				ctx.font = Math.floor(tileSize/2) + "px Courier New"
+				ctx.textAlign = "center"
+				for(let i of range(width))
+					for(let j of range(height)){
+						ctx.fillStyle = ["red", "lime", "black"][Math.sign(grid[i][j] - targetGrid[i][j]) + 1]
+						ctx.beginPath()
+						ctx.fillText(targetGrid[i][j], ...coords(i + 0.5, j + 0.75))
+						ctx.closePath()
+					}
+
+				ctx.strokeStyle = "#303030"
+				ctx.lineWidth = 2
+				for(let i of range(width - 1))
+					for(let j of range(height))
+						if(verticalWalls[i][j])
+							lineSegment(i + 1, j, i + 1, j + 1)
+				for(let i of range(width))
+					for(let j of range(height - 1))
+						if(horizontalWalls[i][j])
+							lineSegment(i, j + 1, i + 1, j + 1)
+				ctx.beginPath()
+				ctx.strokeRect(canvasMargin.left, canvasMargin.top, width*tileSize, height*tileSize)
+				ctx.closePath()
+			}
+			function lineSegment(x1, y1, x2, y2){
+				ctx.beginPath()
+				ctx.moveTo(...coords(x1, y1))
+				ctx.lineTo(...coords(x2, y2))
+				ctx.stroke()
+				ctx.closePath()
+			}
+			const coords = (x, y) => [canvasMargin.left + Math.round(x*tileSize), canvasMargin.top + Math.round(y*tileSize)]
+			const range = size => new Array(size).fill(0).map((_, i) => +i)
+			const matrix = (w, h, f) => typeof f == "function"
+				?	new Array(w).fill(0).map(() => new Array(h).fill(0).map(f))
+				:	new Array(w).fill(0).map(() => new Array(h).fill(f))
+
+			canvas.addEventListener("click", e => {
+				if(view != "game")
+					return;
+
+				onMouseEvent(e)
+
+				let walls = hoverVertical ? verticalWalls : horizontalWalls
+				if(!(hoverX in walls && hoverY in walls[hoverX]))
+					return;
+
+				walls[hoverX][hoverY] = !walls[hoverX][hoverY]
+				updateGrid()
+				draw()
+			})
+			canvas.addEventListener("mousemove", e => {
+				onMouseEvent(e)
+				draw()
+			})
+			function onMouseEvent(e){
+				hoverX = (e.offsetX - canvasMargin.left) / tileSize
+				hoverY = (e.offsetY - canvasMargin.top) / tileSize
+				hoverVertical = Math.abs((hoverX % 1) - 0.5) > Math.abs((hoverY % 1) - 0.5)
+
+				if(hoverVertical){
+					hoverX = Math.round(hoverX) - 1
+					hoverY = Math.floor(hoverY)
+				}
+				else{
+					hoverY = Math.round(hoverY) - 1
+					hoverX = Math.floor(hoverX)
+				}
+			}
+		</script>
+	</body>
+</html>
