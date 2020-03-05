@@ -19,22 +19,47 @@
 				padding: 20px;
 				border: 1px solid #202020;
 			}
-			#menu #game-sizes {
+
+			.options {
 				display: flex;
 			}
-			#menu #game-sizes > div, #game-over > div {
-				width: 50px;
-				height: 50px;
+			.options > div {
 				margin: 20px;
-				padding: 5px;
-				text-align: center;
+			}
+			.options > div, #AI-help {
 				background: darkgray;
 				border: 1px solid #202020;
+
+				width: 60px;
+				height: 60px;
+				padding: 5px;
+				box-sizing: border-box;
+
+				text-align: center;
+				user-select: none;
+
+				transition: background 0.1s;
+			}
+			.options > div:hover, #AI-help:hover {
+				background: #CCCCCC;
+			}
+
+			#AI-help {
+				position: absolute;
+				right: 30px;
+				bottom: 30px;
+			}
+			#AI-help.on {
+				background: lime;
+			}
+			#AI-help.on:hover {
+				background: #00AA00;
 			}
 
 			#game-over {
 				padding: 10px;
 				border: 1px solid black;
+				background: #FFFFFF30;
 			}
 
 			#game-canvas {
@@ -45,28 +70,34 @@
 	</head>
 	<body>
 		<div id="menu" class="center">
-			<div id="game-sizes">
+			<div class="options">
 				<div onclick="start(5, 5)">5x5</div>
 				<div onclick="start(9, 5)">9x5</div>
 				<div onclick="start(10, 10)">10x10</div>
 				<div onclick="start(20, 10)">20x10</div>
 				<div onclick="start(35, 20)">35x20</div>
+				<div onclick="start(50, 30)">50x30</div>
 			</div>
 		</div>
+		<div id="AI-help" onclick="toggleAIhelp()">AI help</div>
 		<canvas id="game-canvas" class="center" style="display: none"></canvas>
 		<div id="game-over" class="center" style = "display: none">
 			<center>You won!</center>
-			<div onclick="start()">Play again</div>
-			<div onclick="canvas.style.display = gameOver.style.display = 'none'; menu.style.display = ''">Change settings</div>
+			<div class="options">
+				<div onclick="start()">Play again</div>
+				<div onclick="canvas.style.display = gameOver.style.display = 'none'; menu.style.display = ''">Change settings</div>
+			</div>
 		</div>
 		<script type="text/javascript">
-			let menu = document.getElementById("menu")
-			let gameOver = document.getElementById("game-over")
-			let canvas = document.getElementById("game-canvas")
+			let menu =         document.getElementById("menu")
+			let gameOver =     document.getElementById("game-over")
+			let AIhelpButton = document.getElementById("AI-help")
+			let canvas =       document.getElementById("game-canvas")
 			let ctx = canvas.getContext("2d")
 
 			let view = "menu"
 			let width = height = tileSize = 0
+			let AIhelp = false
 			let canvasMargin = {left: 0, top: 0}
 			let targetGrid = [[]]
 			let grid = [[]]
@@ -75,6 +106,10 @@
 
 			let hoverX = hoverY = -1
 			let hoverVertical = false
+
+			let numberColors = ["red", "lime", "black"]
+			let wallColors = ["#303030", "#303060", "#50AA50"]
+			let AIspeed = 1  //ms
 
 
 			function start(w = width, h = height){
@@ -93,32 +128,39 @@
 
 				targetGrid       = matrix(width, height, 0)
 				grid             = matrix(width, height, 0)
-				verticalWalls    = matrix(width - 1, height, () => Math.random() < 0.5)
-				horizontalWalls  = matrix(width, height - 1, () => Math.random() < 0.5)
+				verticalWalls    = matrix(width - 1, height, () => Math.round(Math.random()))
+				horizontalWalls  = matrix(width, height - 1, () => Math.round(Math.random()))
 				updateGrid(targetGrid)
 				//verticalWalls    = matrix(width - 1, height, () => Math.random() < 0.5)
 				//horizontalWalls  = matrix(width, height - 1, () => Math.random() < 0.5)
-				verticalWalls  .forEach(col => col.fill(false))
-				horizontalWalls.forEach(row => row.fill(false))
+				verticalWalls  .forEach(col => col.fill(0))
+				horizontalWalls.forEach(row => row.fill(0))
 
 				draw()
+
+				if(AIhelp)
+					AIsolveBoard()
 			}
 			function updateGrid(g = grid){
 				for(let i of range(width))
 					for(let j of range(height)){
 						g[i][j] = 0
-						for(let x = i - 1;   x in verticalWalls      && !verticalWalls  [x][j];   x--) g[i][j]++
-						for(let x = i    ;   x in verticalWalls      && !verticalWalls  [x][j];   x++) g[i][j]++
-						for(let y = j - 1;   y in horizontalWalls[i] && !horizontalWalls[i][y];   y--) g[i][j]++
-						for(let y = j    ;   y in horizontalWalls[i] && !horizontalWalls[i][y];   y++) g[i][j]++
+						for(let x = i - 1;   x in verticalWalls      && !(verticalWalls  [x][j] % 3);   x--) g[i][j]++
+						for(let x = i    ;   x in verticalWalls      && !(verticalWalls  [x][j] % 3);   x++) g[i][j]++
+						for(let y = j - 1;   y in horizontalWalls[i] && !(horizontalWalls[i][y] % 3);   y--) g[i][j]++
+						for(let y = j    ;   y in horizontalWalls[i] && !(horizontalWalls[i][y] % 3);   y++) g[i][j]++
 					}
 			}
 			function draw(){
 				ctx.clearRect(0, 0, canvas.width, canvas.height)
 				updateGrid()
 
-				if(grid.every((row, i) => row.every((x, j) => x == targetGrid[i][j])))
+				if(grid.every((row, i) => row.every((x, j) => x == targetGrid[i][j]))){
+					view = "gameOver"
 					gameOver.style.display = ""
+
+					horizontalWalls.concat(verticalWalls).forEach(row => row.forEach((x, i) => row[i] = +(x % 3 != 0)))
+				}
 
 				let walls = hoverVertical ? verticalWalls : horizontalWalls
 				if(hoverX in walls && hoverY in walls[hoverX]){
@@ -135,23 +177,28 @@
 				ctx.textAlign = "center"
 				for(let i of range(width))
 					for(let j of range(height)){
-						ctx.fillStyle = ["red", "lime", "black"][Math.sign(grid[i][j] - targetGrid[i][j]) + 1]
+						ctx.fillStyle = numberColors[Math.sign(grid[i][j] - targetGrid[i][j]) + 1]
 						ctx.beginPath()
 						ctx.fillText(targetGrid[i][j], ...coords(i + 0.5, j + 0.75))
 						ctx.closePath()
 					}
 
-				ctx.strokeStyle = "#303030"
 				ctx.lineWidth = 2
 				for(let i of range(width - 1))
 					for(let j of range(height))
-						if(verticalWalls[i][j])
+						if(verticalWalls[i][j]){
+							ctx.strokeStyle = wallColors[verticalWalls[i][j] - 1]
 							lineSegment(i + 1, j, i + 1, j + 1)
+						}
 				for(let i of range(width))
 					for(let j of range(height - 1))
-						if(horizontalWalls[i][j])
+						if(horizontalWalls[i][j]){
+							ctx.strokeStyle = wallColors[horizontalWalls[i][j] - 1]
 							lineSegment(i, j + 1, i + 1, j + 1)
+						}
+
 				ctx.beginPath()
+				ctx.strokeStyle = wallColors[0]
 				ctx.strokeRect(canvasMargin.left, canvasMargin.top, width*tileSize, height*tileSize)
 				ctx.closePath()
 			}
@@ -168,6 +215,101 @@
 				?	new Array(w).fill(0).map(() => new Array(h).fill(0).map(f))
 				:	new Array(w).fill(0).map(() => new Array(h).fill(f))
 
+			const sleep = (milliseconds) => {
+				return new Promise(resolve => setTimeout(resolve, milliseconds))
+			}
+
+			function toggleAIhelp(){
+				AIhelp = !AIhelp
+				AIhelpButton.classList.toggle("on")
+				if(AIhelp)
+					AIsolveBoard()
+			}
+			function AIexamineTile(x, y){
+				let total = targetGrid[x][y]
+
+				let maxUp = 0, maxDown = 0, maxLeft = 0, maxRight = 0
+
+				for(let i = 1, branchMin = total; (y - i)     in horizontalWalls[x] && horizontalWalls[x][y - i]     % 3 == 0 && i <= (branchMin = Math.min(branchMin, targetGrid[x][y - i])); maxUp    = i++);
+				for(let i = 1, branchMin = total; (y + i - 1) in horizontalWalls[x] && horizontalWalls[x][y + i - 1] % 3 == 0 && i <= (branchMin = Math.min(branchMin, targetGrid[x][y + i])); maxDown  = i++);
+				for(let i = 1, branchMin = total; (x - i)     in verticalWalls      && verticalWalls[x - i][y]       % 3 == 0 && i <= (branchMin = Math.min(branchMin, targetGrid[x - i][y])); maxLeft  = i++);
+				for(let i = 1, branchMin = total; (x + i - 1) in verticalWalls      && verticalWalls[x + i - 1][y]   % 3 == 0 && i <= (branchMin = Math.min(branchMin, targetGrid[x + i][y])); maxRight = i++);
+
+				let minUp = 0, minDown = 0, minLeft = 0, minRight = 0
+
+				for(let i = 1; i <= maxUp && (y - i) in horizontalWalls[x] && horizontalWalls[x][y - i] == 3; minUp = i++);
+				for(let i = 1; i <= maxDown && (y + i - 1) in horizontalWalls[x] && horizontalWalls[x][y + i - 1] == 3; minDown = i++);
+				for(let i = 1; i <= maxLeft && (x - i) in verticalWalls && verticalWalls[x - i][y] == 3; minLeft = i++);
+				for(let i = 1; i <= maxRight && (x + i - 1) in verticalWalls && verticalWalls[x + i - 1][y] == 3; minRight = i++);
+
+
+				let minHorizontal = Math.max(total - maxUp - maxDown, minLeft + minRight), minVertical = Math.max(total - maxLeft - maxRight, minUp + minDown)
+				minUp    = Math.max(minVertical - maxDown, minUp)
+				minDown  = Math.max(minVertical - maxUp, minDown)
+				minLeft  = Math.max(minHorizontal - maxRight, minLeft)
+				minRight = Math.max(minHorizontal - maxLeft, minRight)
+
+				maxUp    = Math.min(total - minDown  - minLeft - minRight, maxUp)
+				maxDown  = Math.min(total - minUp    - minLeft - minRight, maxDown)
+				maxLeft  = Math.min(total - minRight - minUp   - minDown , maxLeft)
+				maxRight = Math.min(total - minLeft  - minUp   - minDown , maxRight)
+
+
+				for(let i = 0; i < minUp; i++)
+					if((y - i - 1) in horizontalWalls[x])
+						horizontalWalls[x][y - i - 1] = 3
+				for(let i = 0; i < minDown; i++)
+					if((y + i) in horizontalWalls[x])
+						horizontalWalls[x][y + i] = 3
+				for(let i = 0; i < minLeft; i++)
+					if((x - i - 1) in verticalWalls)
+						verticalWalls[x - i - 1][y] = 3
+				for(let i = 0; i < minRight; i++)
+					if((x + i) in verticalWalls)
+						verticalWalls[x + i][y] = 3
+
+				if(minUp == maxUp && (y - minUp - 1) in horizontalWalls[x])
+					horizontalWalls[x][y - minUp - 1] = 2
+				if(minDown == maxDown && (y + minDown) in horizontalWalls[x])
+					horizontalWalls[x][y + minDown] = 2
+				if(minLeft == maxLeft && (x - minLeft - 1) in verticalWalls)
+					verticalWalls[x - minLeft - 1][y] = 2
+				if(minRight == maxRight && (x + minRight) in verticalWalls)
+					verticalWalls[x + minRight][y] = 2
+
+				return minUp + minDown + minLeft + minRight == total
+			}
+			async function AIsolveBoard(){
+				if(!(AIhelp && view == "game"))
+					return;
+
+				updateGrid()
+
+				let completeTiles = matrix(width, height, false)
+
+				let newWalls = wallsToText(), oldWalls = "", changed = true
+				while(changed && AIhelp){
+					changed = false
+					for(let i in grid)
+						for(let j in grid[i])
+							if(!completeTiles[i][j]){
+								if(AIexamineTile(+i, +j))
+									completeTiles[i][j] = true
+
+								oldWalls = newWalls
+								newWalls = wallsToText()
+								if(newWalls != oldWalls){
+									changed = true
+									draw()
+									await sleep(AIspeed)
+								}
+							}
+
+				}
+			}
+
+			const wallsToText = () => horizontalWalls + " " + verticalWalls
+
 			canvas.addEventListener("click", e => {
 				if(view != "game")
 					return;
@@ -178,9 +320,11 @@
 				if(!(hoverX in walls && hoverY in walls[hoverX]))
 					return;
 
-				walls[hoverX][hoverY] = !walls[hoverX][hoverY]
-				updateGrid()
+				walls[hoverX][hoverY] = 1 - (walls[hoverX][hoverY] % 3 != 0)
 				draw()
+
+				if(AIhelp)
+					AIsolveBoard()
 			})
 			canvas.addEventListener("mousemove", e => {
 				onMouseEvent(e)
