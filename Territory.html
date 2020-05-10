@@ -1,226 +1,299 @@
-
 <!DOCTYPE html>
-<html>
-
-<head>
-
-	<style>
-		* {
-			padding: 0;
-			margin: 0;
-		}
-		
-		canvas {
-			background: black;
-			display: block;
-			margin: 0 auto;
-		}
-	</style>
-
-<title>Territory wars</title>
-</head>
-
-<body>
-
-	<canvas id="myCanvas" width="1350" height="625">   </canvas>
-
-	<body style="background-color:black;">
-
-		<SCRIPT LANGUAGE="JavaScript">
-    
-			var canvas = document.getElementById("myCanvas");
-			var ctx = canvas.getContext("2d");
-			
-			var speed = 0;
-            var colors = "green";//0 for rgb spectrum, "green" for greenscale
-			
-			var setup = "random"; //random, sides
-			var squish = 1;
-			var scale = 5; // between 1 and 50
-			var index1 = 0;
-     		var index2 = 0;
-			var index1Max = 20*scale;
-			var index2Max = 10*scale;
-			var tileSize = 50/scale;
-			var rand = 0;
-			var spreadChance = 8;  //fraction
-			var tile = [[]];
-			
-			
-			
-			
-			//========================================================================
-			
-			
-			
-			index1 = 0;
-				while(index1 <= index1Max){
-					tile[index1] = [];
-					index2 = 0;
-					while(index2 <= index2Max){
-						
-						if(setup == "random"){
-                            if(colors == "green"){
-                                tile[index1][index2] = {
-							    	color:"rgb(0,"+Math.floor(Math.random()*205 + 50)+",0)",
-							    	nextColor:"rgb(0,"+Math.floor(Math.random()*205 + 50)+",0)"
-							    }
-                            }
-                            else if(colors == 0){
-                                tile[index1][index2] = {
-							    	color:"rgb("+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+")",
-							    	nextColor:"rgb("+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+","+Math.floor(Math.random()*250)+")"
-							    }
-                            }
-                            else{
-							    rand = Math.random()*colors;
-							    if(rand <= 1){tile[index1][index2] = {
-							    	color:"lime",
-							    	nextColor:"lime",
-							    }}
-					       	    else if(rand <= 2){tile[index1][index2] = {
-							    	color:"blue",
-							    	nextColor:"blue",
-							    }}
-							    else{tile[index1][index2] = {
-							    	color:"red",
-							    	nextColor:"red",
-							    }}
-                            }
-						}
-						if(setup == "sides"){
-							if(index1 >= index1Max/2){tile[index1][index2] = {
-								color:"lime",
-								nextColor:"lime",
-							}}
-							else{tile[index1][index2] = {
-								color:"blue",
-								nextColor:"blue",
-							}}
-							
-						}
-						
-						index2 += 1;
-					}
-					index1 += 1;
-				}
-			
-			
-			
-			
-			
-			
-			
-			
-		
-			//========================================================================
-			function draw() {
-				
-					ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
-          
-				//document.addEventListener("keydown", keyDownHandler, false);
-				//document.addEventListener("keyup", keyUpHandler, false);
-				
-				//function keyDownHandler(e) {}
-        		//function keyUpHandler(e) {}
-        
-				
-				
-				
-				
-        		index1 = 0;
-				while(index1 <= index1Max){
-					index2 = 0;
-					while(index2 <= index2Max){
-						
-						
-						rand = Math.random()*4;
-						if(rand <= 1){
-						if(index1 != 0){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1 - 1][index2].nextColor = tile[index1][index2].color;
-							}
-						}}
-                        rand = Math.random()*4;
-						if(rand <= 1){
-						if(index2 != 0){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1][index2 - 1].nextColor = tile[index1][index2].color;
-							}
-						}}
-                        rand = Math.random()*4;
-						if(rand <= 1){
-						if(index1 != index1Max){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1 + 1][index2].nextColor = tile[index1][index2].color;
-							}
-						}}
-                        rand = Math.random()*4;
-                        if(rand <= 1){
-						if(index2 != index2Max){
-							rand = Math.random()*spreadChance;
-							if(rand <= 1){
-								tile[index1][index2 + 1].nextColor = tile[index1][index2].color;
-							}
-						}}
-						
-						
-						if(squish == 1){
-                            if(index2 != index2Max && index1 != 0 && index2 != 0 && index1 != index1Max){
-								if(tile[index1+1][index2].color == tile[index1-1][index2].color &&
-							       tile[index1+1][index2].color == tile[index1][index2+1].color &&
-								   tile[index1][index2+1].color == tile[index1][index2-1].color){
-								       tile[index1][index2].nextColor = tile[index1+1][index2].color;
-								}
-                            }
-						}
-						
-						
-						
-						index2 += 1;
-					}
-					index1 += 1;
-				}
-				
-				
-				
-				
-				
-				index1 = 0;
-				while(index1 <= index1Max){
-					index2 = 0;
-					while(index2 <= index2Max){
-						
-						tile[index1][index2].color = tile[index1][index2].nextColor;
-						
-						ctx.beginPath();
-						ctx.rect(index1*tileSize, index2*tileSize, tileSize+1, tileSize+1);
-						ctx.fillStyle = tile[index1][index2].color;
-						ctx.fill();
-						ctx.closePath();
-						
-						index2 += 1;
-					}
-					index1 += 1;
-				}
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Territory wars</title>
+		<style type="text/css">
+			body {
+				background: #202024;
+				font-family: Courier New;
+				padding: 0;
+				margin: 0;
 			}
-			setInterval(draw, speed);
-		</SCRIPT>
 
+			canvas {
+				position: absolute;
+				left: 0;
+				right: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			#menu {
+				position: absolute;
+				left: 20%;
+				right: 20%;
+				top: 20%;
+				bottom: 20%;
+
+				border: 1px solid black;
+				border-radius: 2px;
+				background: #00000070;
+
+				transition: transform 0.2s ease-in-out;
+			}
+			#menu.hidden {
+				transform: scale(0);
+			}
+			#menu > div {
+				width: 100%;
+				height: 50%;
+				display: flex;
+				justify-content: space-evenly;
+				align-items: center;
+
+				color: white;
+				text-align: center;
+			}
+			#menu > :first-child > div {
+				width: 80px;
+				transform: translateY(20px);
+			}
+			#menu > :first-child > div > :first-child {
+				position: relative;
+				top: -20px;
+				left: 50%;
+				transform: translateX(-50%);
+				min-height: calc(2em * 1.15);
+			}
+			.button {
+				width: 80px;
+				height: 80px;
+				border: 1px solid gray;
+
+				color: white;
+				text-align: center;
+				user-select: none;
+			}
+			.start.button {
+				background: #00BB00;
+			}
+			.start.button:hover {
+				background: #008800;
+			}
+
+			#color-count {
+				position: absolute;
+				top: 0;
+				right: 0;
+				padding: 5px;
+				font-size: 20px;
+				font-weight: bold;
+				text-align: right;
+				pointer-events: none;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="game-canvas"></canvas>
+		<div id="color-count"></div>
+		<div id="menu">
+			<div class="settings">
+				<div><div>Size</div><div class="button">A</div></div>
+				<div><div>Color scheme</div><div class="button">C</div></div>
+				<div><div>Blending</div><div class="button">B</div></div>
+				<div><div>Max FPS</div><div class="button">D</div></div>
+				<div><div>Color rounding</div><div class="button">E</div></div>
+			</div>
+			<div>
+				<div class="start button" onclick="start()">Start</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			let canvas = document.getElementById("game-canvas")
+			let ctx = canvas.getContext("2d", {alpha: false})
+			let menuDiv = document.getElementById("menu")
+			let colorCounter = document.getElementById("color-count")
+
+
+			let colorType = "hue"  //hue, rgb, green
+			let doColorBlend = true
+			let fps = 100
+			let spreadChance = 0.1
+
+			let blendStrength = 0
+			let tileSize = 10
+			let width = 30, height = 30
+			let xValues = [], yValues = []
+			let grid = [[]]
+			let tiles = []
+
+			let maxDrawFps = 30
+			let frameIntervalId = -1
+			let frameCounter = 0
+			let lastDrawTime = 0
+
+
+
+			class Button {
+				constructor(labels, values, element, callback){
+					this.labels = labels
+					this.values = values
+					this.index = 0
+					this.element = element
+					this.callback = callback
+
+					this.element.onmouseup = this.onClick.bind(this)
+					this.element.oncontextmenu = () => false
+					this.element.innerText = labels[0]
+				}
+				onClick(e){
+					this.index = (this.index + (e.which == 3 ? -1 : 1) + this.values.length) % this.values.length
+					this.element.innerText = this.labels[this.index]
+
+					if(this.callback)
+						this.callback(this.getValue())
+				}
+				getValue(){
+					return this.values[this.index]
+				}
+			}
+			class Tile {
+				constructor(x, y){
+					this.x = x
+					this.y = y
+					this.color = Math.random()
+					this.nextColor = this.color
+					this.neighbours = []
+					this.spreadChance = 0
+				}
+				updateColor(){
+					if(Math.random() < this.spreadChance){
+						let newColor = this.neighbours[Math.floor(Math.random() * this.neighbours.length)].color
+						this.nextColor = doColorBlend ? blend(this.color, newColor) : newColor
+					}
+				}
+			}
+
+
+			function start(){
+				ctx.clearRect(0, 0, canvas.width, canvas.height)
+				menuDiv.classList.add("hidden")
+				canvas.width  = canvas.clientWidth
+				canvas.height = canvas.clientHeight
+
+				width = buttons[0].getValue()
+				tileSize = Math.floor(canvas.width / width)
+				width  = Math.floor(canvas.width  / tileSize)
+				height = Math.floor(canvas.height / tileSize)
+
+				colorCounter.style.right = canvas.width - width*tileSize + "px"
+
+
+				xValues = range(width)
+				yValues = range(height)
+				colorType = buttons[1].getValue()
+
+				grid = range(width).map(x => range(height).map(y => new Tile(x, y)))
+				tiles = grid.flat()
+
+				for(let i of xValues)
+					for(let j of yValues)
+						for(let x of [-1, 0, 1])
+							if(i + x >= 0 && i + x < width)
+								for(let y of [-1, 0, 1])
+									if(j + y >= 0 && j + y < height && x | y)
+										grid[i][j].neighbours.push(grid[i + x][j + y])
+
+				for(let tile of tiles)
+					tile.spreadChance = 1 - (1 - spreadChance) ** tile.neighbours.length
+
+
+				draw()
+				startLoop()
+			}
+			function startLoop(){
+				frameIntervalId = setInterval(frame, 1000/fps)
+			}
+			function stopLoop(){
+				clearInterval(frameIntervalId)
+				frameIntervalId = -1
+			}
+			function frame(){
+				while(frameIntervalId != -1 && performance.now() - lastDrawTime < 1000 / maxDrawFps){
+
+					for(let tile of tiles)
+						tile.updateColor()
+					for(let tile of tiles)
+						tile.color = tile.nextColor
+
+					frameCounter++
+				}
+				
+				requestAnimationFrame(draw)
+			}
+			function draw(){
+				ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+				let roundTo = colorType == "hue" ?  buttons[4].getValue() :  200
+				let queues = new Array(roundTo).fill(0).map(() => [])
+
+				for(let tile of tiles)
+					queues[Math.floor(tile.color * roundTo)].push(tile)
+
+				let totalColors = 0
+				for(let q in queues)
+					if(queues[q].length){
+						ctx.fillStyle = translateColor(q / roundTo)
+						for(let tile of queues[q]){
+							ctx.beginPath()
+							ctx.fillRect(tile.x * tileSize, tile.y * tileSize, tileSize, tileSize)
+							ctx.closePath()
+						}
+
+						totalColors++
+					}
+
+				lastDrawTime = performance.now()
+				colorCounter.textContent = totalColors
+			}
+			function translateColor(value){
+				if(colorType == "rgb")
+					return "cyan"
+				if(colorType == "hue")
+					return "hsl(" + value*360 + "deg, 100%, 50%)"
+				if(colorType == "green")
+					return "rgb(0, " + (value*200 + 55) + ", 0)"
+			}
+			function blend(a, b){
+				if(colorType == "green" || Math.abs(a - b) <= 0.5)
+					return blendStrength*a + (1 - blendStrength)*b
+				if(colorType == "hue"){
+					if(a > b) a--
+					else      b--
+
+					return (blendStrength*a + (1 - blendStrength)*b + 1) % 1
+				}
+			}
+			const range = length => new Array(length).fill(0).map((_, i) => +i)
+
+
+
+			document.addEventListener("keydown", e => {
+				if(e.key == "Escape"){
+					menuDiv.classList.toggle("hidden")
+					if(frameIntervalId == -1)
+						startLoop()
+					else
+						stopLoop()
+				}
+			})
+
+			let optionDivs = Array.from(menuDiv.firstElementChild.children).map(el => el.lastElementChild)
+			let buttons = [
+				new Button(["small", "medium", "big", "huge"], [30, 60, 100, 200   ], optionDivs[0]                            ),
+				new Button(["rainbow", "greenscale", "rgb"  ], ["hue", "green"     ], optionDivs[1]                            ),
+				new Button(["none", "some", "lots", "crazy" ], [0, 0.2, 0.5, 0.8   ], optionDivs[2], val => blendStrength = val),
+				new Button([30, 1, 8, 15                    ], [30, 1, 8, 15       ], optionDivs[3], val => maxDrawFps    = val),
+				new Button(["none", 16, 100, 360            ], [255*6, 16, 100, 360], optionDivs[4], draw                      )
+			]
+
+			setInterval(() => {
+				console.log(frameCounter)
+				frameCounter = 0
+			}, 1000)
+
+
+		</script>
 	</body>
-
 </html>
