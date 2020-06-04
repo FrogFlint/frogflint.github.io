@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>The Mandelbrot Set</title>
+		<style type="text/css">
+			body {
+				max-height: 100%;
+				overflow: hidden;
+
+				font-family: Courier New;
+			}
+
+			#main-canvas {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+			}
+			#menu {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+
+				/*width: 50%;
+				height: 70%;*/
+				width: max-content;
+				padding: 80px;
+
+				background: #000000D0;
+				border: 1px solid black;
+				border-radius: 3px;
+
+				color: white;
+			}
+			#menu table {
+				/*margin: 50px auto;*/
+				font-size: 15px;
+			}
+			#menu td:first-child {
+				padding-right: 50px;
+			}
+
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="main-canvas"></canvas>
+		<div id="menu" class="hidden">
+			<table>
+				<tr> <td>left click</td> <td>zoom in</td> </tr>
+				<tr> <td>shift + left click</td> <td>zoom out</td> </tr>
+				<tr> <td>scroll</td> <td>free zoom</td> </tr>
+				<tr> <td>right click + drag</td> <td>move camera</td> </tr>
+				<tr> <td>shift + right click</td> <td>set anchor position</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>J</td> <td>switch between Mandelbrot set and Julia set</td> </tr>
+				<tr> <td>shift + J</td> <td>reset anchor to (0, 0)</td> </tr>
+				<tr> <td>Z</td> <td>reset camera</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>]</td> <td>+ max iterations</td> </tr>
+				<tr> <td>[</td> <td>- max iterations</td> </tr>
+				<tr> <td>shift + ]</td> <td>+ pixel size</td> </tr>
+				<tr> <td>shift + [</td> <td>- pixel size</td> </tr>
+			</table>
+		</div>
+		<script type="text/javascript">
+			let canvas = document.getElementById("main-canvas")
+			let ctx = canvas.getContext("2d")
+			let menu = document.getElementById("menu")
+
+			let colors = []
+			let totalColors = 80
+			let currentlyDrawing = false
+
+			let camera = {x: 0, y: 0, zoom: 200}  //zoom is in pixels/unit
+			let zoomFactor = 2
+			let blur = 0
+			let blurValue = 1
+
+			let bailout = 200
+			let selectedX = 0, selectedY = 0
+			let juliaSet = false
+
+
+			function HSLtoRGB(h, s, l){  //0-360, 0-1, 0-1
+				let c = (1 - Math.abs(2*l - 1))*s
+				let x = (1 - Math.abs(h/60 % 2 - 1))*c
+				let m = l - c/2
+
+				let [r,g,b] = [[c,x,0],[x,c,0],[0,c,x],[0,x,c],[x,0,c],[c,0,x]][Math.floor(h / 60)]
+				return [(r + m)*255, (g + m)*255, (b + m)*255]
+			}
+			function generateColors(){
+				colors = [[0, 0, 0]]
+				for(let i = 0; i < totalColors; i++)
+					colors.push(HSLtoRGB(i * 360/totalColors, 1, 0.5).map(c => Math.floor(c)))
+			}
+
+			function calculatePixel(seedX, seedY, dx, dy){
+				let x = seedX, y = seedY
+				let xsqr = x*x, ysqr = y*y  //for optimal speed
+				let i = 0
+
+				while(i < bailout && xsqr + ysqr < 4){
+					y = 2*x*y + dy
+					x = xsqr - ysqr + dx
+					xsqr = x*x
+					ysqr = y*y
+
+					++i
+				}
+				return i
+			}
+
+			function setup(){
+				blurValue = 1.5 ** blur
+				let w = Math.floor(canvas.clientWidth/blurValue), h = Math.floor(canvas.clientHeight/blurValue)
+				if(w != canvas.width || h != canvas.height){
+					canvas.width = w
+					canvas.height = h
+				}
+
+				ctx.beginPath()
+				ctx.fillRect(0, 0, w, h)
+				ctx.closePath()
+			}
+			const getTransformX = (x0 = canvas.width /2, cx = camera.x, zoom = camera.zoom/blurValue) => x => (x - x0) / zoom + cx
+			const getTransformY = (y0 = canvas.height/2, cy = camera.y, zoom = camera.zoom/blurValue) => y => (y - y0) / zoom + cy
+
+			function draw(){
+				if(currentlyDrawing) return
+				currentlyDrawing = true
+
+				let transformX = getTransformX(), transformY = getTransformY()
+				let off = 0
+				let image = ctx.getImageData(0, 0, canvas.width, canvas.height)
+				let id = image.data
+
+				let startTime = performance.now()
+
+				for(let j = 0; j < canvas.height; j += 1)
+					for(let i = 0; i < canvas.width; i += 1){
+						let value = juliaSet ?
+							calculatePixel(transformX(i), transformY(j), selectedX, selectedY) :
+							calculatePixel(selectedX, selectedY, transformX(i), transformY(j))
+						let [r, g, b] = colors[value == bailout ? 0 : (value % totalColors) + 1]
+
+						id[off]     = r
+						id[off + 1] = g
+						id[off + 2] = b
+
+						off += 4
+					}
+				ctx.putImageData(image, 0, 0)
+
+				currentlyDrawing = false
+				console.log(Math.round(performance.now() - startTime))
+			}
+
+
+			setup()
+			generateColors()
+			draw()
+
+			document.oncontextmenu = () => false
+			function onMouseEvent(e){
+				let x = getTransformX()(e.offsetX/blurValue), y = getTransformY()(e.offsetY/blurValue)
+				if(e.which == 1 && e.type == "mousedown" || e.type == "wheel"){
+					let zoom = e.type == "wheel" ?
+						zoomFactor ** (e.deltaY / -70) :
+						e.shiftKey ?
+							1/zoomFactor :
+							zoomFactor
+
+					camera.x = x + (camera.x - x)/zoom
+					camera.y = y + (camera.y - y)/zoom
+					camera.zoom *= zoom
+				}
+				else if(e.which == 3){
+					if(e.shiftKey){
+						selectedX = x
+						selectedY = y
+					}
+					else{
+						camera.x -= e.movementX / camera.zoom
+						camera.y -= e.movementY / camera.zoom
+					}
+				}
+				else if(e.which == 2){
+					totalColors = Math.max(Math.min(Math.round(totalColors - e.movementY/3), 200), 20)
+					generateColors()
+				}
+				else return
+
+				requestAnimationFrame(draw)
+			}
+			canvas.addEventListener("mousedown",   onMouseEvent)
+			canvas.addEventListener("mousemove", onMouseEvent)
+			document.addEventListener("keydown", e => {
+				switch(e.key){
+					case "j":
+						juliaSet = !juliaSet
+						break
+					case "J":
+						selectedX = 0
+						selectedY = 0
+						break
+					case "z":
+						camera.x = 0
+						camera.y = 0
+						camera.zoom = 200
+						break
+
+					case "]":
+						bailout += 50
+						break
+					case "[":
+						bailout = Math.max(bailout - 50, 50)
+						break
+					case "}":
+						blur++
+						setup()
+						break
+					case "{":
+						blur = Math.max(blur - 1, 0)
+						setup()
+						break
+
+					case "Escape":
+						menu.classList.toggle("hidden")
+						return
+
+					default: return
+				}
+
+				requestAnimationFrame(draw)
+			})
+			document.addEventListener("wheel", onMouseEvent)
+
+
+			/// === TODO:
+			//Julia set preview (hovers around mouse, toggle with p)
+			//try scaling up the blurred version with css transforms
+
+			//maybe put something in the menu to save/load the [camera info, selected position, maybe other details] as text
+			//maybe improve color gradient changing method
+
+		</script>
+	</body>
+</html>
