@@ -2,6 +2,7 @@
 <html lang="en" dir="ltr">
 	<head>
 		<meta charset="utf-8">
+		<meta version="1.2">
 		<title>Not really minesweeper</title>
 		<style type="text/css">
 			body {
@@ -100,10 +101,9 @@
 			<div class="options">
 				<div onclick="start(0)" onmouseover="showHighscores(0)" onmouseout="hideHighscores()">5x5</div>
 				<div onclick="start(1)" onmouseover="showHighscores(1)" onmouseout="hideHighscores()">9x5</div>
-				<div onclick="start(2)" onmouseover="showHighscores(2)" onmouseout="hideHighscores()">10x10</div>
-				<div onclick="start(3)" onmouseover="showHighscores(3)" onmouseout="hideHighscores()">20x10</div>
-				<div onclick="start(4)" onmouseover="showHighscores(4)" onmouseout="hideHighscores()">35x20</div>
-				<div onclick="start(5)" onmouseover="showHighscores(5)" onmouseout="hideHighscores()">50x30</div>
+				<div onclick="start(2)" onmouseover="showHighscores(2)" onmouseout="hideHighscores()">7x7</div>
+				<div onclick="start(3)" onmouseover="showHighscores(3)" onmouseout="hideHighscores()">10x10</div>
+				<div onclick="start(4)" onmouseover="showHighscores(4)" onmouseout="hideHighscores()">20x10</div>
 			</div>
 		</div>
 		<div id="highscores" style="display: none"></div>
@@ -144,7 +144,7 @@
 
 			let numberColors = ["red", "lime", "black"]
 			let wallColors = ["#303030", "#303060", "#50AA50"]
-			let boardSizes = [[5, 5], [9, 5], [10, 10], [20, 10], [35, 20], [50, 30]], boardSize = 0
+			let boardSizes = [[5, 5], [9, 5], [7, 7], [10, 10], [20, 10]], boardSize = 0
 			let AIspeed = 1, maxDrawSpeed = 10  //ms
 			let drawCooldown = false
 			let AIspeedOption = 0
@@ -162,7 +162,10 @@
 			}
 
 			let highscores = getCookie("WallPuzzleHighscores")
-			highscores = highscores ? JSON.parse(highscores) : [[], [], [], [], [], []]
+			highscores = highscores ? JSON.parse(highscores) : [[], [], [], [], []]
+			if(highscores.length == 6)
+				highscores = [highscores[0], highscores[1], [], highscores[2], highscores[3]]
+					.map(x => x.map(y => y.map(z => Math.round(z))))
 
 
 			function openMenu(){
