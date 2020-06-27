@@ -165,7 +165,7 @@
 			highscores = highscores ? JSON.parse(highscores) : [[], [], [], [], []]
 			if(highscores.length == 6)
 				highscores = [highscores[0], highscores[1], [], highscores[2], highscores[3]]
-					.map(x => x.map(y => y.map(z => Math.round(z))))
+					.map(x => x.map(y => Math.round(y)))
 
 
 			function openMenu(){
