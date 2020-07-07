@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>A raytraced cube I guess</title>
+		<style>
+			body {
+				max-height: 100%;
+				overflow: hidden;
+
+				font-family: Courier New;
+			}
+
+			#main-canvas {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			#menu {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+
+				width: max-content;
+				padding: 40px;
+
+				background: #000000D0;
+				border: 1px solid black;
+				border-radius: 3px;
+
+				color: white;
+			}
+			#menu table {
+				/*margin: 50px auto;*/
+				font-size: 15px;
+			}
+			#menu td:first-child {
+				padding-right: 50px;
+			}
+
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="main-canvas"></canvas>
+		<div id="menu" class="hidden">
+			<table>
+				<tr> <td>w</td> <td>forwards</td> </tr>
+				<tr> <td>a</td> <td>left</td> </tr>
+				<tr> <td>s</td> <td>backwards</td> </tr>
+				<tr> <td>d</td> <td>right</td> </tr>
+				<tr> <td>q</td> <td>up</td> </tr>
+				<tr> <td>e</td> <td>down</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>]</td> <td>+ pixel size</td> </tr>
+				<tr> <td>[</td> <td>- pixel size</td> </tr>
+				<tr> <td>shift + ]</td> <td>+ field of view</td> </tr>
+				<tr> <td>shift + [</td> <td>- field of view</td> </tr>
+			</table>
+		</div>
+		<script>
+			let canvas = document.getElementById("main-canvas")
+			let ctx = canvas.getContext("2d")
+			let menu = document.getElementById("menu")
+
+			let camera = {
+				x: -1.2,
+				y: -0.6,
+				z: 1.9,
+				theta: 0.1,  //0* to 360*
+				phi: -0.66,    //-90* to 90*
+				thetaFOV: 70,
+				focus: 0,
+				plane: {center: [], down: [], right: []}
+			}
+			let blur = 5, blurValue = 1
+			let settings = {
+				sensitivity: 6 * Math.PI/180,
+				moveSpeed: 0.3
+			}
+			let keys = {
+				w:          false,
+				a:          false,
+				s:          false,
+				d:          false,
+				q:          false,
+				e:          false,
+				ArrowUp:    false,
+				ArrowDown:  false,
+				ArrowLeft:  false,
+				ArrowRight: false,
+				"{":        false,
+				"}":        false
+			}
+
+
+			let sin  = Math.sin .bind(Math)
+			let cos  = Math.cos .bind(Math)
+			let atan = Math.atan.bind(Math)
+
+			let abs  = Math.abs .bind(Math)
+			let max  = Math.max .bind(Math)
+			let min  = Math.min .bind(Math)
+			let sqrt = Math.sqrt.bind(Math)
+			let PI  = Math.PI
+
+
+			///scene
+			const prismDistanceGen = (x1, y1, z1, x2, y2, z2) => (x, y, z) => sqrt(
+				((x < x1) != (x < x2) ? 0 : sqr(min(abs(x - x1), abs(x - x2)))) +
+				((y < y1) != (y < y2) ? 0 : sqr(min(abs(y - y1), abs(y - y2)))) +
+				((z < z1) != (z < z2) ? 0 : sqr(min(abs(z - z1), abs(z - z2))))
+			)
+
+			let objects = [
+				{
+					name: "sphere",
+					color: [255, 0, 0],
+					distance: (x, y, z) => sqrt(sqr(x - 0.5) + sqr(y + 1.5) + sqr(z - 0.5)) - 0.5
+				},
+				{
+					name: "cube",
+					color: [0, 255, 0],
+					distance: prismDistanceGen(0, 0, 0, 1, 1, 1)
+				},
+				{
+					name: "ground",
+					color: [220, 80, 10],
+					distance: (x, y, z) => z
+				}
+			]
+			let objectIntersectRadius = 0.01
+			let renderDistance = 100
+			let maxRaySteps = 100
+
+
+
+
+			function setup(){
+				blurValue = 1.5 ** blur
+				let w = Math.floor(canvas.clientWidth/blurValue), h = Math.floor(canvas.clientHeight/blurValue)
+				if(w != canvas.width || h != canvas.height){
+					canvas.width = w
+					canvas.height = h
+				}
+
+				camera.phiFOV = (h / w) * camera.thetaFOV
+				camera.focus = (w / 2) / Math.tan(camera.thetaFOV / 2)
+
+				ctx.beginPath()
+				ctx.fillRect(0, 0, w, h)
+				ctx.closePath()
+
+				draw()
+			}
+
+			function draw(){
+				camera.plane.center = [cos(camera.theta)*cos(camera.phi), sin(camera.theta)*cos(camera.phi), sin(camera.phi)]
+				camera.plane.down   = [cos(camera.theta)*cos(camera.phi - PI/2), sin(camera.theta)*cos(camera.phi - PI/2), sin(camera.phi - PI/2)]
+				camera.plane.right  = [cos(camera.theta + PI/2), sin(camera.theta + PI/2), 0]
+
+
+				let off = 0
+				let image = ctx.getImageData(0, 0, canvas.width, canvas.height)
+				let id = image.data
+
+				for(let j = 0; j < canvas.height; j++)
+					for(let i = 0; i < canvas.width; i++){
+						let [theta, phi] = pixelCoordToAngle((i - canvas.width/2) * blurValue, (j - canvas.height/2) * blurValue)
+						let [r, g, b] = rayColor(theta, phi)
+
+						id[off]     = r
+						id[off + 1] = g
+						id[off + 2] = b
+
+						off += 4
+					}
+				ctx.putImageData(image, 0, 0)
+			}
+			function pixelCoordToAngle(x, y){
+				let s = 21000 / camera.thetaFOV
+				let P = camera.plane
+
+				let X = P.center[0] + P.right[0] * x/s + P.down[0] * y/s
+				let Y = P.center[1] + P.right[1] * x/s + P.down[1] * y/s
+				let Z = P.center[2] + P.right[2] * x/s + P.down[2] * y/s
+
+				let theta = angleTo(X, Y)
+				let phi = angleTo(Math.sqrt(X*X + Y*Y), Z)
+
+				return [theta, phi]
+			}
+			function rayColor(theta, phi, x = camera.x, y = camera.y, z = camera.z){
+				let dx = cos(theta)*cos(phi)
+				let dy = sin(theta)*cos(phi)
+				let dz = sin(phi)
+
+				let minRadius = Infinity
+				for(let step = 0; step < maxRaySteps; step++){
+					let stepRadius = Infinity
+					for(let o of objects){
+						let d = o.distance(x, y, z)
+						if(d < objectIntersectRadius)
+							return rayShading(o.color, o.name, step, minRadius, cameraDistance(x, y, z))
+						stepRadius = min(stepRadius, d)
+					}
+
+					minRadius = min(minRadius, stepRadius)
+
+					x += dx * stepRadius
+					y += dy * stepRadius
+					z += dz * stepRadius
+
+					if(cameraDistance(x, y, z) > renderDistance)
+						break
+				}
+
+				return rayShading([100, 100, 255], "sky", maxRaySteps, minRadius, PI/2 - phi)
+			}
+			function rayShading([r, g, b], object, steps, minRadius, distance = 1){
+				let shade = 1.1 ** steps
+				if(object == "ground")
+					shade = sqrt(shade / 1.1 ** sqrt(sqr(distance)))
+				if(object == "sky")
+					shade = 1.1 ** (distance * 3 - 4)
+				return [r/shade, g/shade, b/shade]
+			}
+
+			const mod = (x, m) => x - Math.floor(x / m) * m
+			const sqr = x => x*x
+			const dotProduct = (v1, v2) => v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]
+			const norm = v => Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2])
+			const angleTo = (x, y) => atan(y / x) + (x < 0 ? PI : 0)
+			const cameraDistance = (x, y, z) => sqrt(sqr(x - camera.x) + sqr(y - camera.y) + sqr(z - camera.z))
+
+			function frame(){
+				moveCamera()
+
+				let redraw = false
+				for(let k in keys)
+					redraw = redraw || keys[k]
+				if(redraw)
+					requestAnimationFrame(draw)
+			}
+			function moveCamera(){
+				if(keys.ArrowUp)    camera.phi   += settings.sensitivity
+				if(keys.ArrowDown)  camera.phi   -= settings.sensitivity
+				if(keys.ArrowRight) camera.theta += settings.sensitivity
+				if(keys.ArrowLeft)  camera.theta -= settings.sensitivity
+
+				if(keys.w){
+					camera.x += cos(camera.theta) * settings.moveSpeed
+					camera.y += sin(camera.theta) * settings.moveSpeed
+				}
+				if(keys.s){
+					camera.x -= cos(camera.theta) * settings.moveSpeed
+					camera.y -= sin(camera.theta) * settings.moveSpeed
+				}
+				if(keys.a){
+					camera.x += cos(camera.theta - PI/2) * settings.moveSpeed
+					camera.y += sin(camera.theta - PI/2) * settings.moveSpeed
+				}
+				if(keys.d){
+					camera.x += cos(camera.theta + PI/2) * settings.moveSpeed
+					camera.y += sin(camera.theta + PI/2) * settings.moveSpeed
+				}
+				if(keys.q)  camera.z += settings.moveSpeed
+				if(keys.e)  camera.z -= settings.moveSpeed
+
+				if(keys["}"]) camera.thetaFOV += 5
+				if(keys["{"]) camera.thetaFOV -= 5
+			}
+
+
+			setup()
+			setInterval(frame, 100)
+
+
+			document.addEventListener("keydown", e => {
+				for(let k in keys)
+					if(e.key == k)
+						keys[k] = true
+
+				switch(e.key){
+					case "]":
+						blur++
+						setup()
+						break
+					case "[":
+						blur = Math.max(blur - 1, 0)
+						setup()
+						break
+
+					case "Escape":
+						menu.classList.toggle("hidden")
+						return
+				}
+			})
+			document.addEventListener("keyup", e => {
+				for(let k in keys)
+					if(e.key == k)
+						keys[k] = false
+			})
+		</script>
+	</body>
+</html>
