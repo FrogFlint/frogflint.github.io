@@ -177,8 +177,8 @@
 
 				for(let j = 0; j < canvas.height; j++)
 					for(let i = 0; i < canvas.width; i++){
-						let [theta, phi] = pixelCoordToAngle((i - canvas.width/2) * blurValue, (j - canvas.height/2) * blurValue)
-						let [r, g, b] = rayColor(theta, phi)
+						let [dx, dy, dz] = pixelCoordToVector((i - canvas.width/2) * blurValue, (j - canvas.height/2) * blurValue)
+						let [r, g, b] = rayColor(dx, dy, dz)
 
 						id[off]     = r
 						id[off + 1] = g
@@ -188,7 +188,7 @@
 					}
 				ctx.putImageData(image, 0, 0)
 			}
-			function pixelCoordToAngle(x, y){
+			function pixelCoordToVector(x, y){
 				let s = 21000 / camera.thetaFOV
 				let P = camera.plane
 
@@ -196,15 +196,17 @@
 				let Y = P.center[1] + P.right[1] * x/s + P.down[1] * y/s
 				let Z = P.center[2] + P.right[2] * x/s + P.down[2] * y/s
 
-				let theta = angleTo(X, Y)
-				let phi = angleTo(Math.sqrt(X*X + Y*Y), Z)
+				//let theta = angleTo(X, Y)
+				//let phi = angleTo(Math.sqrt(X*X + Y*Y), Z)
 
-				return [theta, phi]
+				let l = norm([X, Y, Z])
+
+				return [X/l, Y/l, Z/l]
 			}
-			function rayColor(theta, phi, x = camera.x, y = camera.y, z = camera.z){
-				let dx = cos(theta)*cos(phi)
+			function rayColor(dx, dy, dz, x = camera.x, y = camera.y, z = camera.z){
+				/*let dx = cos(theta)*cos(phi)
 				let dy = sin(theta)*cos(phi)
-				let dz = sin(phi)
+				let dz = sin(phi)*/
 
 				let minRadius = Infinity
 				for(let step = 0; step < maxRaySteps; step++){
@@ -226,7 +228,7 @@
 						break
 				}
 
-				return rayShading([100, 100, 255], "sky", maxRaySteps, minRadius, PI/2 - phi)
+				return rayShading([100, 100, 255], "sky", maxRaySteps, minRadius, PI/2 - angleTo(Math.sqrt(dx*dx + dy*dy), dz))
 			}
 			function rayShading([r, g, b], object, steps, minRadius, distance = 1){
 				let shade = 1.1 ** steps
