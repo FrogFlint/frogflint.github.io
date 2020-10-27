@@ -9,12 +9,12 @@
 				color: white;
 				font-family: cambria;
 			}
-			body > div {
+			#links {
 				margin-top: 3%;
 				display: flex;
 				justify-content: space-around;
 			}
-			body > div > div {
+			.category {
 				background: #171717;
 				border: 3px outset #3C3C3C;
 				padding-left: calc(5% - 30px);
@@ -46,14 +46,20 @@
 				border: 1px solid white;
 				border-radius: 0px;
 			}
+
+			#help {
+				position: absolute;
+				bottom: 1.8em;
+				text-align: center;
+			}
 		</style>
 	</head>
 
 	<body>
 		<h1><center>My projects</center></h1>
 
-		<div>
-			<div>
+		<div id="links">
+			<div class="category">
 				<h3><center>Actually okay</center></h3>
 				<ul>
 					<li><a href="/Raymarching">Raymarching experiment</a></li>
@@ -73,7 +79,7 @@
 				</ul>
 			</div>
 
-			<div>
+			<div class="category">
 				<h3><center>Meh<center></h3>
 				<ul>
 					<li><a href="/Date">Bad date selector</a></li>
@@ -98,6 +104,8 @@
 					<li><a href="/CauseAndEffect">Consequences squared</a></li> -->
 				</ul>
 			</div>
+
+			<div id="help">Pressing escape usually tells you the controls</div>
 		</div>
 
 	</body>
