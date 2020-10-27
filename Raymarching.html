@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Who knew you could do raymarching in Javascript?</title>
+		<style>
+			body {
+				max-height: 100%;
+				overflow: hidden;
+
+				font-family: Courier New;
+			}
+
+			#main-canvas {
+				position: absolute;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+			}
+
+			#menu {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translate(-50%, -50%);
+
+				width: max-content;
+				padding: 40px;
+
+				background: #000000D0;
+				border: 1px solid black;
+				border-radius: 3px;
+
+				color: white;
+			}
+			#menu table {
+				/*margin: 50px auto;*/
+				font-size: 15px;
+			}
+			#menu td:first-child {
+				padding-right: 50px;
+			}
+
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="main-canvas"></canvas>
+		<div id="menu" class="hidden">
+			<table>
+				<tr> <td>wasd</td> <td>horizontal movement</td> </tr>
+				<tr> <td>qe</td> <td>vertical movement</td> </tr>
+				<tr> <td>arrow keys</td> <td>look around</td> </tr>
+				<tr> <td>right click</td> <td>toggle mouse controls</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>]</td> <td>+ pixel size</td> </tr>
+				<tr> <td>[</td> <td>- pixel size</td> </tr>
+				<tr> <td>shift + ]</td> <td>+ field of view</td> </tr>
+				<tr> <td>shift + [</td> <td>- field of view</td> </tr>
+				<tr> <td>+</td> <td>increase oversampling (1, 4, 9...)</td> </tr>
+				<tr> <td>-</td> <td>decrease oversampling</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>o</td> <td>step count overlay</td> </tr>
+				<tr> <td>p</td> <td>switch loading pattern (top-to-bottom, random)</td> </tr>
+				<tr> <td>f</td> <td>force redraw</td> </tr>
+				<tr> <td><br></td> </tr>
+				<tr> <td>l</td> <td>move light source</td> </tr>
+				<tr> <td>1-7</td> <td>switch scene</td> </tr>
+			</table>
+		</div>
+		<script>
+			let canvas = document.getElementById("main-canvas")
+			let ctx = canvas.getContext("2d")
+			let menu = document.getElementById("menu")
+
+			let camera = {
+				x: 0,
+				y: 0,
+				z: 2,
+				theta: 0.1,  //0* to 360*
+				phi: -0.66,    //-90* to 90*
+				thetaFOV: 70,
+				focus: 0,
+				plane: {center: [], down: [], right: []}
+			}
+			let blur = 5, blurValue = 1
+			let settings = {
+				sensitivity: 6 * Math.PI/180,
+				moveSpeed: 0.3,
+				mouseControl: false,
+				mouseSensitivity: 0.003
+			}
+			let keys = {
+				w:          false,
+				a:          false,
+				s:          false,
+				d:          false,
+				q:          false,
+				e:          false,
+				ArrowUp:    false,
+				ArrowDown:  false,
+				ArrowLeft:  false,
+				ArrowRight: false,
+				"{":        false,
+				"}":        false,
+				Shift:      false
+			}
+
+
+			let objectCollisionRadius = 0.0001
+			let objectCollisionRatio = 0.00001
+			let dynamicCollisionRadius = true
+			let renderDistance = 100
+			let maxRaySteps = 150
+
+			let rayBatchSize = 2000
+			let batchTime = 50  //ms
+			let pixelBatchSize = 1000  //adjusted for oversampling
+			let pixelOffset = -1
+			let oversampling = 1
+			let drawIntervalId = -1
+			let pixelStepCount = 0  //all types
+
+
+			let image = null
+			let randomOrderMap = []
+			let loadOrderStyle = 0  //top to bottom, random
+			let stepOverlay = false
+
+
+
+			///math function shortcuts
+			let sin  = Math.sin .bind(Math)
+			let cos  = Math.cos .bind(Math)
+			let atan = Math.atan.bind(Math)
+
+			let abs  = Math.abs .bind(Math)
+			let max  = Math.max .bind(Math)
+			let min  = Math.min .bind(Math)
+			let sign = Math.sign.bind(Math)
+			let sqrt = Math.sqrt.bind(Math)
+			let floor = Math.floor.bind(Math)
+			let PI  = Math.PI
+
+			///vector math, etc.
+			const mod = (x, m) => x - floor(x / m) * m
+			const sqr = x => x*x
+			const norm = (x, y, z) => sqrt(x*x + y*y + z*z)
+			function normalized([x, y, z]){
+				let d = norm(x, y, z)
+				return [x/d, y/d, z/d]
+			}
+			const dotProduct = ([x1, y1, z1], [x2, y2, z2]) => x1*x2 + y1*y2 + z1*z2
+			const crossProduct = ([x1, y1, z1], [x2, y2, z2]) => [y1*z2 - z1*y2, z1*x2 - x1*z2, x1*y2 - y1*x2]
+			function reflectAcrossNormal([x, y, z], [nx, ny, nz]){
+				let s = 2*(x*nx + y*ny + z*nz)
+				return [s*nx - x, s*ny - y, s*nz - z]
+			}
+			const vec3scale = (f, [x, y, z]) => [f*x, f*y, f*z]
+			const vec3sum = ([x1, y1, z1], [x2, y2, z2]) => [x1 + x2, y1 + y2, z1 + z2]
+			const vec3subtract = ([x1, y1, z1], [x2, y2, z2]) => [x1 - x2, y1 - y2, z1 - z2]
+			const angleTo = (x, y) => atan(y / x) + (x < 0 ? PI : 0)
+
+			const baseObject = object => object instanceof Geometry.SpaceTransform ? baseObject(object.object) : object
+
+			const cameraDistance = (x, y, z) => norm(x - camera.x, y - camera.y, z - camera.z)
+			const stepOverlayPixel = () => [1*pixelStepCount, 1*pixelStepCount, 1*pixelStepCount]
+
+
+			///scene
+			class SceneObject{
+				constructor(geometry, material, name){
+					this.geometry = geometry
+					this.material = material
+					this.name = name
+				}
+			}
+			const Geometry = {
+				Sphere: class {
+					constructor([x, y, z], r){
+						this.x = x
+						this.y = y
+						this.z = z
+						this.r = r
+					}
+					distance(x, y, z, pathNormal){
+						x -= this.x
+						y -= this.y
+						z -= this.z
+						if(!pathNormal)
+							return norm(x, y, z) - this.r
+
+						let d = norm(x, y, z)
+						let r = d - this.r
+						let [dx, dy, dz] = pathNormal
+						let f = -(dx*x + dy*y + dz*z) / d
+						return f < 0 ? renderDistance : r / f
+					}
+					surfaceVector(x, y, z){
+						return normalized([x - this.x, y - this.y, z - this.z])
+					}
+					closestPoint(x, y, z){
+						x -= this.x
+						y -= this.y
+						z -= this.z
+						let f = this.r / norm(x, y, z)
+						return [x*f + this.x, y*f + this.y, z*f + this.z]
+					}
+					surfaceVectorPointsAway = true
+					distanceFieldPointsAway = true
+				},
+				RectangularPrism: class {
+					constructor([x1, y1, z1], [x2, y2, z2]){
+						this.x1 = min(x1, x2)
+						this.x2 = max(x1, x2)
+						this.y1 = min(y1, y2)
+						this.y2 = max(y1, y2)
+						this.z1 = min(z1, z2)
+						this.z2 = max(z1, z2)
+					}
+					distance(x, y, z){
+						let cx = x > this.x2 ? this.x2 : x < this.x1 ? this.x1 : x
+						let cy = y > this.y2 ? this.y2 : y < this.y1 ? this.y1 : y
+						let cz = z > this.z2 ? this.z2 : z < this.z1 ? this.z1 : z
+						if(cx == x && cy == y && cz == z)
+							return -min(x - this.x1, this.x2 - x, y - this.y1, this.y2 - y, z - this.z1, this.z2 - z)
+						return norm(x - cx, y - cy, z - cz)
+					}
+					surfaceVector(x, y, z){
+						let [cx, cy, cz] = this.closestPoint(x, y, z)
+						return normalized([x - cx, y - cy, z - cz])
+					}
+					closestPoint(x, y, z){
+						let cx = x > this.x2 ? this.x2 : x < this.x1 ? this.x1 : x
+						let cy = y > this.y2 ? this.y2 : y < this.y1 ? this.y1 : y
+						let cz = z > this.z2 ? this.z2 : z < this.z1 ? this.z1 : z
+
+						if(cx == x && cy == y && cz == z)
+							switch(min(
+								x - this.x1, this.x2 - x,
+								y - this.y1, this.y2 - y,
+								z - this.z1, this.z2 - z
+							)){
+								case x - this.x1: return [this.x1, y, z]
+								case this.x2 - x: return [this.x2, y, z]
+								case y - this.y1: return [x, this.y1, z]
+								case this.y2 - y: return [x, this.y2, z]
+								case z - this.z1: return [x, y, this.z1]
+								case this.z2 - z: return [x, y, this.z2]
+							}
+						return [cx, cy, cz]
+					}
+					surfaceVectorPointsAway = true
+					distanceFieldPointsAway = true
+				},
+				RectangularPrismFaces: function([x1, y1, z1], [x2, y2, z2]){
+					let ex1 = min(x1, x2)
+					let ex2 = max(x1, x2)
+					let ey1 = min(y1, y2)
+					let ey2 = max(y1, y2)
+					let ez1 = min(z1, z2)
+					let ez2 = max(z1, z2)
+
+					return new Geometry.Intersection(
+						new Geometry.Plane([ex1, ey1, ez1], [-1, 0, 0]),
+						new Geometry.Plane([ex1, ey1, ez1], [0, -1, 0]),
+						new Geometry.Plane([ex1, ey1, ez1], [0, 0, -1]),
+						new Geometry.Plane([ex2, ey2, ez2], [1, 0, 0]),
+						new Geometry.Plane([ex2, ey2, ez2], [0, 1, 0]),
+						new Geometry.Plane([ex2, ey2, ez2], [0, 0, 1])
+					)
+				},
+				Plane: class {
+					constructor(referencePoint, normal){
+						this.point = referencePoint
+						this.normal = normal
+					}
+					distance(x, y, z, pathNormal){
+						let [nx, ny, nz] = this.normal
+						let [px, py, pz] = this.point
+						let d = nx*(x - px) + ny*(y - py) + nz*(z - pz)  //shorten
+						if(!pathNormal)
+							return d
+						let [dx, dy, dz] = pathNormal
+						let f = -(nx*dx + ny*dy + nz*dz)
+						return f < 0 ? renderDistance*sign(d) : 0.999999 * d/f
+					}
+					surfaceVector(x, y, z){
+						return Array.from(this.normal)
+					}
+					closestPoint(x, y, z){
+						let d = this.distance(x, y, z)
+						let [nx, ny, nz] = this.normal
+						return [x - d*nx, y - d*ny, x - d*nz]
+					}
+					surfaceVectorPointsAway = true
+					distanceFieldPointsAway = true
+				},
+				TriangularPyramid: class {
+					constructor(v1, v2, v3, v4){
+						this.object = new Geometry.Intersection(
+							this.makeFace(v1, v2, v3, v4),
+							this.makeFace(v1, v2, v4, v3),
+							this.makeFace(v1, v3, v4, v2),
+							this.makeFace(v2, v3, v4, v1)
+						)
+					}
+					makeFace(v1, v2, v3, v4){
+						let normal = crossProduct(vec3subtract(v2, v1), vec3subtract(v3, v1))
+						let f = -sign(dotProduct(vec3subtract(v4, v1), normal)) / norm(...normal)
+						return new Geometry.Plane(v1, vec3scale(f, normal))
+					}
+					distance(x, y, z){
+						return this.object.distance(x, y, z)
+					}
+					surfaceVector(x, y, z){
+						return this.object.surfaceVector(x, y, z)
+					}
+					surfaceVectorPointsAway = true
+					distanceFieldPointsAway = true
+				},
+
+				SpaceTransform: class {
+					constructor(object, transform){
+						this.object = object
+						this.transform = transform
+					}
+					distance(x, y, z){
+						return this.object.distance(...this.transform(x, y, z))
+					}
+					surfaceVector(x, y, z){
+						return this.object.surfaceVector(...this.transform(x, y, z))
+					}
+				},
+				Negation: class {
+					constructor(object){
+						this.object = object
+					}
+					distance(x, y, z){
+						return -this.object.distance(x, y, z)
+					}
+					surfaceVector(x, y, z){
+						return vec3scale(-1, this.object.surfaceVector(x, y, z))
+					}
+				},
+				Intersection: class {
+					constructor(...objects){
+						this.objects = objects
+						this.distanceFieldPointsAway = objects.map(object => object.distanceFieldPointsAway).reduce((a, b) => a && b)
+					}
+					distance(x, y, z, pathNormal){
+						return max(...this.objects.map(object => object.distance(x, y, z, pathNormal)))
+					}
+					surfaceVector(x, y, z){
+						/*let weights = this.objects.map(object => object.distance(x, y, z))
+						let nx = 0, ny = 0, nz = 0
+						weights.forEach((weight, i) => {
+							if(weight > 0){
+								let [dx, dy, dz] = this.objects[i].surfaceVector(x, y, z)
+								nx += dx * weight
+								ny += dy * weight
+								nz += dz * weight
+							}
+						})
+						return normalized([nx, ny, nz])*/
+						let distances = this.objects.map(object => abs(object.distance(x, y, z)))
+						return this.objects[distances.indexOf(min(...distances))].surfaceVector(x, y, z)
+					}
+				}
+			}
+			const Lighting = {
+				UniformPointSource: class {
+					constructor([x, y, z], color, brightness){
+						this.x = x
+						this.y = y
+						this.z = z
+						this.color = color
+						this.brightness = brightness
+					}
+					distance(x, y, z){
+						return norm(x - this.x, y - this.y, z - this.z)
+					}
+					vectorTo(x, y, z){
+						let dx = this.x - x
+						let dy = this.y - y
+						let dz = this.z - z
+						let s = norm(dx, dy, dz)
+						return [dx/s, dy/s, dz/s]
+					}
+				}
+			}
+
+			class Material{
+				constructor([r, g, b], opacity = 1, reflectivity = 0, sheen = 0){
+					this.r = r
+					this.g = g
+					this.b = b
+					this.opacity = opacity  //0 = transparent, 1 = normal
+					this.reflectivity = reflectivity  //0 = normal, 1 = mirror
+					this.sheen = sheen  //0 = normal, 1 = max glare
+				}
+			}
+
+
+			let scenes = [,  //starts from 1 to match keybinds
+				{
+					name: "simple demo",
+					objects: [
+						new SceneObject(new Geometry.Sphere([0.5, -1.5, 0.5], 0.5), new Material([255, 0, 0], 1, 0, 0.1)),
+						new SceneObject(Geometry.RectangularPrismFaces([0, 0, 0], [1, 1, 1]), new Material([0, 255, 0], 1, 0, 0.1)),
+						new SceneObject(Geometry.RectangularPrismFaces([0.3, 0.3, 1], [0.7, 0.7, 1.4]), new Material([0, 255, 255])),
+						new SceneObject(new Geometry.Sphere([2.5, -0.5, 0.5], 0.5), new Material([255, 255, 255], 1, 0.99, 0.8)),
+						new SceneObject(new Geometry.Plane([0, 0, 0], [0, 0, 1]), new Material([220, 80, 10]), "ground"),
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([3, 2.5, 5], [255, 255, 255], 0.5),
+						new Lighting.UniformPointSource([2.5, -2, 4], [255, 255, 255], 0.5)
+						//new Lighting.UniformPointSource([0, 0, 2.5], [255, 255, 255], 0.5)
+					],
+					cameraPos: {
+						x: -1.2,
+						y: -0.6,
+						z: 1.9,
+						theta: 0.1,
+						phi: -0.66
+					}
+				},
+				{
+					name: "experimental",
+					objects: [
+						new SceneObject(new Geometry.Intersection(new Geometry.Sphere([0.5, -1.5, 0.5], 0.5), new Geometry.Negation(new Geometry.RectangularPrism([-0.5, -1.75, 0.25], [1.5, -1.25, 0.75]))), new Material([255, 0, 0])),
+						new SceneObject(new Geometry.Intersection(new Geometry.RectangularPrism([0, 0, 0], [1, 1, 1]), new Geometry.Sphere([0.5, 0.5, 0.5], 0.7)), new Material([0, 255, 0])),
+						new SceneObject(new Geometry.RectangularPrism([0.3, 0.3, 1], [0.7, 0.7, 1.4]), new Material([0, 255, 255])),
+						//new SceneObject(new Geometry.Negation(new Geometry.RectangularPrism([10, 10, 10], [-10, -10, -10])), new Material([255, 0, 255])),
+						new SceneObject(new Geometry.Intersection(new Geometry.Sphere([-1.5, 0.5, 0.5], 0.5), new Geometry.Plane([-1.5, 0.5, 0.5], [-1, 0, 0])), new Material([255, 255, 0], 1, 0.8)),
+						//new SceneObject(new Geometry.Plane([0, 3, 0], [0, -1, 0]), new Material([255, 255, 255], 1, 0.9)),
+						new SceneObject(new Geometry.Plane([0, 0, 0], [0, 0, 1]), new Material([220, 80, 10]), "ground")
+						//new SceneObject(new Geometry.Intersection(new Geometry.Plane([0, 0, 0], [0, 0, 1]), new Geometry.Plane([0, 0, 0], [0, 1, 0])), new Material([220, 80, 10]), "ground")
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([3, 2.5, 5], [255, 255, 255], 1)
+					]
+				},
+				{
+					name: "pyramid mirror",
+					objects: [
+						new SceneObject(new Geometry.Sphere([0.5, -1.5, 0.5], 0.5), new Material([255, 0, 0])),
+						new SceneObject(new Geometry.RectangularPrism([0, 0, 0], [1, 1, 1]), new Material([0, 255, 0])),
+						new SceneObject(new Geometry.RectangularPrism([0.3, 0.3, 1], [0.7, 0.7, 1.4]), new Material([0, 255, 255])),
+						//new SceneObject(new Geometry.Sphere([2.5, -0.5, 0.5], 0.5), new Material([255, 255, 255], 1, 0.8)),
+						//new SceneObject(new Geometry.Plane([0, 0, 0], [0, 0, 1]), new Material([220, 80, 10], 1, 0), "ground"),
+						//new SceneObject(new Geometry.Negation(new Geometry.TriangularPyramid([0, 0, 10], [8, 0, 0], [-4, 6, 0], [-4, -6, 0])), new Material([255, 255, 0], 1, 1))
+						new SceneObject(new Geometry.Negation(new Geometry.Sphere([0, 0, 0], 3)), new Material([255, 255, 255], 1, 1))
+						//new SceneObject(new Geometry.Negation(new Geometry.RectangularPrism([3, 3, 3], [-3, -3, 0])), new Material([255, 255, 255]))
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([0, 0, 2.5], [255, 255, 255], 0.5)
+					],
+					cameraPos: {
+						x: -0.74,
+						y: -0.38,
+						z: 2,
+						theta: 0,
+						phi: -0.77
+					}
+				},
+				{
+					name: "infinite spheres",
+					objects: [
+						new SceneObject(new Geometry.SpaceTransform(new Geometry.Sphere([3, 3, 3], 1), (x, y, z) => [mod(x, 6), mod(y, 6), mod(z, 6)]), new Material([255, 0, 0]))
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([3, 2.5, 5], [255, 255, 255], 1)
+					]
+				},
+				{
+					name: "infinite reflective spheres",
+					objects: [
+						new SceneObject(new Geometry.SpaceTransform(new Geometry.Sphere([3, 3, 3], 1), (x, y, z) => [mod(x, 6), mod(y, 6), mod(z, 6)]), new Material([255, 0, 255], 1, 0.5))
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([3, 2.5, 5], [255, 255, 255], 1)
+					]
+				},
+				{
+					name: "cube test",
+					objects: [
+						new SceneObject(new Geometry.RectangularPrism([-1, 0, 0], [-2, 1, 1]), new Material([0, 255, 0])),
+						new SceneObject(Geometry.RectangularPrismFaces([0, 0, 0], [1, 1, 1]), new Material([255, 0, 0]))
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([-0.05, 2.5, 5], [255, 255, 255], 1)
+					]
+				},
+				{
+					name: "sierpinski pyramid",
+					objects: [
+						new SceneObject(new Geometry.TriangularPyramid([0, 0, 0], [2, 0, 0], [1, 2, 0], [1, 1, 2]), new Material([60, 255, 60]))
+					],
+					lightSources: [
+						new Lighting.UniformPointSource([2, 5, 5], [255, 255, 255], 1)
+					]
+				}
+			]
+			let scene = null
+			let ambientLight = 0.15
+			let skyBox = new SceneObject(null, new Material([100, 100, 255]), "sky")
+			let cameraObject = new SceneObject(new Geometry.Sphere([0, 0, 0], 0.1), new Material([255, 0, 100]), "camera")
+
+			let rayStepCount = new Array(maxRaySteps + 1).fill(0)
+			let shadowRayStepCount = new Array(maxRaySteps + 1).fill(0)
+
+
+
+			function loadScene(i){
+				//currentScene = i
+				scene = {
+					objects: scenes[i].objects,//.concat(cameraObject),
+					lightSources: scenes[i].lightSources
+				}
+				Object.assign(camera, scenes[i].cameraPos)
+			}
+			function setup(){
+				blurValue = 1.5 ** blur
+				let w = floor(canvas.clientWidth/blurValue), h = floor(canvas.clientHeight/blurValue)
+				if(w != canvas.width || h != canvas.height){
+					canvas.width = w
+					canvas.height = h
+				}
+
+				camera.phiFOV = (h / w) * camera.thetaFOV
+				camera.focus = (w / 2) / Math.tan(camera.thetaFOV / 2)
+
+
+				ctx.beginPath()
+				ctx.fillRect(0, 0, w, h)
+				ctx.closePath()
+
+
+
+				draw()
+			}
+
+			function draw(){
+				updateObjects()
+
+
+				camera.plane.center = [cos(camera.theta)*cos(camera.phi), sin(camera.theta)*cos(camera.phi), sin(camera.phi)]
+				camera.plane.down   = [cos(camera.theta)*cos(camera.phi - PI/2), sin(camera.theta)*cos(camera.phi - PI/2), sin(camera.phi - PI/2)]
+				camera.plane.right  = [cos(camera.theta + PI/2), sin(camera.theta + PI/2), 0]
+
+				pixelBatchSize = Math.round(rayBatchSize / (oversampling * oversampling))
+				pixelOffset = 0
+
+
+				image = ctx.getImageData(0, 0, canvas.width, canvas.height)
+
+				randomOrderMap = new Array(canvas.width * canvas.height).fill(0).map((_, i) => +i)
+				for(let i = randomOrderMap.length - 1; i > 0; i--){
+					const j = floor(Math.random() * i)
+					const temp = randomOrderMap[i]
+					randomOrderMap[i] = randomOrderMap[j]
+					randomOrderMap[j] = temp
+				}
+
+				rayStepCount.fill(0)
+				shadowRayStepCount.fill(0)
+
+
+				if(drawIntervalId != -1)
+					clearInterval(drawIntervalId)
+				drawIntervalId = setInterval(drawBatch, batchTime)
+				drawBatch()
+			}
+			function drawBatch(){
+				let startTime = performance.now()
+				let startY = floor(pixelOffset / canvas.width)
+				let startX = mod(pixelOffset, canvas.width)
+
+				let id = image.data
+
+				let firstStepRadius = scene.objects.filter(object => object.name != "camera").map(object => object.geometry.distance(camera.x, camera.y, camera.z)).reduce((a, b) => min(a, b))
+
+				pixelLoop: for(let j = startY; j < canvas.height; j++)
+					for(let i = j == startY ? startX : 0; i < canvas.width; i++){
+						let [off, x, y] = distortPixelOrder(pixelOffset, i, j)
+						let R = 0, G = 0, B = 0
+
+						for(let subX = 0; subX < oversampling; subX++){
+							for(let subY = 0; subY < oversampling; subY++){
+								let [dx, dy, dz] = pixelCoordToVector(
+									(x + subX/oversampling - canvas.width /2) * blurValue,
+									(y + subY/oversampling - canvas.height/2) * blurValue
+								)
+								let [r, g, b] = rayColor([dx, dy, dz], [
+									camera.x + dx*firstStepRadius,
+									camera.y + dy*firstStepRadius,
+									camera.z + dz*firstStepRadius
+								])
+
+								R += r
+								G += g
+								B += b
+							}
+						}
+						id[off]     = R / (oversampling*oversampling)
+						id[off + 1] = G / (oversampling*oversampling)
+						id[off + 2] = B / (oversampling*oversampling)
+
+						pixelOffset++
+
+						//if(pixelOffset && pixelOffset % pixelBatchSize == 0)
+						if(pixelOffset % 10 == 0 && performance.now() - startTime > 0.5*batchTime)
+							break pixelLoop
+					}
+				ctx.putImageData(image, 0, 0)
+
+				if(pixelOffset == canvas.width * canvas.height)
+					clearInterval(drawIntervalId)
+			}
+			function pixelCoordToVector(u, v){
+				let s = 21000 / camera.thetaFOV
+				let P = camera.plane
+
+				let x = P.center[0] + P.right[0] * u/s + P.down[0] * v/s
+				let y = P.center[1] + P.right[1] * u/s + P.down[1] * v/s
+				let z = P.center[2] + P.right[2] * u/s + P.down[2] * v/s
+
+				//let theta = angleTo(X, Y)
+				//let phi = angleTo(sqrt(X*X + Y*Y), Z)
+
+				let l = norm(x, y, z)
+
+				return [x/l, y/l, z/l]
+			}
+			function rayColor([dx, dy, dz], [x = camera.x, y = camera.y, z = camera.z], startStep = 0, pathLength = 0){
+				let minRadius = renderDistance, step = startStep
+				let objectHit = null
+
+				let startX = x, startY = y, startZ = z, rayStartDistance = 0
+
+				pixelStepCount = 0
+
+				let objects = scene.objects
+				let lastObjectDistance = new Array(objects.length).fill(renderDistance)
+				let objectIsPast = new Array(objects.length).fill(false)
+				let objectCount = objects.length
+
+				cameraToTarget: for(; ; step++){
+					let stepRadius = renderDistance
+					rayStartDistance = abs(dx*(x - startX) + dy*(y - startY) + dz*(z - startZ)) + pathLength
+					let stepCollisionRadius = objectCollisionRatio * rayStartDistance
+
+					for(let i = 0; i < objectCount; i++)
+						if(!objectIsPast[i] && (objects[i].name != "camera" || rayStartDistance > 0.1)){
+							let o = objects[i]
+							let d = o.geometry.distance(x, y, z, [dx, dy, dz])
+
+							if(
+								dynamicCollisionRadius
+								?	d < stepCollisionRadius && rayStartDistance != pathLength
+								:	d < objectCollisionRadius
+							){
+								objectHit = o
+								x -= dx * objectCollisionRadius
+								y -= dy * objectCollisionRadius
+								z -= dz * objectCollisionRadius
+								break cameraToTarget
+							}
+
+							if(o.geometry.distanceFieldPointsAway && d > lastObjectDistance[i])
+								objectIsPast[i] = true
+							else{
+								stepRadius = min(stepRadius, d)
+								lastObjectDistance[i] = d
+							}
+						}
+
+					x += dx * stepRadius
+					y += dy * stepRadius
+					z += dz * stepRadius
+
+					minRadius = min(minRadius, stepRadius)
+
+					if(rayStartDistance > renderDistance || step >= maxRaySteps){
+						rayStepCount[step]++
+						if(stepOverlay)
+							return stepOverlayPixel()
+						let shade = 1.1 ** (-dz*3 + 0)
+						let {r, g, b} = skyBox.material
+						return [r/shade, g/shade, b/shade]
+					}
+				}
+				rayStepCount[step]++
+				pixelStepCount += step
+
+
+
+
+				let totalLight = 0, totalSheen = 0
+				for(let source of scene.lightSources){
+					let [light, sheen] = sourceRayLight([x, y, z], [dx, dy, dz], source, objectHit)
+					totalLight += light//abs()
+					totalSheen += sheen*light
+				}
+				totalLight = totalLight * (1 - ambientLight) + ambientLight
+
+				let {r, g, b, reflectivity, sheen} = objectHit.material
+				r *= totalLight
+				g *= totalLight
+				b *= totalLight
+				if(reflectivity){
+					let [rr, gr, br] = rayColor(reflectAcrossNormal([-dx, -dy, -dz], objectHit.geometry.surfaceVector(x, y, z)), [x, y, z], step, rayStartDistance)
+					r = r*(1 - reflectivity) + rr*reflectivity
+					g = g*(1 - reflectivity) + gr*reflectivity
+					b = b*(1 - reflectivity) + br*reflectivity
+				}
+				if(sheen){
+					r = r*(1 - sheen*totalSheen) + 255*sheen*totalSheen
+					g = g*(1 - sheen*totalSheen) + 255*sheen*totalSheen
+					b = b*(1 - sheen*totalSheen) + 255*sheen*totalSheen
+				}
+
+				if(stepOverlay)
+					return stepOverlayPixel()
+				else return [r, g, b]
+			}
+			function sourceRayLight([x, y, z], incidentRay, source, object){
+				let r = source.distance(x, y, z)  //soon
+				let [dx, dy, dz] = source.vectorTo(x, y, z)
+				let [nx, ny, nz] = object.geometry.surfaceVector(x, y, z)
+
+				let startX = x, startY = y, startZ = z, rayStartDistance = 0
+
+				let objects = scene.objects
+				let lastObjectDistance = new Array(objects.length).fill(renderDistance*2)
+				let objectIsPast = new Array(objects.length).fill(false)
+				let objectCount = objects.length
+
+
+				targetToLightSource: for(var step = 0; step < maxRaySteps; step++){
+					let stepRadius = renderDistance
+					rayStartDistance = abs(dx*(x - startX) + dy*(y - startY) + dz*(z - startZ))
+					let stepCollisionRadius = objectCollisionRatio * rayStartDistance
+
+					for(let i = 0; i < objectCount; i++)
+						if(!objectIsPast[i]){
+							let o = objects[i]
+							let d = o.geometry.distance(x, y, z, [dx, dy, dz])
+
+							if(
+								dynamicCollisionRadius
+								?	d < stepCollisionRadius
+								:	d < objectCollisionRadius
+							)
+								return [0, 0]
+
+							if(o.distanceFieldPointsAway && d > lastObjectDistance[i])
+								objectIsPast[i] = true
+							else{
+								stepRadius = min(stepRadius, d)
+								lastObjectDistance[i] = d
+							}
+						}
+
+					let d = source.distance(x, y, z)
+					if(
+						dynamicCollisionRadius
+						?	d < stepCollisionRadius
+						:	d < objectCollisionRadius
+					)
+						break  //0.5 / (1.5 ** r) + 0.5
+					stepRadius = min(stepRadius, d)
+
+					x += dx * stepRadius
+					y += dy * stepRadius
+					z += dz * stepRadius
+				}
+				shadowRayStepCount[step]++
+				pixelStepCount += step
+
+				return [
+					(dx*nx + dy*ny + dz*nz) * source.brightness,
+					sqr((1 + -dotProduct(reflectAcrossNormal(incidentRay, [nx, ny, nz]), [dx, dy, dz]))/2)
+				]
+			}
+
+
+			function frame(){
+				moveCamera()
+
+				let redraw = false
+				for(let k in keys)
+					redraw = redraw || keys[k]
+				if(redraw)
+					requestAnimationFrame(draw)
+			}
+			function moveCamera(){
+				if(keys.ArrowUp)    camera.phi   += settings.sensitivity
+				if(keys.ArrowDown)  camera.phi   -= settings.sensitivity
+				if(keys.ArrowRight) camera.theta += settings.sensitivity
+				if(keys.ArrowLeft)  camera.theta -= settings.sensitivity
+
+				if(keys.w){
+					camera.x += cos(camera.theta) * settings.moveSpeed
+					camera.y += sin(camera.theta) * settings.moveSpeed
+				}
+				if(keys.s){
+					camera.x -= cos(camera.theta) * settings.moveSpeed
+					camera.y -= sin(camera.theta) * settings.moveSpeed
+				}
+				if(keys.a){
+					camera.x += cos(camera.theta - PI/2) * settings.moveSpeed
+					camera.y += sin(camera.theta - PI/2) * settings.moveSpeed
+				}
+				if(keys.d){
+					camera.x += cos(camera.theta + PI/2) * settings.moveSpeed
+					camera.y += sin(camera.theta + PI/2) * settings.moveSpeed
+				}
+				if(keys.q)  camera.z += settings.moveSpeed
+				if(keys.e)  camera.z -= settings.moveSpeed
+
+				if(keys["}"]) camera.thetaFOV += 5
+				if(keys["{"]) camera.thetaFOV -= 5
+
+
+				settings.moveSpeed = 0.3 * min(...scene.objects.filter(object => object.name != "camera").map(object => object.geometry.distance(camera.x, camera.y, camera.z)), 1)
+			}
+			function updateObjects(){
+				//objects[0].z = sin(performance.now() / 300)/2 + 1
+				cameraObject.geometry.x = camera.x
+				cameraObject.geometry.y = camera.y
+				cameraObject.geometry.z = camera.z
+			}
+			function distortPixelOrder(off, x, y){
+				if(loadOrderStyle == 0)
+					return [off*4, x, y]
+
+				//x = mod(off*23, canvas.width)
+				//y = mod(off*23, canvas.height)
+
+				off = randomOrderMap[off]
+				return [off*4, mod(off, canvas.width), floor(off / canvas.width)]
+			}
+
+
+
+			loadScene(1)
+			setup()
+			setInterval(frame, 100)
+
+
+			document.addEventListener("keydown", e => {
+				for(let k in keys)
+					if(e.key == k)
+						keys[k] = true
+				if(+e.key > 0 && +e.key < scenes.length){
+					loadScene(+e.key)
+					setup()
+				}
+
+				switch(e.key){
+					case "]":
+						if(blur < 10){
+							blur++
+							setup()
+						}
+						break
+					case "[":
+						if(blur){
+							blur--
+							setup()
+						}
+						break
+					case "=":
+						oversampling++
+						requestAnimationFrame(draw)
+						break
+					case "-":
+						if(oversampling > 1){
+							oversampling--
+							requestAnimationFrame(draw)
+						}
+						break
+					case "l":
+						let source = scene.lightSources[0]
+						source.x = camera.x
+						source.y = camera.y
+						source.z = camera.z
+						draw()
+						break
+					case "p":
+						loadOrderStyle = (loadOrderStyle + 1) % 2
+						break
+					case "f":
+						draw()
+						break
+					case "o":
+						stepOverlay = !stepOverlay
+						draw()
+						break
+
+					case "Escape":
+						menu.classList.toggle("hidden")
+						return
+				}
+			})
+			document.addEventListener("keyup", e => {
+				for(let k in keys)
+					if(e.key == k)
+						keys[k] = false
+			})
+			document.addEventListener("mousedown", e => {
+				if(e.button == 2 && !e.shiftKey){
+					keys.Shift = false
+					settings.mouseControl = !settings.mouseControl
+					settings.mouseControl ? canvas.requestPointerLock() : document.exitPointerLock()
+					e.preventDefault()
+				}
+			})
+			document.addEventListener("mousemove", e => {
+				if(settings.mouseControl){
+					camera.theta += e.movementX * settings.mouseSensitivity
+					camera.phi   -= e.movementY * settings.mouseSensitivity
+					requestAnimationFrame(draw)
+				}
+			})
+			document.oncontextmenu = () => keys.Shift
+		</script>
+	</body>
+</html>
