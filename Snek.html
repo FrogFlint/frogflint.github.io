@@ -157,7 +157,7 @@
 					return;
 				for(square of grid.flat())
 					square.player = square.value = 0;
-				players = playerMode ? [new Player(2, 2), new Player(width - 3, height - 3)] : [new Player(Math.floor(width/2), 3)];
+				players = playerMode ? [new Player(2, 2), new Player(width - 3, height - 3 + (width + height - 1)%2)] : [new Player(Math.floor(width/2), 3)];
 				players[0].direction = 1;
 
 				for(let i = 0; i < maxFood; ++i)
