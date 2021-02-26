@@ -14,6 +14,35 @@ const globalAceEditorSettings = {
 	maxLines: 500,
 	showPrintMargin: false,
 }
+const globalAceEditorCommands = [
+	{
+		name: "addBlankLineBelow",
+		bindKey: {win: "Shift-Enter", mac: "Shift-Enter"},
+		exec(e){  //could be done better
+			e.navigateLineEnd()
+			e.insert("\n")
+		},
+		readOnly: false,
+	},
+	{
+		name: "addBlankLineAbove",
+		bindKey: {win: "Control-Shift-Enter", mac: "Command-Shift-Enter"},
+		exec(e){
+			e.navigateLineStart()
+			e.insert("\n")
+			e.navigateUp()
+		},
+		readOnly: false,
+	},
+	{
+		name: "selectWord",
+		bindKey: {win: "Control-D", mac: "Command-D"},
+		exec(e){
+			e.selection.selectWord()
+		},
+		readOnly: true,
+	},
+]
 
 
 ///UI functions
@@ -60,6 +89,9 @@ function createBasicAceEditor(el, options){
 	const editor = ace.edit(el, {...globalAceEditorSettings, highlightActiveLine: false, ...options})
 	editor.on("blur",  () => editor.setHighlightActiveLine(false))
 	editor.on("focus", () => editor.setHighlightActiveLine(true))
+	editor.session.setMode("ace/mode/latex")
+	for(const command of globalAceEditorCommands)
+		editor.commands.addCommand(command)
 
 	return editor
 }
@@ -77,6 +109,19 @@ selectBasicTranspiler(tabContents.basic)
 
 
 /** TODO:
-	+ add parsing for comments
-		- would have to not appear in the output (since they can go between arguments)
+	~ make the readonly editor look a bit different from the normal ones
+	~+ add environments
+		# not really useful
+	~ settings
+		** line wrap, font size, dark mode
+	~~ editor tweaks
+		~ shortcut to switch between document and preamble
+		~ make better syntax highlighting
+		~+ add "add newline above", select word, camel select, maybe more
+		~+ change shortcuts for duplicate line, delete line, select word, indent selected lines
+	~ strip unneccessary whitespace from codecogs request urls
+		- have toMinifiedString() to go with toString()
+			% will need to be aware of "\ ", "\text" and similar
+				# treating $mathmode$ inside textmode as text wouldn't be awful
+		& option for output box to show minified code instead of regular
 */

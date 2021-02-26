@@ -25,7 +25,7 @@
 					<div id="button-line">
 						<button class="button transpile">Transpile</button>
 						<button class="button help" onclick="toggleHelp()">Help</button>
-						<!-- <button class="button settings" onclick="toggleSettings()">Help</button> -->
+						<!-- <button class="button settings" onclick="toggleSettings()">Settings</button> -->
 					</div>
 					<div id="code-output">
 						<div class="code-output">
@@ -47,9 +47,11 @@
 						</div>
 						<div class="section">
 							<div class="section-title">Differences from LaTeX syntax</div>
-							<p>This tool does not (yet?) emulate <span class="inline-code">\def</span> or <span class="inline-code">\let</span>.</p>
+							<p>This tool does not (yet?) emulate <span class="inline-code">\def</span>, <span class="inline-code">\let</span>, <span class="inline-code">\newenvironment</span>, or <span class="inline-code">\newcommand*</span>.</p>
 							<p>This tool does not use semantic parsing, so <span class="inline-code">\catcode</span> and <span class="inline-code">\verb</span> will not be respected (but a lot of the time they will be untouched).</p>
 							<p>There are no unmatched bracket errors. Reaching the end of the document closes all groups, and unexpected closing brackets are treated as regular text.</p>
+							<p><span class="inline-code">\newcommand</span> is only recognized in the preamble, and can use the name of an existing LaTeX command</p>
+							<p>Comments with <span class="inline-code">%</span> are not included in the output (most TeX-to-image renderers don't support them anyways). <span class="inline-code">\%</span> still works fine.</p>
 							<p>
 								Because the tool does not know whether each build-in command takes optional argument or not, it assumes they all do (except for <span class="inline-code">\left</span>).
 								You can still pass a square bracket character as a parameter with <span class="inline-code">\command{[}</span>, or type one after with <span class="inline-code">\command [</span>.
@@ -58,6 +60,11 @@
 								Because the tool does not know how many non-optional arguments each built-in command takes, it can't know whether a zero-parameter command is being used as an implicit parameter (and should be auto-grouped) or not.
 								For example, using <span class="inline-code">\cmd \d {\vec{d}}</span> and then <span class="inline-code">\abs\d</span> will not work properly, but changing to <span class="inline-code">\cmd \d {{\vec{d}}}</span> or <span class="inline-code">\abs{\d}</span> will.
 							 </p>
+						</div>
+						<div class="section">
+							<div class="section-title">3rd party services</div>
+							<p>The amazing text input boxes are using the <a href="https://ace.c9.io/" target="_">Ace Editor</a> library. It's not needed for the tool itself, but it makes it a lot more pleasant to type.</p>
+							<p>The image preview takes the generated output text and shows you what <a href="https://codecogs.com/latex/eqneditor.php" target="_">codecogs</a> (the rendering service also used by playposit) will do with it.</p>
 						</div>
 					</div>
 					<div class="error-log">
@@ -70,6 +77,7 @@
 			</div>
 		</div>
 		<script src="https://pagecdn.io/lib/ace/1.4.12/ace.min.js" crossorigin="anonymous" integrity="sha256-T5QdmsCQO5z8tBAXMrCZ4f3RX8wVdiA0Fu17FGnU1vU=" ></script>
+		<script src="https://pagecdn.io/lib/ace/1.4.12/mode-latex.min.js" crossorigin="anonymous"  ></script>
 
 		<script src="transpilers/basic.js"></script>
 
