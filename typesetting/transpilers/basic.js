@@ -1,41 +1,71 @@
-function selectBasicTranspiler(tabContents){
-	//all this is wrapped in a function so that I don't have to namespace it
+class BasicTranspiler{
+	constructor(tab){
+		this.tab = tab
 
-	const preambleBox = tabContents.querySelector(".code-input.preamble .code-editor")
-	const documentBox = tabContents.querySelector(".code-input.document .code-editor")
-	const outputBox   = tabContents.querySelector(".code-output .code-editor")
+		this.preambleBox = tab.areas.editor.element.querySelector(".code-input.preamble .code-editor")
+		this.documentBox = tab.areas.editor.element.querySelector(".code-input.document .code-editor")
+		this.outputBox   = tab.areas.editor.element.querySelector(".code-output .code-editor")
 
-	const preambleEditor = aceEditors.preamble = createBasicAceEditor(preambleBox, {placeholder: "preamble"})
-	const documentEditor = aceEditors.document = createBasicAceEditor(documentBox, {placeholder: "equation"})
-	const outputEditor   = aceEditors.output   = createBasicAceEditor(outputBox,   {placeholder: "output", readOnly: true})
+		this.preambleEditor = aceEditors.preamble = createBasicAceEditor(this.preambleBox, {placeholder: "preamble"})
+		this.documentEditor = aceEditors.document = createBasicAceEditor(this.documentBox, {placeholder: "equation"})
+		this.outputEditor   = aceEditors.output   = createBasicAceEditor(this.outputBox,   {placeholder: "output", readOnly: true})
 
-	const errorList = []
-
-
-
-	function transpile(){
-		errorList.splice(0, errorList.length)
-		let [preambleTree] = parse(preambleEditor.getValue(), undefined, {inPreamble: true})
-		const macros = createMacroList(preambleTree)
-
-		let [tree] = parse(documentEditor.getValue())
-		expandMacros(tree, macros)
+		this.errorList = []
 
 
-		updateErrorLog(errorList)
+		///activation
+		tab.areas.editor.element.querySelector(".transpile.button").onclick = () => this.transpile()
+		const transpileShortcut = {
+			name:        "transpile",
+			description: "transpile",
+			bindKey:     {win: "Ctrl-S", mac: "Command-S"},
+			exec:        () => this.transpile(),
+		}
+		this.preambleEditor.commands.addCommand(transpileShortcut)
+		this.documentEditor.commands.addCommand(transpileShortcut)
+		this.preambleEditor.commands.addCommand({
+			name:        "focusEquation",
+			description: "switch focus to equation editor",
+			bindKey:     {win: "Ctrl-F", mac: "Command-F"},
+			exec:        () => this.documentEditor.focus(),
+		})
+		this.documentEditor.commands.addCommand({
+			name:        "focusPreamble",
+			description: "switch focus to preamble editor",
+			bindKey:     {win: "Ctrl-F", mac: "Command-F"},
+			exec:        () => this.preambleEditor.focus(),
+		})
+
+		this.outputEditor.on("blur", () => this.outputEditor.selection.moveTo(0, 1))
+	}
+
+	transpile(){
+		this.errorList.splice(0, this.errorList.length)
+		let [preambleTree] = this.parse(this.preambleEditor.getValue(), undefined, {inPreamble: true})
+		const macros = this.createMacroList(preambleTree)
+
+		let [tree] = this.parse(this.documentEditor.getValue())
+		this.expandMacros(tree, macros)
+
+
+		this.tab.updateErrorLog(this.errorList)
 
 		const outputText = tree.join("")
-		outputEditor.setValue(outputText, -1)
+		this.outputEditor.setValue(outputText, -1)
 
-		updatePreviewImage(outputText)  //maybe move these outside
+
+		this.tab.updatePreviewImage(outputText)  //maybe move these outside
+
+		localStorage.setItem("typesetting last basic preamble", this.preambleEditor.getValue())
+		localStorage.setItem("typesetting last basic equation", this.documentEditor.getValue())
 	}
-	function parse(text, endTag, parseOptions = {}){
+	parse(text, endTag, parseOptions = {}){
 		let tree = []
 		let optionalParamIsValid = false
 
 		while(text.length){
 			if(endTag){
-				const end = strMatch(text, endTag, true)
+				const end = this.strMatch(text, endTag, true)
 				if(end) return [tree, text.slice(end[0].length)]
 			}
 
@@ -43,15 +73,15 @@ function selectBasicTranspiler(tabContents){
 			let token = null
 
 			if(text[0] === "{"){
-				const [contents, remainder] = parse(text.slice(1), "}", parseOptions)
-				tree.push(new Token("group", text.slice(0, text.length - remainder.length), "", contents))  //"text" parameter is unnecessary
+				const [contents, remainder] = this.parse(text.slice(1), "}", parseOptions)
+				tree.push(new BasicTranspiler.Token("group", text.slice(0, text.length - remainder.length), "", contents))  //"text" parameter is unnecessary
 				text = remainder
 				optionalParamIsValid = false
 				continue
 			}
 			if(optionalParamIsValid && text[0] === "["){
-				const [contents, remainder] = parse(text.slice(1), "]", parseOptions)
-				tree.push(new Token("optional parameter", text.slice(0, text.length - remainder.length), "", contents))  //"text" parameter is unnecessary
+				const [contents, remainder] = this.parse(text.slice(1), "]", parseOptions)
+				tree.push(new BasicTranspiler.Token("optional parameter", text.slice(0, text.length - remainder.length), "", contents))  //"text" parameter is unnecessary
 				text = remainder
 				if(!parseOptions.inPreamble)  // technically the lack of a limit (instead of 2) only stops `\cmd\name[5][unused][`, so it's not going in "help"
 					optionalParamIsValid = false
@@ -59,14 +89,14 @@ function selectBasicTranspiler(tabContents){
 			}
 
 			if(/^\\[^a-zA-Z]/.test(text)){
-				tree.push(new Token("control symbol", "\\" + text[1], text[1]))
+				tree.push(new BasicTranspiler.Token("control symbol", "\\" + text[1], text[1]))
 				text = text.slice(2)
 				optionalParamIsValid = true
 				continue
 			}
 
 			if(parseOptions.inPreamble && /^#\d/.test(text)){
-				tree.push(new Token("placeholder", "#" + text[1], text[1]))
+				tree.push(new BasicTranspiler.Token("placeholder", "#" + text[1], text[1]))
 				text = text.slice(2)
 				optionalParamIsValid = true
 				continue
@@ -74,7 +104,7 @@ function selectBasicTranspiler(tabContents){
 
 			token = text.match(/^\\[a-zA-Z]+/)
 			if(token){
-				tree.push(new Token("control word", token[0], token[0].slice(1)))
+				tree.push(new BasicTranspiler.Token("control word", token[0], token[0].slice(1)))
 				text = text.slice(token[0].length)
 				optionalParamIsValid = true
 				if(token[0] === "\\left")  //or any command with no optional parameter
@@ -84,17 +114,17 @@ function selectBasicTranspiler(tabContents){
 
 			token = text.match(/^%[^\n]*?(?=\n|$)/)
 			if(token){
-				tree.push(new Token("comment", token[0], token[0].slice(1)))
+				tree.push(new BasicTranspiler.Token("comment", token[0], token[0].slice(1)))
 				text = text.slice(token[0].length)
 				continue
 			}
 
 			if(/^\s/.test(text)){
-				tree.push(new Token("whitespace", text[0], text[0]))
+				tree.push(new BasicTranspiler.Token("whitespace", text[0], text[0]))
 				text = text.slice(1)
 			}
 			else {
-				tree.push(new Token("text", text[0], text[0]))
+				tree.push(new BasicTranspiler.Token("text", text[0], text[0]))
 				text = text.slice(1)
 				optionalParamIsValid = false
 			}
@@ -102,13 +132,18 @@ function selectBasicTranspiler(tabContents){
 
 		return [tree, text]
 	}
-	function createMacroList(tree){
+	createMacroList(tree){
 		let macros = []
 		for(let i = 0; i < tree.length; i++)
 			if(tree[i].type === "control word" && (tree[i].value === "newcommand" || tree[i].value === "cmd")){
 				let j = i
 
-				for(++j; tree[j].isCollapsible(); j++);
+				for(++j; j < tree.length && tree[j].isCollapsible(); j++);
+				if(j === tree.length){
+					this.errorList.push(new BasicTranspiler.ConversionError("unfinished macro"))
+					continue
+				}
+
 				let name = tree[j]
 				if(name.isCommand())
 					name = name.value
@@ -117,7 +152,7 @@ function selectBasicTranspiler(tabContents){
 					if(name)
 						name = name.value
 					else {
-						errorList.push(new ConversionError("missing macro name"))
+						this.errorList.push(new BasicTranspiler.ConversionError("no macro name"))
 						continue
 					}
 				}
@@ -133,15 +168,15 @@ function selectBasicTranspiler(tabContents){
 							defaultParam = token  //maybe change to group
 					}
 					else if(!token.isCollapsible())
-						body = tokenEnsureGroup(token)
+						body = this.tokenEnsureGroup(token)
 				}
 
 				i = j
-				macros.push(new CustomCommand(name, paramCount, defaultParam, body))
+				macros.push(new BasicTranspiler.CustomCommand(name, paramCount, defaultParam, body))
 			}
 		return macros
 	}
-	function expandMacros(tree, macros, savedNameList = null){
+	expandMacros(tree, macros, savedNameList = null){
 		const macroNames = savedNameList || macros.map(macro => macro.name)
 
 		for(let i = 0; i < tree.length; i++){
@@ -156,7 +191,7 @@ function selectBasicTranspiler(tabContents){
 					if(arg.type === "optional parameter")
 						optionalParam = arg
 					else if(!arg.isCollapsible())
-						requiredParams.push(tokenEnsureGroup(arg))
+						requiredParams.push(this.tokenEnsureGroup(arg))
 				}
 
 				tree.splice(i, j - i, ...macro.expand(optionalParam, requiredParams))
@@ -164,11 +199,11 @@ function selectBasicTranspiler(tabContents){
 				i--  //% so that the macro body can start with another macro
 			}
 			else if(token.children.length)
-				expandMacros(token.children, macros, macroNames)
+				this.expandMacros(token.children, macros, macroNames)
 		}
 	}
 
-	class Token {
+	static Token = class {
 		constructor(type, text, value = "", children = []){
 			this.type = type  //* control word, control symbol, text, whitespace, group, optional parameter, placeholder, comment
 			this.text = text  //#+ might get merged with this.value
@@ -176,36 +211,14 @@ function selectBasicTranspiler(tabContents){
 
 			this.children = children
 		}
-		/*findDecendants(callback){
-			if(this.children.length === 0)
-				return []
-			let matches = []
-			for(const child of this.children){
-				if(callback(child))
-					matches.push(child)
-				matches.push(...child.findDecendants(callback))
-			}
-			return matches
-		}
-		replaceDecendants(condition, replacer){
-			for(let i = 0; i < this.children.length; i++){
-				const child = this.children[i]
-				if(condition(child)){
-					let newValue = ensureArray(replacer(child))
-					this.children.splice(i, 1, ...newValue)
-					i += newValue.length - 1
-				}
-				else child.replaceDecendants(condition, replacer)
-			}
-		}*/
 		copy(){
-			return new Token(this.type, this.text, this.value, this.children.map(child => child.copy()))
+			return new BasicTranspiler.Token(this.type, this.text, this.value, this.children.map(child => child.copy()))
 		}
 		copyAndReplace(condition, replacer){
 			const newChildren = []
 			for(const child of this.children)
 				newChildren.push(condition(child) ? replacer(child) : child.copyAndReplace(condition, replacer))
-			return new Token(this.type, this.text, this.value, newChildren.flat())
+			return new BasicTranspiler.Token(this.type, this.text, this.value, newChildren.flat())
 		}
 
 		isCommand(){
@@ -228,7 +241,7 @@ function selectBasicTranspiler(tabContents){
 			}
 		}
 	}
-	class CustomCommand {
+	static CustomCommand = class {
 		constructor(name, paramCount, defaultParam, body){
 			this.name = name
 			this.paramCount = paramCount
@@ -238,7 +251,7 @@ function selectBasicTranspiler(tabContents){
 		}
 		expand(optionalParam, requiredParams){
 			if(requiredParams.length !== this.expectedParams){
-				errorList.push(new ConversionError("missing parameters", this.name, requiredParams.length, this.expectedParams))
+				this.errorList.push(new BasicTranspiler.ConversionError("missing parameters", this.name, requiredParams.length, this.expectedParams))
 				return []  //%+ could pad with empty groups and continue, but that could cause repetetive errors
 			}
 
@@ -246,7 +259,7 @@ function selectBasicTranspiler(tabContents){
 			return this.body.copyAndReplace(token => token.type === "placeholder", token => params[+token.value - 1].children).children
 		}
 	}
-	class ConversionError {
+	static ConversionError = class {
 		constructor(type, ...data){
 			this.type = type
 			this.data = data
@@ -255,13 +268,14 @@ function selectBasicTranspiler(tabContents){
 			switch(this.type){
 				case "missing parameters": return `Error: the command \\${this.data[0]} expected ${this.data[2]} parameter${this.data[2] === 1 ? "" : "s"}, but only found ${this.data[1]}`
 				case "name collision":     return `Error: two ${this.data[0]} cannot share the name ${this.data[1]}`
-				case "missing macro name": return `Syntax Error: no name given for custom command`
+				case "no macro name":      return `Syntax Error: no name given for custom command`
+				case "unfinished macro":   return `Syntax Error: unfinished macro definition`
 				default:                   return `${this.type}: ${this.data.join(" ; ")}`
 			}
 		}
 	}
 
-	function strMatch(str, pattern, justStart = false){
+	strMatch(str, pattern, justStart = false){
 		if(typeof pattern === "string"){
 			if(justStart)
 				return str.startsWith(pattern) ? pattern : null
@@ -271,18 +285,7 @@ function selectBasicTranspiler(tabContents){
 		else if(pattern instanceof RegExp)
 			return str.match(pattern)
 	}
-	const tokenEnsureGroup = token => token.type === "group" ? token : new Token("group", `{${token.text}}`, "", [token])
-
-	///activation
-	tabContents.querySelector(".transpile.button").onclick = transpile
-	const transpileShortcut = {
-		name: "transpile",
-		description: "transpile",
-		bindKey: {win: "Ctrl-S", mac: "Command-S"},
-		exec: transpile,
+	tokenEnsureGroup(token){
+		return token.type === "group" ? token : new BasicTranspiler.Token("group", `{${token.text}}`, "", [token])
 	}
-	preambleEditor.commands.addCommand(transpileShortcut)
-	documentEditor.commands.addCommand(transpileShortcut)
-
-	outputEditor.on("blur", () => outputEditor.selection.moveTo(0, 1))
 }

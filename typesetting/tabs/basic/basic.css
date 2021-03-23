@@ -1,0 +1,138 @@
+#tab-content {
+	display: flex;
+	flex-flow: row nowrap;
+	flex: 2 5 50%;
+	overflow: hidden;
+}
+#tab-content[multi-column] {
+	flex-flow: column nowrap;
+	overflow: auto;
+}
+
+.editor-area {
+	padding: 1em;
+	overflow: auto;
+
+	flex: auto;
+
+	display: flex;
+	flex-flow: column nowrap;
+}
+.info-and-preview {
+	min-width: 20%;
+	max-width: 60%;
+	padding: 1em;
+	overflow: auto;
+
+	display: flex;
+	flex-flow: column nowrap;
+}
+[multi-column] .info-and-preview {
+	max-width: 100%;
+}
+[multi-column] .editor-area {
+	overflow: visible;
+	flex: none;
+}
+[multi-column] .info-and-preview {
+	overflow: visible;
+	/* flex-flow: column-reverse nowrap; */
+}
+
+
+.code-editor {
+	width: 100%;
+	font-size: 1em;
+}
+.code-editor:focus-within {
+	/* outline: 1px solid #0005; */
+	outline: 1px solid var(--gray-tint-medium);
+}
+
+.button-line .button {
+	margin-left: 1em;
+}
+
+
+.option-group {
+	margin-top: 0.7em;
+}
+.toggle-button {
+	padding: 0.2em;
+	cursor: pointer;
+}
+.toggle-text {
+	border-radius: 2px;
+	padding: 0.3em;
+	max-width: fit-content;
+}
+.toggle-button:hover .toggle-text {
+	background: var(--gray-tint-medium);
+}
+.checkbox {
+	display: inline-block;
+	width: 0.8em;
+	height: 0.8em;
+	border-radius: 0.2em;
+
+	margin-right: 1ex;
+	transform: translateY(0.1em);  /* not the best way of doing this */
+
+	border: 1px solid var(--border-color);
+}
+.checkbox.checked, .option.checked .checkbox {
+	background: var(--gray-tint-thick);
+	/* background: #00ff0080; */
+}
+
+
+.error-log .error-message {
+	padding: 0.5ex;
+	margin-bottom: 1ex;
+
+	font-family: courier new;
+	background: #f005;
+	border: 1px solid #800;
+}
+
+.help-text {
+	/* max-width: 100ex; */
+}
+.section-title {
+	font-weight: bold;
+	font-size: 1.5em;
+	text-align: center;
+}
+.inline-code {
+	font-family: monospace;
+	white-space: pre;
+	padding: 2px;
+
+	border-radius: 2px;
+	background: #e8e8e8;
+}
+
+.info-and-preview > div {
+	margin-bottom: 2em;
+}
+.preview-area {
+	display: flex;
+	flex-flow: row nowrap;
+}
+.preview-area > * {
+	padding-left: 2em;
+	padding-right: 2em;
+}
+.preview-image.loading {
+	opacity: 0.5;
+}
+.preview-html {
+	/* font-size: 1.2em; */
+	/* font-family: courier; */
+	/* font-weight: 100; */
+}
+
+
+.MathJax.CtxtMenu_Attached_0 {
+	max-width: fit-content;
+}

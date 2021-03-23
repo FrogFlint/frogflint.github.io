@@ -1,0 +1,56 @@
+:root {
+	--dark-mode-transition-speed: 0.5s;
+
+	--border-color: black;
+}
+/* [dark-mode] :root {
+} */
+#app[dark-mode] {
+	background: #141414;
+	color: white;
+	--border-color: white;
+	--gray-tint-thin: #ffffff18;
+	--gray-tint-medium: #ffffff44;
+	--gray-tint-thick: #ffffff70;
+}
+
+[dark-mode] .inline-code {
+	background: #333;
+	/* color: white; */
+}
+[dark-mode] .preview-image {
+	filter: invert();
+}
+
+/* [dark-mode] .ace-tm {
+	background: #222;
+} */
+
+
+[dark-mode] a:-webkit-any-link {
+	color: #00eeee;
+}
+[dark-mode] a:-webkit-any-link:visited {
+	color: #dd00dd;
+}
+
+
+
+
+#app, .ace_editor {
+	transition: background var(--dark-mode-transition-speed), color var(--dark-mode-transition-speed);
+}
+
+.ace_gutter, .ace_gutter-cell, .inline-code {
+	transition: background-color var(--dark-mode-transition-speed);
+}
+.ace_line span, .ace_gutter-layer {
+	transition: color var(--dark-mode-transition-speed);
+}
+.ace_fold-widget {
+	transition: background-color var(--dark-mode-transition-speed), box-shadow var(--dark-mode-transition-speed);
+}
+
+.preview-image {
+	transition: filter var(--dark-mode-transition-speed);
+}
