@@ -37,20 +37,66 @@
 
 
 
-#app, .ace_editor {
-	transition: background var(--dark-mode-transition-speed), color var(--dark-mode-transition-speed);
+/* this could really use lesscss */
+.dark-mode-transition,
+.dark-mode-transition .ace_editor {
+	transition:
+		background var(--dark-mode-transition-speed),
+		color      var(--dark-mode-transition-speed);
 }
 
-.ace_gutter, .ace_gutter-cell, .inline-code {
+.dark-mode-transition .ace_gutter,
+.dark-mode-transition .ace_gutter-cell,
+.dark-mode-transition .inline-code {
 	transition: background-color var(--dark-mode-transition-speed);
 }
-.ace_line span, .ace_gutter-layer {
+.dark-mode-transition .ace_line span,
+.dark-mode-transition .ace_gutter-layer {
 	transition: color var(--dark-mode-transition-speed);
 }
-.ace_fold-widget {
-	transition: background-color var(--dark-mode-transition-speed), box-shadow var(--dark-mode-transition-speed);
+.dark-mode-transition .ace_fold-widget {
+	transition:
+		background-color var(--dark-mode-transition-speed),
+		box-shadow       var(--dark-mode-transition-speed);
 }
 
-.preview-image {
+.dark-mode-transition .preview-image {
 	transition: filter var(--dark-mode-transition-speed);
 }
+.dark-mode-transition .checkbox {
+	transition:
+		background var(--dark-mode-transition-speed),
+		border     var(--dark-mode-transition-speed);
+}
+
+.dark-mode-transition #header {
+	transition:
+		border-bottom var(--dark-mode-transition-speed),
+		box-shadow    var(--dark-mode-transition-speed);
+}
+.dark-mode-transition #header .tab {
+	transition: border-right var(--dark-mode-transition-speed);
+}
+
+
+/* this version doesn't work yet */
+/* .dark-mode-transition,
+.dark-mode-transition .ace_editor,
+.dark-mode-transition .ace_gutter,
+.dark-mode-transition .ace_gutter-cell,
+.dark-mode-transition .inline-code,
+.dark-mode-transition .ace_line span,
+.dark-mode-transition .ace_gutter-layer,
+.dark-mode-transition .ace_fold-widget,
+.dark-mode-transition .checkbox {
+	transition:
+		background       var(--dark-mode-transition-speed),
+		background-color var(--dark-mode-transition-speed),
+		color            var(--dark-mode-transition-speed),
+		border           var(--dark-mode-transition-speed),
+		box-shadow       var(--dark-mode-transition-speed);
+}
+
+.dark-mode-transition .preview-image {
+	transition: filter var(--dark-mode-transition-speed);
+} */

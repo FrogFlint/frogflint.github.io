@@ -26,7 +26,7 @@ body {
 	display: flex;
 
 	border-bottom: 1px solid var(--border-color);
-	box-shadow: 0 0 0.5ex #0004;
+	box-shadow: 0 0 0.5ex var(--gray-tint-medium);
 }
 
 
@@ -34,7 +34,10 @@ body {
 #header .tab {
 	font-size: 1.5em;
 	padding: 0.5ex;
+
 	border-right: 1px solid var(--border-color);
+	margin-bottom: -1px;
+
 	cursor: pointer;
 }
 #header .tab:hover {
@@ -49,10 +52,10 @@ body {
 	height: 10px; */
 }
 ::-webkit-scrollbar-track {
-	background: red;
+	/* background: red; */
 }
 ::-webkit-scrollbar-thumb {
-	background: cyan;
+	/* background: cyan; */
 }
 
 

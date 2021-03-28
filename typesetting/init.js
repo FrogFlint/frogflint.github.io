@@ -63,6 +63,11 @@ function setHasClass(el, className, condition){
 		? el.classList.add   (className)
 		: el.classList.remove(className)
 }
+function setHasAttr(el, attrName, condition){
+	condition
+		? el.setAttribute   (attrName, true)
+		: el.removeAttribute(attrName)
+}
 function createBasicAceEditor(el, options){
 	const editor = ace.edit(el, {...globalAceEditorSettings, highlightActiveLine: false, ...options})
 	editor.on("blur",  () => editor.setHighlightActiveLine(false))
@@ -189,12 +194,16 @@ class GlobalSettings {
 		this.updateDarkMode()
 	}
 	updateDarkMode(){
-		if(this.darkMode) appBox   .setAttribute("dark-mode", true)
-		else              appBox.removeAttribute("dark-mode")
+		appBox.classList.add("dark-mode-transition")
+		setTimeout(() => appBox.classList.remove("dark-mode-transition"), 500)
+
+
+		setHasAttr(appBox, "dark-mode", this.darkMode)
 
 		const editorTheme = this.getEditorTheme()
 		for(const editor of Object.values(aceEditors))
 			editor.setTheme(editorTheme)
+
 
 		this.saveToBrowser()
 	}
@@ -249,6 +258,8 @@ currentTab.render()
 	& scale math output
 	& render options
 		* font thickness/weight
+
+	# scrollbar styling works on chromeos but not windows
 
 	&++ some kind of animation when toggling multi-column
 

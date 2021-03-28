@@ -3,8 +3,8 @@ class BasicTab {
 		this.areas = {}
 		this.buttons = {}
 		this.options = {
-			multiColumn: true,
-			useCodecogs: false,
+			multiColumn: false,
+			useCodecogs: true,
 			useMathJax: true,
 			wrapOutputInArray: false,  //+ move implementation (but not the setting itself) to the transpiler
 		}
@@ -125,21 +125,9 @@ class BasicTab {
 
 				this.transpiler = new BasicTranspiler(this)
 
-				//! load most recently saved preamble and equation from localStorage
 				aceEditors.preamble.setValue(localStorage.getItem("typesetting last basic preamble") || "", -1)
 				aceEditors.document.setValue(localStorage.getItem("typesetting last basic equation") || "", -1)
-				// this.setDemoInput()  //#! for development
 			}
 		)
-	}
-
-
-	setDemoInput(){
-		fetch("http://localhost/typesetting/tabs/basic/demoPreamble.tex.php")
-			.then(response => response.text())
-			.then(demoText => aceEditors.preamble.setValue(demoText, -1))
-		fetch("http://localhost/typesetting/tabs/basic/demoEquation.tex.php")
-			.then(response => response.text())
-			.then(demoText => aceEditors.document.setValue(demoText, -1))
 	}
 }
