@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Sliding clock</title>
+
+		<style type="text/css">
+				:root {
+					--slide-transition: 0.8s;  /* can include timing function */
+				}
+
+				body {
+					max-height: 100%;
+					overflow: hidden;
+					padding: 0;
+					margin: 0;
+				}
+				div {
+					padding: inherit;
+					margin: inherit;
+				}
+				main {
+					position: absolute;
+					width: 100%;
+					height: 100%;
+
+					background: linear-gradient(180deg, #202020, #202040);
+				}
+
+
+				#time {
+					position: absolute;
+					left: 50%;
+					top: 50%;
+					transform: translate(-50%, -50%);
+
+					display: flex;
+					flex-direction: row;
+
+					overflow: hidden;
+
+					font-size: 200px;
+					color: white;
+					/* font-weight: bold; */
+				}
+				#time * {
+					text-align: center;
+				}
+				#time > .digit {
+					width: 1.5ex;  /* make a setting somewhere, maybe calculated or tied to font */
+					overflow: visible;
+				}
+
+
+
+				.digit-card {
+					position: absolute;
+					top: 0;
+				}
+				.digit-card.sliding {
+					transition: transform var(--slide-transition), opacity var(--slide-transition);
+				}
+				.digit-card.up {
+					transform: translate(0, -1.5em);
+					/* opacity: 0; */
+				}
+				.digit-card.down {
+					transform: translate(0, 1.5em);
+					/* opacity: 0; */
+				}
+
+
+				#time .seconds, #time .minutes-seconds {
+					color: #aaaaaa;
+				}
+				.colon {
+					margin-left: -0.2ex;
+					margin-right: 0.2ex;
+				}
+		</style>
+	</head>
+	<body>
+		<main>
+			<div id="time">
+				<div class="digit hours tens"></div>
+				<div class="digit hours ones"></div>
+				<div class="colon">:</div>
+				<div class="digit minutes tens"></div>
+				<div class="digit minutes ones"></div>
+				<div class="colon minutes-seconds">:</div>
+				<div class="digit seconds tens"></div>
+				<div class="digit seconds ones"></div>
+			</div>
+		</main>
+
+		<script type="text/javascript">
+			let settings = {
+				mode: "clock",  //: [clock, timer, stopwatch]
+
+				showSeconds: true,
+				showMilliseconds: false,
+
+				slideDirection: "up",  //: [up, down]
+				slideTime: 0.8,  //: seconds; 0 is no animation
+
+				font: "Arial",
+				//(+) fontSize: 50,
+			}
+			let running = true
+			let time = {
+				hours: 0,
+				minutes: 0,
+				seconds: 0,
+				milliseconds: 0,
+			}
+			const digitElements = Array.from(document.querySelectorAll("#time > .digit"))
+
+
+			function syncToRealtime(){
+				let d = new Date()
+
+				d.setSeconds(d.getSeconds() + 1)  //% the sliding animation *ends* right as the second changes
+
+				time.hours        = d.getHours()
+				time.minutes      = d.getMinutes()
+				time.seconds      = d.getSeconds()
+				time.milliseconds = d.getMilliseconds()
+			}
+
+			function updateDigits(){
+				const newDigitValues = [
+					Math.floor(time.hours / 10) || "",
+					time.hours % 10,
+					Math.floor(time.minutes / 10),
+					time.minutes % 10,
+					Math.floor(time.seconds / 10),
+					time.seconds % 10,
+				]
+
+				const [slideTo, slideFrom] = slideClasses(settings.slideDirection)
+
+				let anySlides = false  //% prevents cleanup on initial displaying
+				for(let i in digitElements){
+					let oldDigit = digitElements[i].firstChild
+					let newValue = newDigitValues[i]
+
+					if(!oldDigit || settings.slideTime === 0)
+						digitElements[i].appendChild(newDigitCard(newValue))
+
+					else if(oldDigit.innerText !== String(newValue)){
+						anySlides = true
+
+						oldDigit.classList.add("sliding")
+						oldDigit.classList.add(slideTo)
+
+						let newDigit = newDigitCard(newValue)
+						newDigit.classList.add(slideFrom)
+						newDigit.classList.add("sliding")
+						digitElements[i].appendChild(newDigit)
+						const forceCssUpdate = newDigit.clientWidth
+						newDigit.classList.remove(slideFrom)
+					}
+				}
+
+				if(anySlides && settings.slideTime !== 0)
+					setTimeout(slideCleanup, settings.slideTime * 1000)
+			}
+			function slideCleanup(){
+				for(let digit of digitElements){
+					while(digit.children.length > 1)
+						digit.removeChild(digit.firstChild)
+					digit.firstChild.classList.remove("sliding")
+				}
+			}
+			function newDigitCard(value){
+				let el = document.createElement("div")
+				el.classList.add("digit-card")
+				el.innerText = value
+
+				return el
+			}
+
+			const slideClasses = slideDirection => ({up: ["up", "down"], down: ["down", "up"]})[slideDirection]
+
+
+
+			function tick(){
+				if(running){
+					if(settings.mode === "clock"){
+						syncToRealtime()
+						updateDigits()
+					}
+				}
+			}
+
+
+
+			function init(){
+				tick()
+				setTimeout(
+					() => {
+						tick()
+						setInterval(tick, 1000)
+					},
+					(2000 - new Date().getMilliseconds() - settings.slideTime*1000) % 1000
+				)
+			}
+			init()
+		</script>
+	</body>
+</html>
