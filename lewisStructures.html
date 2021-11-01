@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Lewis Structure drawing tool</title>
+		<style type="text/css">
+
+
+			#main-ui {
+				margin-left: 30px;
+				margin-top: 30px;
+
+				display: flex;
+				flex-flow: column nowrap;
+				align-items: flex-start;
+			}
+			#main-ui > * {
+				margin-bottom: 30px;
+			}
+			#formula-input {
+				padding: 3px;
+				font-family: courier new;
+				font-size: 2em;
+			}
+
+
+			.hidden {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id=main-ui>
+			<canvas id=main-canvas></canvas>
+			<input
+				type=text id=formula-input
+				autocomplete=off autocorrect=off autocapitalize=off spellcheck=false
+			/>
+			<div id=error-message></div>
+			<!-- <button class="toggle help">Show help</button> -->
+			<div id=help class="hidden">
+
+			</div>
+		</d>
+
+		<script type="text/javascript">
+
+
+			const style = {
+				font: {
+					face: "Arial",
+					size: 40,
+					color: "black",
+				},
+				atom: {
+					distance: 120,
+					radius: 30,
+				},
+				bond: {
+					distance: 35,
+					gap: 20,
+					thickness: 3,
+					color: "black",
+				},
+				electron: {
+					distance: 35,
+					radius: 2.5,
+					gap: 15,
+					color: "black",
+				},
+			}
+
+			const parser = {
+				options: {
+					useMaxOrbitals: true,
+				},
+
+				match: {
+					word(text){
+						if(!(text && text[0] >= "A" && text[0] <= "Z"))
+							return
+						for(var i = 1; text[i] && text[i] >= "a" && text[i] <= "z"; i++);
+						return text.divide(i)
+					},
+					direction(text){
+						for(var i = 0; text[i] && text[i] >= "a" && text[i] <= "z"; i++);
+						if(!i)
+							return
+						let [dir, rest] = text.divide(i)
+						if(directions.includes(dir))
+							return [dir, rest]
+						if(dir.length === 2 && directions.includes(dir = dir.reverse()))
+							return [dir, rest]
+						return
+					},
+					string(text){
+						if(text[0] !== "\"")
+							return
+						let str = ""
+
+						text = text.slice(1)
+						while(text){
+							switch(text[0]){
+								case "\"":
+									return [str, text.slice(1)]
+								case "\\":
+									str += text[1]
+									text = text.slice(1)
+									break
+								default:
+									str += text[0]
+							}
+							text = text.slice(1)
+						}
+						// throw "expected closing quote"
+						return [str, text]
+					},
+					element(text){
+						let match
+						if(match = parser.match.word(text) || parser.match.string(text))
+							return match
+						if(text[0] === "_")
+							return [" ", text.slice(1)]
+					},
+
+					atom(text, parentBonds = 0){
+						let element = null
+						let match = null
+						let roundBracket = false, squareBracket = false
+
+						if(roundBracket = text[0] === "(")
+							text = text.slice(1)
+
+						if(!(match = parser.match.element(text))){
+							if(roundBracket)
+								throw "expected element name after \"(\""
+							else
+								return null
+						}
+						[element, text] = match
+
+						if(element in parser.data.namedAtoms)
+							return [parser.data.namedAtoms[element].copy(), text]
+
+						if(squareBracket = text[0] === "[")
+							text = text.slice(1)
+						else if(!(roundBracket || parser.options.useMaxOrbitals))
+							return null
+
+
+						let orbitalsLeft = roundBracket || squareBracket || !parser.options.useMaxOrbitals
+							? 16 - !!parentBonds
+							: (element === "H" || element === " " ? 1 : 4) - parentBonds
+
+						let orbitals = []
+						let lastBond = null
+						while(text && !(text[0] === "]" || text[0] === ")" || text[0] === ",") && orbitalsLeft > 0){
+							text = parser.skipSeperators(text)
+							if(!(match = parser.match.orbital(text)))
+								throw "invalid orbital"
+
+							text = match[1]
+							let orbital =  match[0]
+
+							if(+orbital > 0){
+								for(let i of range(+orbital))
+									orbitals.push(new parser.token.pair(2))
+								orbitalsLeft -= orbital
+							}
+							else {
+								if(orbital.atom){
+									if(orbital.atom === "*"){
+										if(!lastBond)
+											throw "no atom to repeat"
+										orbital.atom = lastBond.atom.copy()
+										orbital.count ||= lastBond.count
+									}
+									lastBond = orbital
+									orbitalsLeft -= orbital.count
+								}
+								else
+									orbitalsLeft -= !!orbital.count
+								orbitals.push(orbital)
+							}
+						}
+						// console.log(orbitals, text)
+						while(text[0] === "|" || text[0] === "+"){
+							match = parser.match.orbital(text)
+							orbitals.push(match[0])
+							text = match[1]
+						}
+
+						if(text[0] === ",")
+							text = text.slice(1)
+						if(squareBracket && text[0] === "]")
+							text = text.slice(1)
+						if(roundBracket && text[0] === ")")
+							text = text.slice(1)
+
+						return [new parser.token.atom(element, orbitals), text]
+					},
+					orbital(text){
+						if(+text[0] > 0)
+							return text.divide(1)
+
+						let type = "bond", count = undefined, direction = undefined
+						let special = false  //#! bad name (covers "*" but not "=*")
+						let atomName = null
+						let match = null
+
+						switch(text[0]){
+							case "+":
+								count = 0
+								break
+							case "-":
+								count = 1
+								break
+							case "=":
+								count = 2
+								break
+							case "|":
+								type = "pair"
+								count = 0
+								break
+							case ".":
+								type = "pair"
+								count = 1
+								break
+							case ":":
+								type = "pair"
+								count = 2
+								break
+							default:
+								special = true
+						}
+						if(!special)
+							text = text.slice(1)
+						if(type === "bond" && count > 0 && text[0] === "="){
+							count += 2
+							text = text.slice(1)
+						}
+
+						if(match = parser.match.direction(text))
+							[direction, text] = match
+
+
+						if(type === "pair")
+							return [new parser.token.pair(count, direction), text]
+
+						if(text[0] === "*")
+							return [new parser.token.bond(count, direction, "*"), text.slice(1)]
+
+
+						if((match = parser.match.word(text)) && match[1][0] === "!"){
+							atomName = match[0]
+							text = match[1].slice(1)
+						}
+
+						if(count === undefined)
+							count = 1
+						if(match = parser.match.atom(text, count)){
+							if(atomName)
+								parser.data.namedAtoms[atomName] = match[0]
+							return [new parser.token.bond(count, direction, match[0]), match[1]]
+						}
+					},
+					ion(text){
+						// direction?
+						// atom
+						// charge?
+					},
+
+					formula(text){
+						parser.data.namedAtoms = {}
+						return parser.match.atom(text)
+					},
+				},
+				skipSeperators(text){
+					for(var i = 0; text[i] === " " || text[i] === "\n"; i++);
+					return text.slice(i)
+				},
+
+				token: {
+					atom: class {
+						constructor(element, orbitals = []){
+							this.element = element
+							this.orbitals = orbitals
+						}
+						copy(){
+							return new parser.token.atom(this.element, this.orbitals.map(o => o.copy()))
+						}
+					},
+					bond: class {
+						constructor(count, direction, atom){
+							this.count = count
+							this.direction = direction
+							this.atom = atom
+						}
+						copy(){
+							return new parser.token.bond(this.count, this.direction, this.atom.copy())
+						}
+					},
+					pair: class {
+						constructor(count, direction){
+							this.count = count
+							this.direction = direction
+						}
+						copy(){
+							return new parser.token.pair(this.count, this.direction)
+						}
+					},
+				},
+
+				data: {
+					namedAtoms: {},
+				},
+			}
+
+			Object.defineProperties(String.prototype, {
+				reverse: {value: function(){
+					return this.split("").reverse().join("")
+					//# might be inefficient
+				}},
+				divide: {value: function(i){
+					return [this.slice(0, i), this.slice(i)]
+				}},
+			})
+			Object.defineProperties(Array.prototype, {
+				mod: {value: function(start){
+					return [...this.slice(start), ...this.slice(0, start)]
+				}},
+				findIndexInOrder: {value: function(condition, order){
+					return order[order.findIndex((i, j) => condition(this[i], i, this, +j))]
+				}},
+				filterAndIndex: {value: function(condition){
+					return this.keys().filter(i => condition(this[i], i, this))
+				}},
+				sortAndIndex: {value: function(comparison){
+					return this.keys().sort((i, j) => comparison(this[i], this[i], i, j, this))
+				}},
+			})
+			Object.defineProperties(Object.prototype, {
+				map: {value: function(callback){
+					return Object.fromEntries(Object.entries(this).map(([key, val]) => [key, callback(val, key, this)]))
+				}},
+				//~+ map but you set a new key as well
+			})
+
+			const directions = "r rrd dr ddr d ddl dl lld l llu ul uul u uur ur rru".split(" ")
+			const directionVectors = [0,1,2,3,4,3,2,1,0,-1,-2,-3,-4,-3,-2,-1]
+				.map((x, i, a) => [a[(+i + 4) % 16], x].map(y => Math.sign(y) * Math.sqrt(Math.abs(y)) / 2))
+			const orbitalSpreadShapes = [
+				"",
+				"r,rrd,dr,ddr,d,ddl,dl,lld,l,llu,ul,uul,u,uur,ur,rru",
+				"r l,u d,ul dr,lr du,rru lld,rrd llu,ddr uul,ddl uur",
+				"llu rru d,u rrd lld,l uur ddr,r ddl uul",
+				"r d l u,ur dr dl ul,rru ddr lld uul,rrd ddl llu uur",
+				"",
+				"r ddr ddl l uul uur,u rru rrd d lld llu",
+				"",
+				"r dr d dl l ul u ur,rru rrd ddr ddl lld llu uul uur",
+				"",
+				"",
+				"",
+				"r rrd ddr d ddl lld l llu uul u uur rru",
+				"",
+				"",
+				"",
+				"r rrd dr ddr d ddl dl lld l llu ul uul u uur ur rru",
+			].map(x => x ? x.split(",").map(y => y.split(" ")) : [])
+			const orbitalSpreadOrder = [,
+				[0],
+				[0,1],
+				[0,1,2],
+				[0,2,3,1],
+				[],
+				[0,2,4,3,5,1],
+				[],
+				[0,4,6,2,3,5,7,1],
+				[],
+				[],
+				[],
+				[0,6,4,8,10,2,5,7,9,11,1,3],
+				[],
+				[],
+				[],
+				[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]  //~ reorder
+			]
+			const centeredOffsets = [[],[0],[1,-1],[2,0,-2],[3,1,-1,-3],[4,2,0,-2,-4],[5,3,1,-1,-3,-5]]
+				.map(x => x.map(y => y/2))  //~+ turn into generator function
+
+			const mod = (x, m) => x - m * Math.floor(x / m)
+			function* range(n, m = 0, s = 1){
+				const start = Math.min(n, m),
+				      end   = Math.max(n, m)
+				for(let i = start; i < end; i += s)
+					yield i
+			}
+			function* enumerate(obj){
+				if(Array.isArray(obj)){
+					let i = 0
+					for(let val of obj)
+						yield [val, i++, obj]
+				}
+				else
+					yield* Object.entries(obj)  //# doesn't include a third value
+			}
+
+			const canvas          = document.getElementById("main-canvas")
+			const ctx             = canvas.getContext("2d")
+			const inputBox        = document.getElementById("formula-input")
+			const errorMessageBox = document.getElementById("error-message")
+
+
+			function parse(text){
+				let match = parser.match.formula(text)
+				console.log("match: ", match)
+				if(!match || match[1])
+					throw "syntax error"
+				return match[0]
+			}
+			function completeShape(atom, directionIn, backwardsFirst = false){
+				directionIn = directionIn && directions[mod(directions.indexOf(directionIn) + 8, 16)]
+
+				let givenBranches = {
+					main: [],
+					secondary: [],
+				}
+				for(let [o, i] of enumerate(atom.orbitals))
+					givenBranches[o.atom && o.count === 0 ? "secondary" : "main"].push(i)
+
+				let branches = givenBranches.map(layer => {
+					let layerBranches = (directionIn && !backwardsFirst ? [directionIn] : []).concat(layer.map(i => atom.orbitals[i].direction))
+					return completeShapePart(
+						layerBranches,
+						layerBranches.filter(d => d).concat(backwardsFirst ? [directionIn] : [])
+					)
+				})
+				if(directionIn && !backwardsFirst)
+					branches = branches.map(layer => layer.slice(1))
+
+				for(let k in branches)
+					for(let [j, i] of enumerate(givenBranches[k])){
+						let orbital = atom.orbitals[j]
+						orbital.direction = branches[k][i]
+						if(orbital.atom)
+							completeShape(orbital.atom, orbital.direction, orbital.count === 0)
+					}
+
+				return atom
+			}
+			function completeShapePart(givenBranches, givenValues){
+				let branches = Array.from(givenBranches)
+				const n = branches.length
+
+
+				let shape = orbitalSpreadShapes.slice(n).flat().find(s => givenValues.every(d => s.includes(d)))
+				let k = shape.length
+
+				//#! this seems messier than it needs to be
+				const first = givenValues[0] || "r"
+				let order = orbitalSpreadOrder[k]
+				let j = shape.indexOf(first)
+				let m = shape.findIndexInOrder((x, i) => shape[mod(+i + order[mod(j - i, k)], k)] === first, [...range(k)].mod(j + 1).reverse())
+				shape = shape.mod(m)
+
+
+				//~++ try to find a second shape which is both a subset of the main one and fits all of the bonds (but not lone pairs)
+
+
+				shape = order.map(j => shape[j]).filter(x => !branches.includes(x))
+				branches = branches.map(x => x || shape.shift())
+
+				return branches
+			}
+			function draw(core){
+				let atoms = [core]
+
+				core.x = 0
+				core.y = 0
+
+				const placeChildren = atom => {
+					for(let orbital of atom.orbitals)
+						if(orbital.atom){
+							let a = orbital.atom
+							atoms.push(a)
+							let [vx, vy] = directionVectors[directions.indexOf(orbital.direction)]
+							a.x = atom.x + Math.round(vx * style.atom.distance)
+							a.y = atom.y + Math.round(vy * style.atom.distance)
+							placeChildren(a)
+						}
+				}
+				placeChildren(core)
+
+
+				const padding = style.electron.distance + Math.ceil(style.electron.radius) + 1  //#! not completely safe
+				const minX = Math.min(...atoms.map(a => a.x)) - padding,
+				      minY = Math.min(...atoms.map(a => a.y)) - padding,
+				      maxX = Math.max(...atoms.map(a => a.x)) + padding,
+				      maxY = Math.max(...atoms.map(a => a.y)) + padding
+
+				const w = maxX - minX, h = maxY - minY
+				canvas.style.width  = w + "px"
+				canvas.style.height = h + "px"
+				canvas.width  = w
+				canvas.height = h
+
+				ctx.clearRect(0, 0, w, h)
+
+
+				const ad = style.atom.distance,
+				      bd = style.bond.distance,
+					  ed = style.electron.distance
+				const bg = style.bond.gap,
+				      eg = style.electron.gap
+
+				const drawAtom = atom => {
+					const ax = atom.x - minX,
+					      ay = atom.y - minY
+
+					// ctx.fillStyle = "lime"
+					// ctx.beginPath()
+					// ctx.arc(atom.x - minX, atom.y - minY, style.atom.radius, 0, Math.PI*2)
+					// ctx.fill()
+					// ctx.closePath()
+
+					ctx.font = style.font.size + "px " + style.font.face
+					ctx.textAlign = "center"
+					ctx.textBaseline = "middle"
+					ctx.fillStyle = style.font.color
+					ctx.beginPath()
+					ctx.fillText(atom.element, ax, ay + style.font.size*0.05)  //#! not quite properly centered
+					ctx.closePath()
+
+					for(let orbital of atom.orbitals){
+						let [vx, vy] = directionVectors[directions.indexOf(orbital.direction)]
+						if(orbital.atom){
+							ctx.strokeStyle = style.bond.color
+							ctx.lineWidth = style.bond.thickness
+							ctx.lineCap = "round"
+							for(let o of centeredOffsets[orbital.count]){
+								ctx.beginPath()
+								ctx.moveTo(ax + vx*bd        + vy*o*bg, ay + vy*bd        - vx*o*bg)
+								ctx.lineTo(ax + vx*(ad - bd) + vy*o*bg, ay + vy*(ad - bd) - vx*o*bg)
+								ctx.stroke()
+								ctx.closePath()
+							}
+
+							drawAtom(orbital.atom)
+						}
+						else {
+							ctx.fillStyle = style.electron.color
+							for(let o of centeredOffsets[orbital.count]){
+								ctx.beginPath()
+								ctx.arc(
+									ax + vx*ed + vy*o*eg,
+									ay + vy*ed - vx*o*eg,
+									style.electron.radius, 0, Math.PI*2
+								)
+								ctx.fill()
+								ctx.closePath()
+							}
+						}
+					}
+				}
+				drawAtom(core)
+			}
+
+
+			function drawInput(){  //# this is only separate from displayInput for easier debugging
+				draw(completeShape(parse(inputBox.value)))
+			}
+			function displayInput(){
+				try {
+					drawInput()
+					errorMessageBox.innerText = ""
+				}
+				catch(err){
+					// console.log(err)
+					errorMessageBox.innerText = err
+				}
+				inputBox.style.minWidth = inputBox.value.length + "ch"
+			}
+			inputBox.addEventListener("input", displayInput)
+
+
+
+
+			let exampleFormula = "C=rNHI3O ddrH|2Cl3"
+
+			inputBox.value = exampleFormula
+			drawInput()
+
+
+			/** ideas
+				~ multiple groups/molecules
+					% does ionic and molecular compounds
+					- highest scope of parsing behaves differently
+					^ render square brackets around whole sections of the formula
+					^+ "direction(atom)[charge]"
+						* lithium sulfate: `(SO3*=O2*)[2-]llu(Li)[+]lld*`
+					^ `~` to draw a dotted line
+					^++ `+` to put an invisible bond somewhere it wouldn't normally be
+						~!! currently parses, but doesn't render properly
+							- it shouldn't be included in the bord direction spreading
+							~+ add another parameter to completeShape, so that directionIn is given, but doesn't count as one connection
+				~ directly place atoms
+					^+* use `{r2l lld}` in the same place you would `lld`
+					+ do not contribute to bond spacing
+				~ make `|` not change orbitalsLeft
+					~ make __
+						+ overhaul parser.match.orbital to also return how many {actual orbitals} it takes up
+				~ make it basically impossible for seperators to cause an error
+				~ make newlines typeable, and treated like separators
+				~! a syntax guide
+					~ note that `H` and `_` still attach to `|` and `,`
+				~++ change where explicit directions fit in the syntax
+				~+ be more consistent with what happens when the end of the input string is reached
+					# auto-close, give an error, etc.
+				~ name a branch (with a valid element name), then reference it anywhere (the way you would use "*")
+					^+ "[name]![branch]"
+						^+** `@`, `&`
+					~++ use like a function
+						^+ "[name]\[[arguments]\]"
+							* `Benzene[BaBbBcBdBeBf]C=CC=CC=C_Ba,Bb,Bc,Bb,Be,Bf,,|`
+				~+ make commas not absorbed when the atom is already at its max connections
+					#% could have complicated consequences with `|`
+				~ tool to convert between commas, square brackets, and round brackets
+				~+ shortcut to reload the drawing
+					% after changing the styles or something
+
+				~+ change the word "orbital" to something else
+					^+ "child"
+					^+ "branch"
+					- since it currently counts double bonds as one connection
+					# orbitalsLeft is the only correct use
+
+				== demo formulas ==
+					* `COH2HHH`
+					* `C=O2*`
+					* `C=O|2*`
+					* `C[(OH2)*****]`
+					* `C=CC=CC=C_HHHHHH,|`
+					* `C=CC=CC=C_A!CC=C,|,=_B!C=CC,|,_ABAB|`
+						* `C=CC=CC=C_A!CC=C_,|,|,|,B!C=CC=_,|,|,|,ABAB|`
+						* `C=CC=CC=C_A!CC=C_H,,H,,|,B!C=CC=_H,,H,,|,ABAB|`
+						* lesson on name scoping: `C=CC=CC=C_A!AA=A,|,=_B!B=BB,|,_ABAB|`
+					*+ `C=rNHI3O ddrH,|2Cl3`
+					* `(SO3*=O2*)[2-]llu(Li)[+]lld*`
+					* `OGa!AAAAAAAAAAAAAAAAGb!BBBBBBBBGc!CCCCGd!DDGe!E,**,,**,,,,**,,,,,,,,**,,,,,,,,,,,,,,,,***`
+			**/
+
+
+
+		</script>
+	</body>
+</html>
