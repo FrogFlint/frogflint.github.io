@@ -2,7 +2,7 @@
 <html lang="en" dir="ltr">
 	<head>
 		<meta charset="utf-8">
-		<meta version="1.2">
+		<meta version="1.3">
 		<title>Not really minesweeper</title>
 		<style type="text/css">
 			body {
@@ -15,11 +15,15 @@
 				top: 50%;
 				transform: translate(-50%, -50%);
 			}
+			.hidden {
+				display: none !important;  /* oof */
+			}
 
-			#menu {
+			#menu, .options-page {
 				padding: 20px;
 				border: 1px solid #202020;
 			}
+
 			#highscores {
 				position: absolute;
 				left: 30%;
@@ -30,6 +34,7 @@
 				border: 1px solid #202020;
 				white-space: pre;
 				font-weight: bold;
+				user-select: none;
 			}
 			#highscores ol {
 				max-height: 6em;
@@ -47,11 +52,12 @@
 
 			.options {
 				display: flex;
+				justify-content: center;
 			}
 			.options > div {
 				margin: 20px;
 			}
-			.options > div, #AI-help {
+			.simple-button {
 				background: darkgray;
 				border: 1px solid #202020;
 
@@ -60,12 +66,18 @@
 				padding: 5px;
 				box-sizing: border-box;
 
+				display: flex;
+				flex: column nowrap;
+				justify-content: center;
+				align-items: center;
 				text-align: center;
+
 				user-select: none;
+				outline: none;
 
 				transition: background 0.1s;
 			}
-			.options > div:hover, #AI-help:hover {
+			.simple-button:hover, .simple-button:focus {
 				background: #CCCCCC;
 			}
 
@@ -81,10 +93,19 @@
 				background: #00AA00;
 			}
 
+			#open-options-menu, #open-main-menu {
+				position: absolute;
+				right: 30px;
+				top: 30px;
+			}
+
 			#game-over {
+				min-width: 180px;
 				padding: 10px;
 				border: 1px solid black;
 				background: #FFFFFF40;
+
+				user-select: none;
 			}
 			#game-over center {
 				font-size: 1.3em;
@@ -94,117 +115,113 @@
 				width: 70%;
 				height: 80%;
 			}
+
+
+			#options-controls td {
+				padding: 3px;
+			}
+			#options-controls td:first-child {
+				padding-right: 30px;
+			}
 		</style>
 	</head>
 	<body>
-		<div id="menu" class="center">
-			<div class="options">
-				<div onclick="start(0)" onmouseover="showHighscores(0)" onmouseout="hideHighscores()">5x5</div>
-				<div onclick="start(1)" onmouseover="showHighscores(1)" onmouseout="hideHighscores()">9x5</div>
-				<div onclick="start(2)" onmouseover="showHighscores(2)" onmouseout="hideHighscores()">7x7</div>
-				<div onclick="start(3)" onmouseover="showHighscores(3)" onmouseout="hideHighscores()">10x10</div>
-				<div onclick="start(4)" onmouseover="showHighscores(4)" onmouseout="hideHighscores()">20x10</div>
-			</div>
+
+		<div id="menu" class="center hidden">
+			<div id="size-options" class="options"></div>
 		</div>
-		<div id="highscores" style="display: none"></div>
-		<div id="AI-help" onclick="toggleAIhelp()">AI help</div>
-		<canvas id="game-canvas" class="center" style="display: none"></canvas>
-		<div id="game-over" class="center" style = "display: none">
+		<div id="highscores" class="hidden"></div>
+		<div id="open-main-menu" class="simple-button hidden" tabindex=11 onclick="openScene(scenes.menu)">Main menu</div>
+		<div id="open-options-menu" class="simple-button hidden" tabindex=11 onclick="openScene(scenes.mainOptions)">Options</div>
+		<div id="AI-help" class="simple-button hidden" tabindex=12 onclick="toggleAIhelp()">AI help</div>
+
+		<div id="options-main" class="options-page options center hidden">
+			<div class="simple-button" onclick="openScene(scenes.howToPlay)">How to play</div>
+			<div class="simple-button" onclick="openScene(scenes.controls)">Controls</div>
+		</div>
+		<div id="options-how-to-play" class="options-page center hidden">
+			<p>
+				You are given a grid of cells, each containing a number (called its "target").
+				On the boundary between any two cells you can place a wall.
+			</p><p>
+				Each cell counts how far it can see upwards, downwards, leftwards, and rightwards, adds up those 4 distances, and calls that its "reach".
+				If you place walls around a cell so that its reach is the same as its target, the target number turns green.
+				If you make the reach smaller than the target, it turns red.
+				You win by making every cell green at the same time.
+			</p><p>
+				You can also place a path (green) between two cells.
+				This doesn't impact how you win the game, but it is useful for keeping track of partial information.
+			</p><p>
+				Trying to place a wall on a path will instead place walls at either end of the line of paths that it's part of.
+				These walls are blue, but don't act any different from normal ones.
+			</p>
+		</div>
+		<div id="options-controls" class="options-page center hidden">
+			<table><tbody>
+				<tr> <td>Place/remove wall</td> <td>Left-click</td> </tr>
+				<tr> <td>Place/remove path</td> <td>Right-click</td> </tr>
+			</tbody></table>
+		</div>
+		<div id="options-colors" class="options-page center hidden"></div>
+
+		<canvas id="game-canvas" class="center hidden"></canvas>
+		<div id="game-over" class="center hidden">
 			<strong>
 				<center>You won!</center><br>
 				Time:
-			</strong> <span id="final-score"></span>
+			</strong> <span id="final-score"></span><br><br>
+			<span id="new-best-position"></span>
 			<div class="options">
-				<div onclick="start()">Play again</div>
-				<div onclick="openMenu()">Change settings</div>
+				<div class="simple-button" tabindex=1 onclick="start()">Play again</div>
+				<!-- <div class="simple-button" tabindex=2 onclick="gameActive = false; openScene('menu')">Change settings</div> -->
 			</div>
 		</div>
+
 		<script type="text/javascript">
-			let menu =             document.getElementById("menu")
-			let gameOver =         document.getElementById("game-over")
-			let scoreDisplay =     document.getElementById("final-score")
-			let highscoreDisplay = document.getElementById("highscores")
-			let AIhelpButton =     document.getElementById("AI-help")
-			let canvas =           document.getElementById("game-canvas")
-			let ctx = canvas.getContext("2d")
 
-			let view = "menu"
-			let width = height = tileSize = 0
-			let AIhelp = false
-			let canvasMargin = {left: 0, top: 0}
-			let targetGrid = [[]]
-			let grid = [[]]
-			let verticalWalls = [[]]
-			let horizontalWalls = [[]]
-
-			let hoverX = hoverY = -1
-			let hoverVertical = false
-			let wins = 0
-			let startTime = -1
-
-			let numberColors = ["red", "lime", "black"]
-			let wallColors = ["#303030", "#303060", "#50AA50"]
-			let boardSizes = [[5, 5], [9, 5], [7, 7], [10, 10], [20, 10]], boardSize = 0
-			let AIspeed = 1, maxDrawSpeed = 10  //ms
-			let drawCooldown = false
-			let AIspeedOption = 0
-			let numberPosX = [], numberPosY = []
+			Object.defineProperties(Object.prototype, {
+				map: {value: function(callback){
+					return Object.fromEntries(Object.entries(this).map(([key, val]) => [key, callback(val, key, this)]))
+				}},
+			})
 
 
-			function setCookie(name, value, days = 365){
-				let d = new Date;
-				d.setTime(d.getTime() + 24*60*60*1000*days);
-				document.cookie = name + "=" + value + ";path=/;expires=" + d.toGMTString();
-			}
-			function getCookie(name){
-				let v = document.cookie.match("(^|;) ?" + name + "=([^;]*)(;|$)");
-				return v ? v[2] : null;
-			}
 
-			let highscores = getCookie("WallPuzzleHighscores")
-			highscores = highscores ? JSON.parse(highscores) : [[], [], [], [], []]
-			if(highscores.length == 6)
-				highscores = [highscores[0], highscores[1], [], highscores[2], highscores[3]]
-					.map(x => x.map(y => Math.round(y)))
-
-
-			function openMenu(){
-				canvas.style.display = gameOver.style.display = "none";
-				menu.style.display = ""
+			function openScene(newScene){
+				scene.forEach(id => document.getElementById(id).classList.add("hidden"))
+				scene = Array.isArray(newScene) ? newScene : [newScene]
+				scene.forEach(id => document.getElementById(id).classList.remove("hidden"))
 			}
 			function showHighscores(size){
-				highscoreDisplay.style.display = ""
-				highscoreDisplay.innerHTML = "<ol>" + highscores[size].map(num => "<li><span>  " + Math.round(num)/1000 + "s</span></li>").join("") + "</ol>"
+				els.highscoreDisplay.classList.remove("hidden")
+				if(highscores[size])
+					els.highscoreDisplay.innerHTML = "<ol>" + highscores[size].map(num => "<li><span>  " + Math.round(num)/1000 + "s</span></li>").join("") + "</ol>"
 			}
 			function hideHighscores(){
-				highscoreDisplay.style.display = "none"
+				els.highscoreDisplay.classList.add("hidden")
+				els.highscoreDisplay.innerHTML = ""
 			}
 
-			function start(size = boardSize){
-				[width, height] = boardSizes[size]
-				boardSize = size
-				view = "game"
+			function start(newWidth = width, newHeight = height){
+				width = newWidth
+				height = newHeight
 
+				gameActive = true
 				hideHighscores()
-				menu.style.display = gameOver.style.display = "none"
-				canvas.style.display = ""
-				canvas.width  = canvas.clientWidth
-				canvas.height = canvas.clientHeight
+				openScene(scenes.game)
+				canvasSetup()
 
-				tileSize = Math.floor(Math.min((canvas.width - 10) / width, (canvas.height - 10) / height))
-				canvasMargin.left = Math.floor((canvas.width  -  width*tileSize)/2)
-				canvasMargin.top  = Math.floor((canvas.height - height*tileSize)/2)
-
-				targetGrid       = matrix(width, height, 0)
-				grid             = matrix(width, height, 0)
-				verticalWalls    = matrix(width - 1, height, () => Math.round(Math.random()))
-				horizontalWalls  = matrix(width, height - 1, () => Math.round(Math.random()))
+				targetGrid      = matrix(width, height, 0)
+				grid            = matrix(width, height, 0)
+				offsetGrid      = matrix(width, height, 0)
+				verticalWalls   = matrix(width - 1, height, () => Number(Math.random() < settings.wallChance))
+				horizontalWalls = matrix(width, height - 1, () => Number(Math.random() < settings.wallChance))
 				updateGrid(targetGrid)
 				verticalWalls  .forEach(col => col.fill(0))
 				horizontalWalls.forEach(row => row.fill(0))
 
-				numberPosX = range(width ).map(x => canvasMargin.left + Math.round((x + 0.5) * tileSize))
-				numberPosY = range(height).map(y => canvasMargin.top  + Math.round((y + 0.75) * tileSize))
+				selection.x = Math.floor(width /2)
+				selection.y = Math.floor(height/2)
 
 				draw()
 
@@ -212,6 +229,17 @@
 					AIsolveBoard()
 				else
 					startTime = performance.now()
+			}
+			function canvasSetup(){
+				canvas.width  = canvas.clientWidth
+				canvas.height = canvas.clientHeight
+
+				tileSize = Math.floor(Math.min((canvas.width - 10) / width, (canvas.height - 10) / height))
+				canvasMargin.left = Math.floor((canvas.width  -  width*tileSize)/2)
+				canvasMargin.top  = Math.floor((canvas.height - height*tileSize)/2)
+
+				numberPosX = range(width ).map(x => canvasMargin.left + Math.round((x + 0.5) * tileSize))
+				numberPosY = range(height).map(y => canvasMargin.top  + Math.round((y + 0.75) * tileSize))
 			}
 			function updateGrid(g = grid){
 				for(let i of range(width))
@@ -222,39 +250,62 @@
 						for(let y = j - 1;   y >= 0         && !(horizontalWalls[i][y] % 3);   y--) g[i][j]++
 						for(let y = j    ;   y < height - 1 && !(horizontalWalls[i][y] % 3);   y++) g[i][j]++
 					}
+
+				for(let i of range(width))
+					for(let j of range(height)){
+						offsetGrid[i][j] = 0
+						for(let x = i - 1;   x >= 0         && verticalWalls  [x][j] == 3;   x--) offsetGrid[i][j]++
+						for(let x = i    ;   x < width - 1  && verticalWalls  [x][j] == 3;   x++) offsetGrid[i][j]++
+						for(let y = j - 1;   y >= 0         && horizontalWalls[i][y] == 3;   y--) offsetGrid[i][j]++
+						for(let y = j    ;   y < height - 1 && horizontalWalls[i][y] == 3;   y++) offsetGrid[i][j]++
+					}
 			}
-			async function draw(ignoreCooldown = false){
+			function checkWin(){
+				if(gameActive && grid.every((row, i) => row.every((x, j) => x == targetGrid[i][j]))){
+					if(startTime != -1 && !AIhelp){
+						let score = Math.round(performance.now() - startTime)
+						let shape = boardShapeName()
+						els.scoreDisplay.textContent = score / 1000 + "s"
+						if(!highscores[shape])
+							highscores[shape] = []
+						highscores[shape] = highscores[shape].concat(score).sort((a, b) => a - b).slice(0, 15)
+
+
+
+						let newBestPos = highscores[shape].indexOf(score) + 1
+						els.newBestDisplay.innerHTML = newBestPos
+							?	"New <strong>" + (newBestPos == 1
+								?	"best</strong>"
+								:	newBestPos + ([,,"nd","rd"][newBestPos] || "th") + "</strong> best"
+								) + " score"
+							:	""
+
+						localStorage.setItem("WallPuzzle highscores", JSON.stringify(highscores))
+					}
+					else els.scoreDisplay.textContent = "N/A"
+
+					gameActive = false
+					openScene(scenes.gameOver)
+
+					horizontalWalls.concat(verticalWalls).forEach(row => row.forEach((x, i) => row[i] = +(x % 3 != 0)))
+					console.log(++wins)
+				}
+			}
+			function draw(ignoreCooldown = false){
 				if(drawCooldown && !ignoreCooldown) return;
 
 				ctx.clearRect(0, 0, canvas.width, canvas.height)
 				updateGrid()
 
-				if(view == "game" && grid.every((row, i) => row.every((x, j) => x == targetGrid[i][j]))){
-					if(startTime != -1 && !AIhelp){
-						let score = performance.now() - startTime
-						scoreDisplay.textContent = Math.round(score) / 1000 + "s"
-						highscores[boardSize] = highscores[boardSize].concat(score).sort((a, b) => a - b).slice(0, 15)
+				checkWin()
 
-						setCookie("WallPuzzleHighscores", JSON.stringify(highscores))
-					}
-					else scoreDisplay.textContent = "N/A"
-
-					view = "gameOver"
-					gameOver.style.display = ""
-
-					horizontalWalls.concat(verticalWalls).forEach(row => row.forEach((x, i) => row[i] = +(x % 3 != 0)))
-					console.log(++wins)
-				}
-
-				let walls = hoverVertical ? verticalWalls : horizontalWalls
-				if(hoverX in walls && hoverY in walls[hoverX]){
+				let walls = hover.vertical ? verticalWalls : horizontalWalls
+				if(hover.x in walls && hover.y in walls[hover.x]){
 					ctx.strokeStyle = "#A0A0A0"
 					ctx.lineWidth = Math.round(tileSize * 0.15)
 					ctx.lineCap = "round"
-					if(hoverVertical)
-						lineSegment(hoverX + 1, hoverY, hoverX + 1, hoverY + 1)
-					else
-						lineSegment(hoverX, hoverY + 1, hoverX + 1, hoverY + 1)
+					if(hover.vertical) lineSegment(hover.x + 1, hover.y, hover.x + 1, hover.y + 1)
+					else               lineSegment(hover.x, hover.y + 1, hover.x + 1, hover.y + 1)
 				}
 
 
@@ -263,18 +314,6 @@
 				for(let i of range(width))
 					for(let j of range(height))
 						drawStack.numbers[Math.sign(grid[i][j] - targetGrid[i][j]) + 1].push([i, j])
-
-				ctx.font = Math.floor(tileSize/2) + "px Courier New"
-				ctx.textAlign = "center"
-				for(let c of range(3)){
-					ctx.fillStyle = numberColors[c]
-					for(let [x, y] of drawStack.numbers[c]){
-						ctx.beginPath()
-						ctx.fillText(targetGrid[x][y], numberPosX[x], numberPosY[y])
-						ctx.closePath()
-					}
-				}
-
 
 				for(let i of range(width - 1))
 					for(let j of range(height))
@@ -285,12 +324,31 @@
 						if(horizontalWalls[i][j])
 							drawStack.horizontalWalls[horizontalWalls[i][j] - 1].push([i, j])
 
+
 				ctx.lineWidth = 2
 				for(let c of range(3)){
 					ctx.strokeStyle = wallColors[c]
-					for(let [x, y] of drawStack.verticalWalls  [c])  lineSegment(x + 1, y, x + 1, y + 1)
-					for(let [x, y] of drawStack.horizontalWalls[c])  lineSegment(x, y + 1, x + 1, y + 1)
+					if(c == 2){
+						for(let [x, y] of drawStack.verticalWalls  [c])  lineSegment(x + .7, y + .5, x + 1.3, y + .5)
+						for(let [x, y] of drawStack.horizontalWalls[c])  lineSegment(x + .5, y + .8, x + .5, y + 1.25)
+					}
+					else{
+						for(let [x, y] of drawStack.verticalWalls  [c])  lineSegment(x + 1, y, x + 1, y + 1)
+						for(let [x, y] of drawStack.horizontalWalls[c])  lineSegment(x, y + 1, x + 1, y + 1)
+					}
 				}
+
+				ctx.font = Math.floor(tileSize/2) + "px Courier New"
+				ctx.textAlign = "center"
+				for(let c of range(3)){
+					ctx.fillStyle = numberColors[settings.dimMode ? "dim" : "normal"][c]
+					for(let [x, y] of drawStack.numbers[c]){
+						ctx.beginPath()
+						ctx.fillText(targetGrid[x][y] /*- offsetGrid[x][y]*/, numberPosX[x], numberPosY[y] - 0.07 * tileSize)
+						ctx.closePath()
+					}
+				}
+
 
 				ctx.beginPath()
 				ctx.strokeStyle = wallColors[0]
@@ -319,7 +377,7 @@
 
 			function toggleAIhelp(){
 				AIhelp = !AIhelp
-				AIhelpButton.classList.toggle("on")
+				els.AIhelpButton.classList.toggle("on")
 				if(AIhelp){
 					startTime = -1
 					AIsolveBoard()
@@ -380,7 +438,7 @@
 				return minUp + minDown + minLeft + minRight == total
 			}
 			async function AIsolveBoard(){
-				if(!(AIhelp && view == "game"))
+				if(!(AIhelp && gameActive))
 					return true;
 
 				updateGrid()
@@ -418,12 +476,12 @@
 									await sleep(1)
 							}
 
-							if(!(AIhelp && view == "game"))	return true
+							if(!(AIhelp && gameActive))	return true
 						}
 				}
 				await draw(true)
 
-				if(view == "game"){
+				if(gameActive){
 					for(let i of range(width))
 						for(let j of range(height))
 							if(grid[i][j] < targetGrid[i][j])
@@ -437,7 +495,7 @@
 								walls[i][j] = 2
 
 								let wait = await AIsolveBoard();
-								if(!(AIhelp && view == "game")) return true
+								if(!(AIhelp && gameActive)) return true
 
 								if(wait){
 									draw()
@@ -459,46 +517,256 @@
 			}
 
 			const wallsToText = () => horizontalWalls + " " + verticalWalls
+			const boardShapeName = (w = width, h = height) => Math.min(w, h) + "x" + Math.max(w, h)
 
-			canvas.addEventListener("click", e => {
-				if(view != "game")
-					return;
+			function onMouseEvent(e){
+				hover.x = (e.offsetX - canvasMargin.left) / tileSize
+				hover.y = (e.offsetY - canvasMargin.top) / tileSize
+				hover.vertical = Math.abs((hover.x % 1) - 0.5) > Math.abs((hover.y % 1) - 0.5)
+
+				if(hover.vertical){
+					hover.x = Math.round(hover.x) - 1
+					hover.y = Math.floor(hover.y)
+				}
+				else{
+					hover.y = Math.round(hover.y) - 1
+					hover.x = Math.floor(hover.x)
+				}
+			}
+			function doMouseAction(){
+				if(!(hover.x in mouse.walls && hover.y in mouse.walls[hover.x]))
+					return
+
+				if(mouse.action == "add" && mouse.wallType != 2 && mouse.walls[hover.x][hover.y] == 0){
+					mouse.walls[hover.x][hover.y] = mouse.wallType
+					if(mouse.wallType == 1 && autoGreen){
+						updateGrid()
+						let undoGreens = []
+						for(let i of range(width))
+							for(let j of range(height))
+								if(grid[i][j] == targetGrid[i][j])
+									undoGreens.push(...extendAutoGreen(i, j))
+
+					}
+				}
+				else if(mouse.action == "remove" && (mouse.walls[hover.x][hover.y] == mouse.wallType || mouse.walls[hover.x][hover.y] == 2 && mouse.wallType == 1))
+					mouse.walls[hover.x][hover.y] = 0
+				// else if(mouse.action == "surround"){
+				else if(mouse.wallType == 2 && mouse.walls[hover.x][hover.y] == 3){
+					for(let [x, y, w] of greenLineEnds(hover.vertical, hover.x, hover.y)){
+						if(mouse.action == "add"    && w == 0) mouse.walls[x][y] = 2
+						if(mouse.action == "remove" && w == 2) mouse.walls[x][y] = 0
+					}
+				}
+			}
+			function extendAutoGreen(i, j){
+				let possibleTiles = []
+				for(let x = i - 1;   x >= 0         && !(verticalWalls  [x][j] % 3);   x--) if(  verticalWalls[x][j] == 0) possibleTiles.push([true , x, j])
+				for(let x = i    ;   x < width - 1  && !(verticalWalls  [x][j] % 3);   x++) if(  verticalWalls[x][j] == 0) possibleTiles.push([true , x, j])
+				for(let y = j - 1;   y >= 0         && !(horizontalWalls[i][y] % 3);   y--) if(horizontalWalls[i][y] == 0) possibleTiles.push([false, i, y])
+				for(let y = j    ;   y < height - 1 && !(horizontalWalls[i][y] % 3);   y++) if(horizontalWalls[i][y] == 0) possibleTiles.push([false, i, y])
+
+				let actualTiles = []
+				for(let [vertical, x, y] of possibleTiles){
+					let walls = vertical ? verticalWalls : horizontalWalls
+					if(walls[x][y] == 0){
+						walls[x][y] = 3
+						actualTiles.push(vertical, x, y)
+					}
+				}
+
+				return actualTiles
+			}
+			/* function surroundTile(i, j){
+				if(!(i in grid && j in grid[i] && offsetGrid[i][j] == targetGrid[i][j])) return
+
+				let up = 0, down = 0, left = 0, right = 0
+
+				for(let x = i - 1;   x >= 0         && verticalWalls  [x][j] == 3;   x--) left++
+				for(let x = i    ;   x < width - 1  && verticalWalls  [x][j] == 3;   x++) right++
+				for(let y = j - 1;   y >= 0         && horizontalWalls[i][y] == 3;   y--) up++
+				for(let y = j    ;   y < height - 1 && horizontalWalls[i][y] == 3;   y++) down++
+
+				if((i - left - 1) in verticalWalls     ) verticalWalls  [i - left - 1][j         ] = 2
+				if((i + right   ) in verticalWalls     ) verticalWalls  [i + right   ][j         ] = 2
+				if((j - up - 1  ) in horizontalWalls[i]) horizontalWalls[i           ][j - up - 1] = 2
+				if((j + down    ) in horizontalWalls[i]) horizontalWalls[i           ][j + down  ] = 2
+			} */
+			function greenLineEnds(vertical, i, j){
+				let walls = vertical ? verticalWalls : horizontalWalls
+				let dx = + vertical
+				let dy = +!vertical
+
+				return [1, -1].map(e => {
+					let x = i, y = j
+					for(; x in walls && y in walls[x] && walls[x][y] == 3; x += e*dx, y += e*dy);
+					return [x, y]
+				})
+					.filter(([x, y]) => x in walls && y in walls[x])
+					.map(([x, y]) => [x, y, walls[x][y]])
+			}
+
+
+
+			/// initialization
+
+			let els = {
+				menu: "menu",
+				sizeOptions: "size-options",
+				gameOver: "game-over",
+				scoreDisplay: "final-score",
+				newBestDisplay: "new-best-position",
+				highscoreDisplay: "highscores",
+				AIhelpButton: "AI-help",
+			}.map(id => document.getElementById(id))
+			let canvas = document.getElementById("game-canvas")
+			let ctx = canvas.getContext("2d")
+
+			let gameActive = false
+			let scene = []
+			let width = height = tileSize = 0
+			let AIhelp = false
+			let autoGreen = false
+
+			let canvasMargin = {left: 0, top: 0}
+			let targetGrid = [[]]
+			let grid = [[]]
+			let offsetGrid = [[]]
+			let verticalWalls = [[]]
+			let horizontalWalls = [[]]
+			let undoAutoGreen = {horizontal: [[ [] ]], vertical: [[ [] ]]}
+
+			let hover = {
+				x: -1,
+				y: -1,
+				vertical: false,
+			}
+			let mouse = {
+				held: false,
+				action: "add",  //: [add, remove]
+				wallType: 0,
+				walls: null
+			}
+			let selection = {
+				x: 0,
+				y: 0,
+				action: "none",  //: [none, add, remove]
+				visible: false,
+			}
+			let wins = 0
+			let startTime = -1
+
+			let numberColors = {normal: ["red", "lime", "black"], dim: ["crimson", "green", "black"]}
+			let wallColors = ["#303030", "#3030a0", "#30CC30"]
+			let defaultShapes = [[5, 5], [9, 5], [6, 6], [7, 7], [10, 10], [20, 10]]
+			let AIspeed = 1, maxDrawSpeed = 10  //ms
+			let drawCooldown = false
+			let AIspeedOption = 0
+			let numberPosX = [], numberPosY = []
+
+
+
+			let settings = localStorage.getItem("WallPuzzle settings") || {
+				dimMode: false,
+
+				autoGreen: false,
+				useRelativeNumbers: false,
+				selectionStyle: "edges",  //: [squares, edges]
+
+				wallChance: 0.5,
+			}
+			let highscores = JSON.parse(localStorage.getItem("WallPuzzle highscores")) || {}
+
+
+			defaultShapes.forEach((shape, i) => {
+				let shapeText = boardShapeName(...shape)
+				let el = document.createElement("div")
+				el.innerText = shapeText
+				el.classList.add("simple-button")
+				el.tabIndex = 100 + +i
+				el.onclick = start.bind(null, shape[0], shape[1])
+				el.onmouseover = showHighscores.bind(null, shapeText)
+				el.onmouseout = hideHighscores
+				els.sizeOptions.appendChild(el)
+			})
+
+			let scenes = {
+				menu: ["menu", "open-options-menu"],
+				game: ["game-canvas", "open-main-menu", "AI-help"],
+				gameOver: ["game-canvas", "open-main-menu", "AI-help", "game-over"],
+				mainOptions: ["options-main", "open-main-menu"],
+				howToPlay: ["options-how-to-play", "open-main-menu"],
+				controls: ["options-controls", "open-main-menu"],
+				colorsOptions: ["options-colors", "open-main-menu"],
+			}
+			openScene(scenes.menu)
+
+
+
+
+
+			document.oncontextmenu = () => false
+			canvas.addEventListener("mousedown", e => {
+				if(!gameActive)
+					return
+
+				mouse.wallType = 0
+				if(e.button == 0)
+					mouse.wallType = 1
+				else if(e.button == 2)
+					mouse.wallType = 3
+				else return
+
 
 				onMouseEvent(e)
 
-				let walls = hoverVertical ? verticalWalls : horizontalWalls
-				if(!(hoverX in walls && hoverY in walls[hoverX]))
-					return;
+				mouse.held = true
+				mouse.walls = hover.vertical ? verticalWalls : horizontalWalls
 
-				walls[hoverX][hoverY] = 1 - (walls[hoverX][hoverY] % 3 != 0)
+				if(!(hover.x in mouse.walls && hover.y in mouse.walls[hover.x]))
+					return
+
+				mouse.action = mouse.walls[hover.x][hover.y] == 0
+					?	"add"
+					:	mouse.wallType == 1 && mouse.walls[hover.x][hover.y] == 3
+						?	"surround"
+						:	"remove"
+				if(mouse.action == "surround"){  //# this could get weird/janky
+					mouse.wallType = 2  //~+ use `"cap ends"` instead
+					mouse.action = greenLineEnds(hover.vertical, hover.x, hover.y).some(x => x[2] == 0) ? "add" : "remove"
+				}
+
+				doMouseAction()
 				draw()
 
 				if(AIhelp)
 					AIsolveBoard()
 			})
 			canvas.addEventListener("mousemove", e => {
+				let hv = hover.vertical
 				onMouseEvent(e)
+				if(mouse.held && gameActive){
+					if(hover.vertical == hv)
+						doMouseAction()
+					else
+						hover.x = -1
+					hover.vertical = hv
+				}
 				draw()
 			})
-			function onMouseEvent(e){
-				hoverX = (e.offsetX - canvasMargin.left) / tileSize
-				hoverY = (e.offsetY - canvasMargin.top) / tileSize
-				hoverVertical = Math.abs((hoverX % 1) - 0.5) > Math.abs((hoverY % 1) - 0.5)
-
-				if(hoverVertical){
-					hoverX = Math.round(hoverX) - 1
-					hoverY = Math.floor(hoverY)
-				}
-				else{
-					hoverY = Math.round(hoverY) - 1
-					hoverX = Math.floor(hoverX)
-				}
-			}
-
+			document.addEventListener("mouseup", e => {
+				mouse.held = false
+			})
 			document.addEventListener("keydown", e => {
-				if(e.key == "Escape")
-					openMenu()
-				if(e.key == " " && view == "gameOver")
+				if(e.key == "Escape"){
+					if(scene.includes("menu"))
+						openScene(scenes.mainOptions)
+					else {
+						gameActive = false
+						openScene(scenes.menu)
+					}
+				}
+				if(e.key == " " && scene.includes("game-over"))
 					start()
 				if(e.key == "[" || e.key == "]"){
 					let d = e.key == "]" ? 1 : -1
@@ -506,6 +774,89 @@
 					AIspeed = [1, 10, 100, 1000][AIspeedOption]
 				}
 			})
+			window.addEventListener("resize", e => {
+				if(gameActive || scene.includes("game-over")){
+					canvasSetup()
+					draw()
+				}
+			})
+			document.querySelectorAll(".simple-button").forEach(el => el.addEventListener("keydown", function(e){
+				if(e.key == "Enter" || e.key == " "){
+					this.click()
+					e.preventDefault()
+				}
+			}))
+
+
+			/** TODO:
+				~ numbers change with green walls
+					- changed numbers are blue
+					- optional / in the corner
+
+				~ get an actual name for this thing
+				~ fix that bug where the screen flashes blank for a second when loading a new level
+				~ option for custom board size
+					++ even custom board shape
+						- can be imported/exported as text
+				== more controls ==
+					~ mouse and keyboard both with lots of options
+						~ and keyboard support for all the menus
+					~ square-based and {wall/corner}-based versions (for mouse and keys each)
+					~ directional things can be {move, place, {place and move}, long move, {+ long move and place lots}}
+						# `long move` is like ctrl-arrows on a spreadsheet
+							& options for what exactly it does
+					- every {key, mouse button} can be used as {?action and/or modifier}
+					- actions can be given multiple allowed input combinations
+					~ allow multiple saved control schemes
+						~ switch between them mid-game with number keys
+					~~ instead of a fixed format, have a big list of "rules" that can be {added, removed, configured}
+						- each rule can be {single action, quadruplet of actions, +more}
+						- selecting values can open new menus for more information
+							* "quad action" > "place and move" > {"green/gray wall", "add/remove/toggle" > "toggle first, follow after" > {"reset after time" > input time, "reset when modifier released", "reset after other movement"}}
+								~ additional options like "follow orientation" {+ just for mouse-based rules}
+						~?+ some way of combining mouse hover/inputs with keyboard selection/inputs
+						~&+ left half of the list shows just the action and uses {? shapes like merged cells on a spreadsheet}
+						~ color-code mouse vs keyboard rules
+					~ __
+				~ a way to make click-and-drag not restricted to the same axis you started on
+					^& shift-click
+					^& right-click (if you don't really use green walls)
+					& always work like this
+				~ a {help / controls / how to play} menu
+				~+ dark mode
+					- and/or low-contrast mode
+				~ touchscreen-compatible
+					~ rotate non-square boards depending on screen shape
+				~ customizable wall chance
+					~+ make this a component of highscore list name
+						+ or just make it only save at 0.5
+					#+ might not actually be that interesting
+				~+ optimize checkWin and draw to not refresh the whole board
+					~ use layered/hidden canvases
+						** numbers, walls, hover/keyboard
+				#~ test if ctx.clearRect is antialiased
+				~ a way to save a board layout (just the numbers) (as text) and replay it later
+					+ probably just delimited by ` `, `|`
+					% for when you thought one was cool, and want to replay it or share it
+					- times are still shown to you, but not saved
+				~ when the AI enters guessing mode, it breaks all the unsolved parts into independent groups
+					- groups determined by flood fill
+					- solved from smallest to largest
+				~ when the AI guesses a wall placement and fully backtracks, it places a green there instead
+				~ some kind of difficulty/complexity rating, based on how the AI solves it
+				~ alternate input style: click on a square, then drag onto another square to put a wall between them
+					^ setting to change the default; hold a key (+ ctrl) to use the other one
+				~ option for the selection indicator to be a more visible color
+					~+ fully customize every ui color
+				~&++ click-and-drag interpolation
+				== requires more of an overhaul ==
+					~ challenge creator
+						- non-rectangle shapes
+						- some squares can be given no specified number
+							% less conditions to fulfill and/or less information to use
+					~ zoom and pan
+					~ move a bunch of stuff into classes
+			*/
 		</script>
 	</body>
 </html>
