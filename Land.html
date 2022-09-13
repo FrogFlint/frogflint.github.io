@@ -2,63 +2,63 @@
 <!DOCTYPE html>
 <html>
 
-<head>
+	<head>
 
-	<style>
-		* {
-			padding: 0;
-			margin: 0;
-		}
-		
-		canvas {
-			background: black;
-			display: block;
-			margin: 0 auto;
-		}
-	</style>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+			}
 
-<title>Land Generator</title>
-</head>
+			canvas {
+				background: black;
+				display: block;
+				margin: 0 auto;
+			}
+		</style>
 
-<body>
+	<title>Land Generator</title>
+	</head>
+
+
 
 	<canvas id="myCanvas" width="1350" height="630"></canvas>
 
 	<body style="background-color:black;">
 
 		<SCRIPT LANGUAGE="JavaScript">
-			
-			
+
+
 			var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
-			
+
 			var tile = [[]];
 			var index1, index2;
-			
+
 			var camera = {x:1000,y:1000};
-			
+
 			var tileSize = 10;
 			var mapSize = {x:Math.floor(1000/tileSize),y:Math.floor(600/tileSize)};
 			var slope = 2;  //maximum land slope
 			var maxHeight = 34;
 			var waterHeight = 17;
-			
+
 			var tilesLeft = 0;
 			var count = 0;
-			
-			
-			
+
+
+
 			function distance(x1,y1,x2,y2){
 				return Math.sqrt((x1-x2)**2 + (y1-y2)**2);
 			}
 			function gridDistance(x1,y1,x2,y2){
 				return Math.abs(x1-x2) + Math.abs(y1-y2);
 			}
-			
+
 			function randIntBetween(a,b){
 				return a > b ? randIntBetween(b,a) : Math.floor(Math.random()*(b - a + 1)) + a;
 			}
-			
+
 			document.addEventListener("keydown", keyDownHandler, false);
 			function keyDownHandler(e) {
 				if(e.key == "w") waterHeight = Math.min(waterHeight + 1, maxHeight + 1);
@@ -80,10 +80,10 @@
 					}
 				}
 			}
-			
-			
+
+
 			function draw() {
-				
+
 				for(var i = 0;i < 100 && tilesLeft > 0;i++){
 					count = Math.random()*tilesLeft;
 					for(index1 = camera.x;index1 < camera.x + mapSize.x && count > 0;index1++){
@@ -108,8 +108,8 @@
 					tile[rand.x][rand.y] = randIntBetween(bounds.bottom, bounds.top);
 					tilesLeft--;
 				}
-				
-				
+
+
 				ctx.clearRect(0,0,canvas.width,canvas.height);
 				for(index1 in tile){
 					for(index2 in tile[index1]){
@@ -121,13 +121,14 @@
 						}
 					}
 				}
-				
+
 				if(tile.length == 1){
 					ctx.beginPath();
 					ctx.fillStyle = "White";
-					ctx.textAlign = "left";
+					ctx.textAlign = "center";
 					ctx.font = "40px Arial";
-					ctx.fillText("Realistic terrain generator", 450, 150);
+					ctx.fillText("Terrain generator", canvas.width/2, 150);
+					ctx.textAlign = "left";
 					ctx.font = "30px Arial";
 					ctx.fillText("Water level", 970, 325);
 					ctx.font = "17px Arial";
@@ -138,13 +139,13 @@
 					ctx.fillText("R to reset", 990, 430);
 					ctx.closePath();
 				}
-				
-				
-				
-				setTimeout(draw, 20);
-			}    
+
+
+
+				setTimeout(draw, 1);
+			}
 			draw();
-        		
+
    		 </SCRIPT>
 	</body>
 </html>
